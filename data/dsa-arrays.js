@@ -41,6 +41,10 @@ window.PREP_DATA["dsa-arrays"] = {
     {
       title: "Binary search on a rotated list",
       body: "A rotated sorted array is two sorted runs stuck together. Mid is in the left run or the right run. One of the two halves is still sorted. If the target sits in the sorted half, search there; otherwise search the other half. That is still O(log n). Linear scan is the brute version, not the interview finish line."
+    },
+    {
+      title: "Matrices / 2D arrays",
+      body: "A matrix is an array of rows. matrix[r][c] is row r, column c. An n by n square has a main diagonal r === c and an anti-diagonal r + c === n - 1. Rotate, spiral, and set-zeroes all walk layers or use the first row and column as extra flags. Bound-check every neighbor. In-place rotate overwrites cells, so save a temp (or rotate a 4-cycle) before you write."
     }
   ],
   examples: [
@@ -1077,6 +1081,117 @@ int search(int* nums, int n, int target) {
 }
 
 printf("%d\\n", search([4, 5, 6, 7, 0, 1, 2], 0)); // 4`
+      }
+    },
+    {
+      lang: "js",
+      title: "Rotate image (transpose, then reverse each row)",
+      desc: "What this is\nA 90 degree clockwise rotate of a square matrix.\nTranspose flips over the main diagonal. Then each row reversed is the rotate.\n\nWhat the code is doing\nThe first nested loop swaps matrix[i][j] with matrix[j][i] for j > i.\nThe second loop reverses each row in place with two pointers.\n[[1,2,3],[4,5,6],[7,8,9]] becomes [[7,4,1],[8,5,2],[9,6,3]].\n\nWatch out\nCounter-clockwise is transpose then reverse columns, or reverse rows then transpose.\nDo not use an extra matrix if the interview asks for in-place.",
+      code: `function rotate(matrix) {
+  const n = matrix.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const t = matrix[i][j];
+      matrix[i][j] = matrix[j][i];
+      matrix[j][i] = t;
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    let L = 0, R = n - 1;
+    while (L < R) {
+      const t = matrix[i][L];
+      matrix[i][L] = matrix[i][R];
+      matrix[i][R] = t;
+      L++;
+      R--;
+    }
+  }
+  return matrix;
+}
+
+console.log(rotate([[1, 2, 3], [4, 5, 6], [7, 8, 9]]));`,
+      codes: {
+        javascript: `function rotate(matrix) {
+  const n = matrix.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const t = matrix[i][j];
+      matrix[i][j] = matrix[j][i];
+      matrix[j][i] = t;
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    let L = 0, R = n - 1;
+    while (L < R) {
+      const t = matrix[i][L];
+      matrix[i][L] = matrix[i][R];
+      matrix[i][R] = t;
+      L++;
+      R--;
+    }
+  }
+  return matrix;
+}
+
+console.log(rotate([[1, 2, 3], [4, 5, 6], [7, 8, 9]]));`,
+        python: `def rotate(matrix):
+  n = len(matrix)
+  for i in range(n):
+    for j in range(i + 1, n):
+      matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+  for i in range(n):
+    L, R = 0, n - 1
+    while L < R:
+      matrix[i][L], matrix[i][R] = matrix[i][R], matrix[i][L]
+      L += 1
+      R -= 1
+  return matrix
+
+print(rotate([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))`,
+        java: `class Solution {
+  public void rotate(int[][] matrix) {
+    int n = matrix.length;
+    for (int i = 0; i < n; i++) {
+      for (int j = i + 1; j < n; j++) {
+        int t = matrix[i][j];
+        matrix[i][j] = matrix[j][i];
+        matrix[j][i] = t;
+      }
+    }
+    for (int i = 0; i < n; i++) {
+      int L = 0, R = n - 1;
+      while (L < R) {
+        int t = matrix[i][L];
+        matrix[i][L] = matrix[i][R];
+        matrix[i][R] = t;
+        L++; R--;
+      }
+    }
+  }
+}`,
+        cpp: `void rotate(vector<vector<int>>& matrix) {
+  int n = (int)matrix.size();
+  for (int i = 0; i < n; i++)
+    for (int j = i + 1; j < n; j++) swap(matrix[i][j], matrix[j][i]);
+  for (int i = 0; i < n; i++) {
+    int L = 0, R = n - 1;
+    while (L < R) { swap(matrix[i][L], matrix[i][R]); L++; R--; }
+  }
+}`,
+        c: `void rotate(int n, int matrix[][16]) {
+  int i, j, L, R, t;
+  for (i = 0; i < n; i++)
+    for (j = i + 1; j < n; j++) {
+      t = matrix[i][j]; matrix[i][j] = matrix[j][i]; matrix[j][i] = t;
+    }
+  for (i = 0; i < n; i++) {
+    L = 0; R = n - 1;
+    while (L < R) {
+      t = matrix[i][L]; matrix[i][L] = matrix[i][R]; matrix[i][R] = t;
+      L++; R--;
+    }
+  }
+}`
       }
     }
   ],
@@ -8993,6 +9108,2987 @@ int missingNumber(int* nums, int n) {
     missing = missing ^ i ^ nums[i];
   }
   return missing;
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 26,
+      level: "beginner",
+      q: "Two Sum II - Input Array Is Sorted",
+      ask: "Amazon · Google · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/given-an-array-a-and-a-number-x-check-for-pair-in-a-with-sum-as-x/"}],
+      a: "A 1-indexed sorted array. Return the two indexes (1-based) whose values add to target. Exactly one solution. Do not reuse an index.\n\nExample: numbers = [2, 7, 11, 15], target = 9. Answer [1, 2] because 2 + 7 = 9.\n\nBrute tries every pair. Optimal binary-searches the partner of each value. More optimal is two pointers from both ends.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n²)",
+          space: "O(1)",
+          why: "Outer index i, inner j > i. First pair that sums to target is the answer. Works, ignores the sorted hint.",
+          code: `function twoSum(numbers, target) {
+  const n = numbers.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (numbers[i] + numbers[j] === target) return [i + 1, j + 1];
+    }
+  }
+  return [];
+}`,
+          codes: {
+            javascript: `function twoSum(numbers, target) {
+  const n = numbers.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (numbers[i] + numbers[j] === target) return [i + 1, j + 1];
+    }
+  }
+  return [];
+}`,
+            python: `def twoSum(numbers, target):
+  n = len(numbers)
+  for i in range(n):
+    for j in range(i + 1, n):
+      if numbers[i] + numbers[j] == target:
+        return [i + 1, j + 1]
+  return []`,
+            java: `class Solution {
+  public int[] twoSum(int[] numbers, int target) {
+    int n = numbers.length;
+    for (int i = 0; i < n; i++)
+      for (int j = i + 1; j < n; j++)
+        if (numbers[i] + numbers[j] == target) return new int[] { i + 1, j + 1 };
+    return new int[] {};
+  }
+}`,
+            cpp: `vector<int> twoSum(vector<int>& numbers, int target) {
+  int n = (int)numbers.size();
+  for (int i = 0; i < n; i++)
+    for (int j = i + 1; j < n; j++)
+      if (numbers[i] + numbers[j] == target) return { i + 1, j + 1 };
+  return {};
+}`,
+            c: `int twoSum(int* numbers, int n, int target, int* ans) {
+  int i, j;
+  for (i = 0; i < n; i++)
+    for (j = i + 1; j < n; j++)
+      if (numbers[i] + numbers[j] == target) { ans[0] = i + 1; ans[1] = j + 1; return 1; }
+  return 0;
+}`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n log n)",
+          space: "O(1)",
+          why: "For each left value, binary search target - numbers[i] on the right side. Sorted order makes the search legal. Extra log n versus two pointers.",
+          code: `function twoSum(numbers, target) {
+  const n = numbers.length;
+  for (let i = 0; i < n; i++) {
+    const need = target - numbers[i];
+    let lo = i + 1, hi = n - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (numbers[mid] === need) return [i + 1, mid + 1];
+      if (numbers[mid] < need) lo = mid + 1;
+      else hi = mid - 1;
+    }
+  }
+  return [];
+}`,
+          codes: {
+            javascript: `function twoSum(numbers, target) {
+  const n = numbers.length;
+  for (let i = 0; i < n; i++) {
+    const need = target - numbers[i];
+    let lo = i + 1, hi = n - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (numbers[mid] === need) return [i + 1, mid + 1];
+      if (numbers[mid] < need) lo = mid + 1;
+      else hi = mid - 1;
+    }
+  }
+  return [];
+}`,
+            python: `def twoSum(numbers, target):
+  n = len(numbers)
+  for i in range(n):
+    need = target - numbers[i]
+    lo, hi = i + 1, n - 1
+    while lo <= hi:
+      mid = (lo + hi) // 2
+      if numbers[mid] == need:
+        return [i + 1, mid + 1]
+      if numbers[mid] < need:
+        lo = mid + 1
+      else:
+        hi = mid - 1
+  return []`,
+            java: `class Solution {
+  public int[] twoSum(int[] numbers, int target) {
+    int n = numbers.length;
+    for (int i = 0; i < n; i++) {
+      int need = target - numbers[i];
+      int lo = i + 1, hi = n - 1;
+      while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (numbers[mid] == need) return new int[] { i + 1, mid + 1 };
+        if (numbers[mid] < need) lo = mid + 1;
+        else hi = mid - 1;
+      }
+    }
+    return new int[] {};
+  }
+}`,
+            cpp: `vector<int> twoSum(vector<int>& numbers, int target) {
+  int n = (int)numbers.size();
+  for (int i = 0; i < n; i++) {
+    int need = target - numbers[i];
+    int lo = i + 1, hi = n - 1;
+    while (lo <= hi) {
+      int mid = (lo + hi) / 2;
+      if (numbers[mid] == need) return { i + 1, mid + 1 };
+      if (numbers[mid] < need) lo = mid + 1;
+      else hi = mid - 1;
+    }
+  }
+  return {};
+}`,
+            c: `int twoSum(int* numbers, int n, int target, int* ans) {
+  int i;
+  for (i = 0; i < n; i++) {
+    int need = target - numbers[i];
+    int lo = i + 1, hi = n - 1;
+    while (lo <= hi) {
+      int mid = (lo + hi) / 2;
+      if (numbers[mid] == need) { ans[0] = i + 1; ans[1] = mid + 1; return 1; }
+      if (numbers[mid] < need) lo = mid + 1;
+      else hi = mid - 1;
+    }
+  }
+  return 0;
+}`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n)",
+          space: "O(1)",
+          why: "Left at start, right at end. Sum too small: left++. Sum too big: right--. Sorted order guarantees you never miss the pair. Interview finish line.",
+          code: `function twoSum(numbers, target) {
+  let left = 0, right = numbers.length - 1;
+  while (left < right) {
+    const sum = numbers[left] + numbers[right];
+    if (sum === target) return [left + 1, right + 1];
+    if (sum < target) left++;
+    else right--;
+  }
+  return [];
+}`,
+          codes: {
+            javascript: `function twoSum(numbers, target) {
+  let left = 0, right = numbers.length - 1;
+  while (left < right) {
+    const sum = numbers[left] + numbers[right];
+    if (sum === target) return [left + 1, right + 1];
+    if (sum < target) left++;
+    else right--;
+  }
+  return [];
+}`,
+            python: `def twoSum(numbers, target):
+  left, right = 0, len(numbers) - 1
+  while left < right:
+    s = numbers[left] + numbers[right]
+    if s == target:
+      return [left + 1, right + 1]
+    if s < target:
+      left += 1
+    else:
+      right -= 1
+  return []`,
+            java: `class Solution {
+  public int[] twoSum(int[] numbers, int target) {
+    int left = 0, right = numbers.length - 1;
+    while (left < right) {
+      int sum = numbers[left] + numbers[right];
+      if (sum == target) return new int[] { left + 1, right + 1 };
+      if (sum < target) left++;
+      else right--;
+    }
+    return new int[] {};
+  }
+}`,
+            cpp: `vector<int> twoSum(vector<int>& numbers, int target) {
+  int left = 0, right = (int)numbers.size() - 1;
+  while (left < right) {
+    int sum = numbers[left] + numbers[right];
+    if (sum == target) return { left + 1, right + 1 };
+    if (sum < target) left++;
+    else right--;
+  }
+  return {};
+}`,
+            c: `int twoSum(int* numbers, int n, int target, int* ans) {
+  int left = 0, right = n - 1;
+  while (left < right) {
+    int sum = numbers[left] + numbers[right];
+    if (sum == target) { ans[0] = left + 1; ans[1] = right + 1; return 1; }
+    if (sum < target) left++;
+    else right--;
+  }
+  return 0;
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 27,
+      level: "intermediate",
+      q: "4Sum",
+      ask: "Amazon · Google · Microsoft · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/4sum/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/find-all-four-sum-numbers/1"}],
+      a: "Return all unique quadruplets [a, b, c, d] such that they add to target. Indexes must be distinct. Order inside a quadruplet does not matter; do not emit duplicates.\n\nExample: nums = [1, 0, -1, 0, -2, 2], target = 0. One answer is [[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]].\n\nBrute is four loops. Optimal is three loops plus a hash set. More optimal sorts, then two loops plus two pointers, skipping clones.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n^4)",
+          space: "O(1) extra",
+          why: "Four nested indexes. Sort each hit so a set of strings can drop duplicates. Correct and too slow.",
+          code: `function fourSum(nums, target) {
+  const n = nums.length;
+  const seen = Object.create(null);
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      for (let k = j + 1; k < n; k++) {
+        for (let p = k + 1; p < n; p++) {
+          if (nums[i] + nums[j] + nums[k] + nums[p] !== target) continue;
+          const quad = [nums[i], nums[j], nums[k], nums[p]].sort(function (a, b) { return a - b; });
+          const key = quad.join(",");
+          if (seen[key]) continue;
+          seen[key] = true;
+          out.push(quad);
+        }
+      }
+    }
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function fourSum(nums, target) {
+  const n = nums.length;
+  const seen = Object.create(null);
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      for (let k = j + 1; k < n; k++) {
+        for (let p = k + 1; p < n; p++) {
+          if (nums[i] + nums[j] + nums[k] + nums[p] !== target) continue;
+          const quad = [nums[i], nums[j], nums[k], nums[p]].sort(function (a, b) { return a - b; });
+          const key = quad.join(",");
+          if (seen[key]) continue;
+          seen[key] = true;
+          out.push(quad);
+        }
+      }
+    }
+  }
+  return out;
+}`,
+            python: `def fourSum(nums, target):
+  n = len(nums)
+  seen = set()
+  out = []
+  for i in range(n):
+    for j in range(i + 1, n):
+      for k in range(j + 1, n):
+        for p in range(k + 1, n):
+          if nums[i] + nums[j] + nums[k] + nums[p] != target:
+            continue
+          quad = tuple(sorted([nums[i], nums[j], nums[k], nums[p]]))
+          if quad in seen:
+            continue
+          seen.add(quad)
+          out.append(list(quad))
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  public List<List<Integer>> fourSum(int[] nums, int target) {
+    int n = nums.length;
+    Set<String> seen = new HashSet<String>();
+    List<List<Integer>> out = new ArrayList<List<Integer>>();
+    for (int i = 0; i < n; i++)
+      for (int j = i + 1; j < n; j++)
+        for (int k = j + 1; k < n; k++)
+          for (int p = k + 1; p < n; p++) {
+            if ((long) nums[i] + nums[j] + nums[k] + nums[p] != target) continue;
+            int[] q = { nums[i], nums[j], nums[k], nums[p] };
+            Arrays.sort(q);
+            String key = q[0] + "," + q[1] + "," + q[2] + "," + q[3];
+            if (!seen.add(key)) continue;
+            out.add(Arrays.asList(q[0], q[1], q[2], q[3]));
+          }
+    return out;
+  }
+}`,
+            cpp: `vector<vector<int>> fourSum(vector<int>& nums, int target) {
+  int n = (int)nums.size();
+  set<vector<int>> seen;
+  for (int i = 0; i < n; i++)
+    for (int j = i + 1; j < n; j++)
+      for (int k = j + 1; k < n; k++)
+        for (int p = k + 1; p < n; p++) {
+          if ((long long)nums[i] + nums[j] + nums[k] + nums[p] != target) continue;
+          vector<int> q = { nums[i], nums[j], nums[k], nums[p] };
+          sort(q.begin(), q.end());
+          seen.insert(q);
+        }
+  return vector<vector<int>>(seen.begin(), seen.end());
+}`,
+            c: `/* four nested loops; store unique sorted quadruplets in a small table */`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n^3)",
+          space: "O(n)",
+          why: "Fix i, j, k. Look up target - (a+b+c) in a set of values after k. Still cubic, extra set, duplicates need care. A stepping stone to two pointers.",
+          code: `function fourSum(nums, target) {
+  const n = nums.length;
+  const seenQ = Object.create(null);
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const seen = Object.create(null);
+      for (let k = j + 1; k < n; k++) {
+        const need = target - nums[i] - nums[j] - nums[k];
+        if (seen[need] !== undefined) {
+          const quad = [nums[i], nums[j], nums[k], need].sort(function (a, b) { return a - b; });
+          const key = quad.join(",");
+          if (!seenQ[key]) { seenQ[key] = true; out.push(quad); }
+        }
+        seen[nums[k]] = k;
+      }
+    }
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function fourSum(nums, target) {
+  const n = nums.length;
+  const seenQ = Object.create(null);
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const seen = Object.create(null);
+      for (let k = j + 1; k < n; k++) {
+        const need = target - nums[i] - nums[j] - nums[k];
+        if (seen[need] !== undefined) {
+          const quad = [nums[i], nums[j], nums[k], need].sort(function (a, b) { return a - b; });
+          const key = quad.join(",");
+          if (!seenQ[key]) { seenQ[key] = true; out.push(quad); }
+        }
+        seen[nums[k]] = k;
+      }
+    }
+  }
+  return out;
+}`,
+            python: `def fourSum(nums, target):
+  n = len(nums)
+  seenQ = set()
+  out = []
+  for i in range(n):
+    for j in range(i + 1, n):
+      seen = set()
+      for k in range(j + 1, n):
+        need = target - nums[i] - nums[j] - nums[k]
+        if need in seen:
+          quad = tuple(sorted([nums[i], nums[j], nums[k], need]))
+          if quad not in seenQ:
+            seenQ.add(quad)
+            out.append(list(quad))
+        seen.add(nums[k])
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  public List<List<Integer>> fourSum(int[] nums, int target) {
+    int n = nums.length;
+    Set<String> seenQ = new HashSet<String>();
+    List<List<Integer>> out = new ArrayList<List<Integer>>();
+    for (int i = 0; i < n; i++) {
+      for (int j = i + 1; j < n; j++) {
+        Set<Long> seen = new HashSet<Long>();
+        for (int k = j + 1; k < n; k++) {
+          long need = (long) target - nums[i] - nums[j] - nums[k];
+          if (seen.contains(need)) {
+            int[] q = { nums[i], nums[j], nums[k], (int) need };
+            Arrays.sort(q);
+            String key = q[0] + "," + q[1] + "," + q[2] + "," + q[3];
+            if (seenQ.add(key)) out.add(Arrays.asList(q[0], q[1], q[2], q[3]));
+          }
+          seen.add((long) nums[k]);
+        }
+      }
+    }
+    return out;
+  }
+}`,
+            cpp: `vector<vector<int>> fourSum(vector<int>& nums, int target) {
+  int n = (int)nums.size();
+  set<vector<int>> seenQ;
+  for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+      unordered_set<long long> seen;
+      for (int k = j + 1; k < n; k++) {
+        long long need = (long long)target - nums[i] - nums[j] - nums[k];
+        if (seen.count(need)) {
+          vector<int> q = { nums[i], nums[j], nums[k], (int)need };
+          sort(q.begin(), q.end());
+          seenQ.insert(q);
+        }
+        seen.insert(nums[k]);
+      }
+    }
+  }
+  return vector<vector<int>>(seenQ.begin(), seenQ.end());
+}`,
+            c: `/* three loops plus a linear scan for the partner; skip duplicate quads */`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n^3)",
+          space: "O(1) extra",
+          why: "Sort. Fix i and j. Two pointers on the rest. Skip duplicate i, j, left, and right. Use 64-bit sums if the language overflows. This is the expected answer.",
+          code: `function fourSum(nums, target) {
+  nums = nums.slice().sort(function (a, b) { return a - b; });
+  const n = nums.length;
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) continue;
+    for (let j = i + 1; j < n; j++) {
+      if (j > i + 1 && nums[j] === nums[j - 1]) continue;
+      let L = j + 1, R = n - 1;
+      while (L < R) {
+        const sum = nums[i] + nums[j] + nums[L] + nums[R];
+        if (sum === target) {
+          out.push([nums[i], nums[j], nums[L], nums[R]]);
+          L++;
+          R--;
+          while (L < R && nums[L] === nums[L - 1]) L++;
+          while (L < R && nums[R] === nums[R + 1]) R--;
+        } else if (sum < target) L++;
+        else R--;
+      }
+    }
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function fourSum(nums, target) {
+  nums = nums.slice().sort(function (a, b) { return a - b; });
+  const n = nums.length;
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) continue;
+    for (let j = i + 1; j < n; j++) {
+      if (j > i + 1 && nums[j] === nums[j - 1]) continue;
+      let L = j + 1, R = n - 1;
+      while (L < R) {
+        const sum = nums[i] + nums[j] + nums[L] + nums[R];
+        if (sum === target) {
+          out.push([nums[i], nums[j], nums[L], nums[R]]);
+          L++;
+          R--;
+          while (L < R && nums[L] === nums[L - 1]) L++;
+          while (L < R && nums[R] === nums[R + 1]) R--;
+        } else if (sum < target) L++;
+        else R--;
+      }
+    }
+  }
+  return out;
+}`,
+            python: `def fourSum(nums, target):
+  nums = sorted(nums)
+  n = len(nums)
+  out = []
+  for i in range(n):
+    if i > 0 and nums[i] == nums[i - 1]:
+      continue
+    for j in range(i + 1, n):
+      if j > i + 1 and nums[j] == nums[j - 1]:
+        continue
+      L, R = j + 1, n - 1
+      while L < R:
+        s = nums[i] + nums[j] + nums[L] + nums[R]
+        if s == target:
+          out.append([nums[i], nums[j], nums[L], nums[R]])
+          L += 1
+          R -= 1
+          while L < R and nums[L] == nums[L - 1]:
+            L += 1
+          while L < R and nums[R] == nums[R + 1]:
+            R -= 1
+        elif s < target:
+          L += 1
+        else:
+          R -= 1
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  public List<List<Integer>> fourSum(int[] nums, int target) {
+    Arrays.sort(nums);
+    int n = nums.length;
+    List<List<Integer>> out = new ArrayList<List<Integer>>();
+    for (int i = 0; i < n; i++) {
+      if (i > 0 && nums[i] == nums[i - 1]) continue;
+      for (int j = i + 1; j < n; j++) {
+        if (j > i + 1 && nums[j] == nums[j - 1]) continue;
+        int L = j + 1, R = n - 1;
+        while (L < R) {
+          long sum = (long) nums[i] + nums[j] + nums[L] + nums[R];
+          if (sum == target) {
+            out.add(Arrays.asList(nums[i], nums[j], nums[L], nums[R]));
+            L++; R--;
+            while (L < R && nums[L] == nums[L - 1]) L++;
+            while (L < R && nums[R] == nums[R + 1]) R--;
+          } else if (sum < target) L++;
+          else R--;
+        }
+      }
+    }
+    return out;
+  }
+}`,
+            cpp: `vector<vector<int>> fourSum(vector<int>& nums, int target) {
+  auto a = nums;
+  sort(a.begin(), a.end());
+  int n = (int)a.size();
+  vector<vector<int>> out;
+  for (int i = 0; i < n; i++) {
+    if (i && a[i] == a[i - 1]) continue;
+    for (int j = i + 1; j < n; j++) {
+      if (j > i + 1 && a[j] == a[j - 1]) continue;
+      int L = j + 1, R = n - 1;
+      while (L < R) {
+        long long sum = (long long)a[i] + a[j] + a[L] + a[R];
+        if (sum == target) {
+          out.push_back({ a[i], a[j], a[L], a[R] });
+          L++; R--;
+          while (L < R && a[L] == a[L - 1]) L++;
+          while (L < R && a[R] == a[R + 1]) R--;
+        } else if (sum < target) L++;
+        else R--;
+      }
+    }
+  }
+  return out;
+}`,
+            c: `void fourSum(int* nums, int n, int target, int out[][4], int* on) {
+  /* assume nums already sorted */
+  int i, j, L, R;
+  *on = 0;
+  for (i = 0; i < n; i++) {
+    if (i && nums[i] == nums[i - 1]) continue;
+    for (j = i + 1; j < n; j++) {
+      if (j > i + 1 && nums[j] == nums[j - 1]) continue;
+      L = j + 1; R = n - 1;
+      while (L < R) {
+        int sum = nums[i] + nums[j] + nums[L] + nums[R];
+        if (sum == target) {
+          out[*on][0] = nums[i]; out[*on][1] = nums[j];
+          out[*on][2] = nums[L]; out[*on][3] = nums[R];
+          (*on)++; L++; R--;
+          while (L < R && nums[L] == nums[L - 1]) L++;
+          while (L < R && nums[R] == nums[R + 1]) R--;
+        } else if (sum < target) L++;
+        else R--;
+      }
+    }
+  }
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 28,
+      level: "intermediate",
+      q: "3Sum Closest",
+      ask: "Amazon · Google · Microsoft · Bloomberg",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/3sum-closest/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/triplet-sum-closest-to-x1114/1"}],
+      a: "Find three numbers whose sum is as close as possible to target. Return that sum (not the triple). Exactly one best sum is guaranteed.\n\nExample: nums = [-1, 2, 1, -4], target = 1. The sum 2 is closest ( -1 + 2 + 1 ).\n\nBrute tries every triple. Optimal sorts then binary-searches the third value. More optimal is sort plus two pointers, tracking the closest sum.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n³)",
+          space: "O(1)",
+          why: "Every triple, track the sum whose absolute gap to target is smallest.",
+          code: `function threeSumClosest(nums, target) {
+  const n = nums.length;
+  let best = nums[0] + nums[1] + nums[2];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      for (let k = j + 1; k < n; k++) {
+        const s = nums[i] + nums[j] + nums[k];
+        if (Math.abs(s - target) < Math.abs(best - target)) best = s;
+      }
+    }
+  }
+  return best;
+}`,
+          codes: {
+            javascript: `function threeSumClosest(nums, target) {
+  const n = nums.length;
+  let best = nums[0] + nums[1] + nums[2];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      for (let k = j + 1; k < n; k++) {
+        const s = nums[i] + nums[j] + nums[k];
+        if (Math.abs(s - target) < Math.abs(best - target)) best = s;
+      }
+    }
+  }
+  return best;
+}`,
+            python: `def threeSumClosest(nums, target):
+  n = len(nums)
+  best = nums[0] + nums[1] + nums[2]
+  for i in range(n):
+    for j in range(i + 1, n):
+      for k in range(j + 1, n):
+        s = nums[i] + nums[j] + nums[k]
+        if abs(s - target) < abs(best - target):
+          best = s
+  return best`,
+            java: `class Solution {
+  public int threeSumClosest(int[] nums, int target) {
+    int n = nums.length, best = nums[0] + nums[1] + nums[2];
+    for (int i = 0; i < n; i++)
+      for (int j = i + 1; j < n; j++)
+        for (int k = j + 1; k < n; k++) {
+          int s = nums[i] + nums[j] + nums[k];
+          if (Math.abs(s - target) < Math.abs(best - target)) best = s;
+        }
+    return best;
+  }
+}`,
+            cpp: `int threeSumClosest(vector<int>& nums, int target) {
+  int n = (int)nums.size(), best = nums[0] + nums[1] + nums[2];
+  for (int i = 0; i < n; i++)
+    for (int j = i + 1; j < n; j++)
+      for (int k = j + 1; k < n; k++) {
+        int s = nums[i] + nums[j] + nums[k];
+        if (abs(s - target) < abs(best - target)) best = s;
+      }
+  return best;
+}`,
+            c: `int threeSumClosest(int* nums, int n, int target) {
+  int i, j, k, best = nums[0] + nums[1] + nums[2];
+  for (i = 0; i < n; i++)
+    for (j = i + 1; j < n; j++)
+      for (k = j + 1; k < n; k++) {
+        int s = nums[i] + nums[j] + nums[k];
+        int d1 = s - target; if (d1 < 0) d1 = -d1;
+        int d2 = best - target; if (d2 < 0) d2 = -d2;
+        if (d1 < d2) best = s;
+      }
+  return best;
+}`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n² log n)",
+          space: "O(n)",
+          why: "Sort. Fix two indexes, binary search the value closest to the leftover. Extra log n on each pair.",
+          code: `function threeSumClosest(nums, target) {
+  const a = nums.slice().sort(function (x, y) { return x - y; });
+  const n = a.length;
+  let best = a[0] + a[1] + a[2];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const need = target - a[i] - a[j];
+      let lo = j + 1, hi = n - 1, pick = j + 1;
+      if (lo > hi) continue;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (a[mid] === need) return target;
+        if (a[mid] < need) { pick = mid; lo = mid + 1; }
+        else { pick = mid; hi = mid - 1; }
+      }
+      const cand = [pick, pick - 1, pick + 1];
+      for (let t = 0; t < cand.length; t++) {
+        const k = cand[t];
+        if (k <= j || k >= n) continue;
+        const s = a[i] + a[j] + a[k];
+        if (Math.abs(s - target) < Math.abs(best - target)) best = s;
+      }
+    }
+  }
+  return best;
+}`,
+          codes: {
+            javascript: `function threeSumClosest(nums, target) {
+  const a = nums.slice().sort(function (x, y) { return x - y; });
+  const n = a.length;
+  let best = a[0] + a[1] + a[2];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const need = target - a[i] - a[j];
+      let lo = j + 1, hi = n - 1, pick = j + 1;
+      if (lo > hi) continue;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (a[mid] === need) return target;
+        if (a[mid] < need) { pick = mid; lo = mid + 1; }
+        else { pick = mid; hi = mid - 1; }
+      }
+      const cand = [pick, pick - 1, pick + 1];
+      for (let t = 0; t < cand.length; t++) {
+        const k = cand[t];
+        if (k <= j || k >= n) continue;
+        const s = a[i] + a[j] + a[k];
+        if (Math.abs(s - target) < Math.abs(best - target)) best = s;
+      }
+    }
+  }
+  return best;
+}`,
+            python: `def threeSumClosest(nums, target):
+  a = sorted(nums)
+  n = len(a)
+  best = a[0] + a[1] + a[2]
+  for i in range(n):
+    for j in range(i + 1, n):
+      need = target - a[i] - a[j]
+      lo, hi, pick = j + 1, n - 1, j + 1
+      if lo > hi:
+        continue
+      while lo <= hi:
+        mid = (lo + hi) // 2
+        if a[mid] == need:
+          return target
+        pick = mid
+        if a[mid] < need:
+          lo = mid + 1
+        else:
+          hi = mid - 1
+      for k in (pick, pick - 1, pick + 1):
+        if k <= j or k >= n:
+          continue
+        s = a[i] + a[j] + a[k]
+        if abs(s - target) < abs(best - target):
+          best = s
+  return best`,
+            java: `import java.util.*;
+class Solution {
+  public int threeSumClosest(int[] nums, int target) {
+    Arrays.sort(nums);
+    int n = nums.length, best = nums[0] + nums[1] + nums[2];
+    for (int i = 0; i < n; i++) {
+      for (int j = i + 1; j < n; j++) {
+        int need = target - nums[i] - nums[j];
+        int lo = j + 1, hi = n - 1, pick = j + 1;
+        if (lo > hi) continue;
+        while (lo <= hi) {
+          int mid = (lo + hi) / 2;
+          if (nums[mid] == need) return target;
+          pick = mid;
+          if (nums[mid] < need) lo = mid + 1;
+          else hi = mid - 1;
+        }
+        int[] cand = { pick, pick - 1, pick + 1 };
+        for (int k : cand) {
+          if (k <= j || k >= n) continue;
+          int s = nums[i] + nums[j] + nums[k];
+          if (Math.abs(s - target) < Math.abs(best - target)) best = s;
+        }
+      }
+    }
+    return best;
+  }
+}`,
+            cpp: `int threeSumClosest(vector<int>& nums, int target) {
+  auto a = nums;
+  sort(a.begin(), a.end());
+  int n = (int)a.size(), best = a[0] + a[1] + a[2];
+  for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+      int need = target - a[i] - a[j];
+      int lo = j + 1, hi = n - 1, pick = j + 1;
+      if (lo > hi) continue;
+      while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (a[mid] == need) return target;
+        pick = mid;
+        if (a[mid] < need) lo = mid + 1;
+        else hi = mid - 1;
+      }
+      int cand[3] = { pick, pick - 1, pick + 1 };
+      for (int t = 0; t < 3; t++) {
+        int k = cand[t];
+        if (k <= j || k >= n) continue;
+        int s = a[i] + a[j] + a[k];
+        if (abs(s - target) < abs(best - target)) best = s;
+      }
+    }
+  }
+  return best;
+}`,
+            c: `/* sort, then two loops plus binary search for the third value */`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n²)",
+          space: "O(1) extra",
+          why: "Sort. Fix i. Two pointers on the rest. Move the side that improves the sum. Track the closest. Stop early on an exact hit.",
+          code: `function threeSumClosest(nums, target) {
+  const a = nums.slice().sort(function (x, y) { return x - y; });
+  const n = a.length;
+  let best = a[0] + a[1] + a[2];
+  for (let i = 0; i < n; i++) {
+    let L = i + 1, R = n - 1;
+    while (L < R) {
+      const s = a[i] + a[L] + a[R];
+      if (Math.abs(s - target) < Math.abs(best - target)) best = s;
+      if (s === target) return s;
+      if (s < target) L++;
+      else R--;
+    }
+  }
+  return best;
+}`,
+          codes: {
+            javascript: `function threeSumClosest(nums, target) {
+  const a = nums.slice().sort(function (x, y) { return x - y; });
+  const n = a.length;
+  let best = a[0] + a[1] + a[2];
+  for (let i = 0; i < n; i++) {
+    let L = i + 1, R = n - 1;
+    while (L < R) {
+      const s = a[i] + a[L] + a[R];
+      if (Math.abs(s - target) < Math.abs(best - target)) best = s;
+      if (s === target) return s;
+      if (s < target) L++;
+      else R--;
+    }
+  }
+  return best;
+}`,
+            python: `def threeSumClosest(nums, target):
+  a = sorted(nums)
+  n = len(a)
+  best = a[0] + a[1] + a[2]
+  for i in range(n):
+    L, R = i + 1, n - 1
+    while L < R:
+      s = a[i] + a[L] + a[R]
+      if abs(s - target) < abs(best - target):
+        best = s
+      if s == target:
+        return s
+      if s < target:
+        L += 1
+      else:
+        R -= 1
+  return best`,
+            java: `import java.util.*;
+class Solution {
+  public int threeSumClosest(int[] nums, int target) {
+    Arrays.sort(nums);
+    int n = nums.length, best = nums[0] + nums[1] + nums[2];
+    for (int i = 0; i < n; i++) {
+      int L = i + 1, R = n - 1;
+      while (L < R) {
+        int s = nums[i] + nums[L] + nums[R];
+        if (Math.abs(s - target) < Math.abs(best - target)) best = s;
+        if (s == target) return s;
+        if (s < target) L++;
+        else R--;
+      }
+    }
+    return best;
+  }
+}`,
+            cpp: `int threeSumClosest(vector<int>& nums, int target) {
+  auto a = nums;
+  sort(a.begin(), a.end());
+  int n = (int)a.size(), best = a[0] + a[1] + a[2];
+  for (int i = 0; i < n; i++) {
+    int L = i + 1, R = n - 1;
+    while (L < R) {
+      int s = a[i] + a[L] + a[R];
+      if (abs(s - target) < abs(best - target)) best = s;
+      if (s == target) return s;
+      if (s < target) L++;
+      else R--;
+    }
+  }
+  return best;
+}`,
+            c: `int cmpInt(const void* a, const void* b) { return *(const int*)a - *(const int*)b; }
+int threeSumClosest(int* nums, int n, int target) {
+  int i, L, R, best;
+  qsort(nums, n, sizeof(int), cmpInt);
+  best = nums[0] + nums[1] + nums[2];
+  for (i = 0; i < n; i++) {
+    L = i + 1; R = n - 1;
+    while (L < R) {
+      int s = nums[i] + nums[L] + nums[R];
+      int d1 = s - target; if (d1 < 0) d1 = -d1;
+      int d2 = best - target; if (d2 < 0) d2 = -d2;
+      if (d1 < d2) best = s;
+      if (s == target) return s;
+      if (s < target) L++;
+      else R--;
+    }
+  }
+  return best;
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 29,
+      level: "beginner",
+      q: "Plus One",
+      ask: "Google · Amazon · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/plus-one/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/plus-one/"}],
+      a: "digits is a non-negative integer, most significant digit first, no leading zeros. Add one and return the new digit array.\n\nExample: [1, 2, 3] becomes [1, 2, 4]. [9, 9] becomes [1, 0, 0].\n\nBrute joins into a big number (breaks on overflow in fixed ints). Optimal walks from the right with carry into a new array. More optimal edits in place and only allocates if every digit was 9.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n)",
+          space: "O(n)",
+          why: "Build a string / BigInt, add one, split back to digits. Fine in JS/Python, illegal in Java int, and not the interview idea.",
+          code: `function plusOne(digits) {
+  let s = "";
+  for (let i = 0; i < digits.length; i++) s += String(digits[i]);
+  const t = String(BigInt(s) + 1n);
+  const out = [];
+  for (let i = 0; i < t.length; i++) out.push(t.charCodeAt(i) - 48);
+  return out;
+}`,
+          codes: {
+            javascript: `function plusOne(digits) {
+  let s = "";
+  for (let i = 0; i < digits.length; i++) s += String(digits[i]);
+  const t = String(BigInt(s) + 1n);
+  const out = [];
+  for (let i = 0; i < t.length; i++) out.push(t.charCodeAt(i) - 48);
+  return out;
+}`,
+            python: `def plusOne(digits):
+  n = 0
+  for d in digits:
+    n = n * 10 + d
+  n += 1
+  return [int(ch) for ch in str(n)]`,
+            java: `import java.math.BigInteger;
+class Solution {
+  public int[] plusOne(int[] digits) {
+    StringBuilder sb = new StringBuilder();
+    for (int d : digits) sb.append(d);
+    BigInteger n = new BigInteger(sb.toString()).add(BigInteger.ONE);
+    String t = n.toString();
+    int[] out = new int[t.length()];
+    for (int i = 0; i < t.length(); i++) out[i] = t.charAt(i) - '0';
+    return out;
+  }
+}`,
+            cpp: `vector<int> plusOne(vector<int>& digits) {
+  /* treat as base-10 array instead of a native big int */
+  vector<int> out = digits;
+  int i = (int)out.size() - 1, carry = 1;
+  while (i >= 0 && carry) {
+    int s = out[i] + carry;
+    out[i] = s % 10;
+    carry = s / 10;
+    i--;
+  }
+  if (carry) out.insert(out.begin(), 1);
+  return out;
+}`,
+            c: `/* convert to a decimal string, add 1 by hand from the right */`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n)",
+          space: "O(n)",
+          why: "Copy into a new array. From the last index, add 1 and propagate carry. If carry remains, allocate one extra leading 1.",
+          code: `function plusOne(digits) {
+  const out = digits.slice();
+  let carry = 1;
+  for (let i = out.length - 1; i >= 0 && carry; i--) {
+    const s = out[i] + carry;
+    out[i] = s % 10;
+    carry = (s / 10) | 0;
+  }
+  if (carry) out.unshift(1);
+  return out;
+}`,
+          codes: {
+            javascript: `function plusOne(digits) {
+  const out = digits.slice();
+  let carry = 1;
+  for (let i = out.length - 1; i >= 0 && carry; i--) {
+    const s = out[i] + carry;
+    out[i] = s % 10;
+    carry = (s / 10) | 0;
+  }
+  if (carry) out.unshift(1);
+  return out;
+}`,
+            python: `def plusOne(digits):
+  out = digits[:]
+  carry = 1
+  i = len(out) - 1
+  while i >= 0 and carry:
+    s = out[i] + carry
+    out[i] = s % 10
+    carry = s // 10
+    i -= 1
+  if carry:
+    out = [1] + out
+  return out`,
+            java: `class Solution {
+  public int[] plusOne(int[] digits) {
+    int n = digits.length;
+    int[] out = digits.clone();
+    int carry = 1;
+    for (int i = n - 1; i >= 0 && carry == 1; i--) {
+      int s = out[i] + carry;
+      out[i] = s % 10;
+      carry = s / 10;
+    }
+    if (carry == 0) return out;
+    int[] big = new int[n + 1];
+    big[0] = 1;
+    for (int i = 0; i < n; i++) big[i + 1] = out[i];
+    return big;
+  }
+}`,
+            cpp: `vector<int> plusOne(vector<int>& digits) {
+  vector<int> out = digits;
+  int carry = 1;
+  for (int i = (int)out.size() - 1; i >= 0 && carry; i--) {
+    int s = out[i] + carry;
+    out[i] = s % 10;
+    carry = s / 10;
+  }
+  if (carry) out.insert(out.begin(), 1);
+  return out;
+}`,
+            c: `int plusOne(int* digits, int n, int* out) {
+  int i, carry = 1;
+  for (i = 0; i < n; i++) out[i + 1] = digits[i];
+  for (i = n; i >= 1 && carry; i--) {
+    int s = out[i] + carry;
+    out[i] = s % 10;
+    carry = s / 10;
+  }
+  if (carry) { out[0] = 1; return n + 1; }
+  for (i = 0; i < n; i++) out[i] = out[i + 1];
+  return n;
+}`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n)",
+          space: "O(1) extra if no new digit",
+          why: "Walk from the right on the input. A digit < 9 becomes digit+1 and you return immediately. All nines become a new array [1, 0, 0, ...].",
+          code: `function plusOne(digits) {
+  for (let i = digits.length - 1; i >= 0; i--) {
+    if (digits[i] < 9) {
+      digits[i]++;
+      return digits;
+    }
+    digits[i] = 0;
+  }
+  const out = Array(digits.length + 1).fill(0);
+  out[0] = 1;
+  return out;
+}`,
+          codes: {
+            javascript: `function plusOne(digits) {
+  for (let i = digits.length - 1; i >= 0; i--) {
+    if (digits[i] < 9) {
+      digits[i]++;
+      return digits;
+    }
+    digits[i] = 0;
+  }
+  const out = Array(digits.length + 1).fill(0);
+  out[0] = 1;
+  return out;
+}`,
+            python: `def plusOne(digits):
+  for i in range(len(digits) - 1, -1, -1):
+    if digits[i] < 9:
+      digits[i] += 1
+      return digits
+    digits[i] = 0
+  return [1] + digits`,
+            java: `class Solution {
+  public int[] plusOne(int[] digits) {
+    for (int i = digits.length - 1; i >= 0; i--) {
+      if (digits[i] < 9) { digits[i]++; return digits; }
+      digits[i] = 0;
+    }
+    int[] out = new int[digits.length + 1];
+    out[0] = 1;
+    return out;
+  }
+}`,
+            cpp: `vector<int> plusOne(vector<int>& digits) {
+  for (int i = (int)digits.size() - 1; i >= 0; i--) {
+    if (digits[i] < 9) { digits[i]++; return digits; }
+    digits[i] = 0;
+  }
+  vector<int> out((int)digits.size() + 1);
+  out[0] = 1;
+  return out;
+}`,
+            c: `int plusOneInPlace(int* digits, int n, int* out) {
+  int i;
+  for (i = n - 1; i >= 0; i--) {
+    if (digits[i] < 9) { digits[i]++; for (i = 0; i < n; i++) out[i] = digits[i]; return n; }
+    digits[i] = 0;
+  }
+  out[0] = 1;
+  for (i = 0; i < n; i++) out[i + 1] = 0;
+  return n + 1;
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 30,
+      level: "beginner",
+      q: "Pascal's Triangle",
+      ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/pascals-triangle/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/pascal-triangle/1"}],
+      a: "Return the first numRows of Pascal's triangle. Row i has i numbers. Each inner value is the sum of the two values above it. Rows are 1-indexed in speech, 0-indexed in arrays.\n\nExample: numRows = 5 yields [[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1]].\n\nBrute uses nCr for every cell. Optimal builds each row from the previous. More optimal fills a row with the multiplicative formula C(r, k) = C(r, k-1) * (r-k+1)/k.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n³) with naive fact",
+          space: "O(n²)",
+          why: "Each cell is nCr. Computing factorials from scratch per cell is slow and overflows. Picture is right, implementation is not the interview one.",
+          code: `function generate(numRows) {
+  function nCr(n, r) {
+    let a = 1, b = 1;
+    for (let i = 0; i < r; i++) {
+      a *= (n - i);
+      b *= (i + 1);
+    }
+    return Math.round(a / b);
+  }
+  const out = [];
+  for (let i = 0; i < numRows; i++) {
+    const row = [];
+    for (let j = 0; j <= i; j++) row.push(nCr(i, j));
+    out.push(row);
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function generate(numRows) {
+  function nCr(n, r) {
+    let a = 1, b = 1;
+    for (let i = 0; i < r; i++) {
+      a *= (n - i);
+      b *= (i + 1);
+    }
+    return Math.round(a / b);
+  }
+  const out = [];
+  for (let i = 0; i < numRows; i++) {
+    const row = [];
+    for (let j = 0; j <= i; j++) row.push(nCr(i, j));
+    out.push(row);
+  }
+  return out;
+}`,
+            python: `def generate(numRows):
+  def nCr(n, r):
+    a = b = 1
+    for i in range(r):
+      a *= n - i
+      b *= i + 1
+    return a // b
+  out = []
+  for i in range(numRows):
+    out.append([nCr(i, j) for j in range(i + 1)])
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  long nCr(int n, int r) {
+    long a = 1, b = 1;
+    for (int i = 0; i < r; i++) { a *= (n - i); b *= (i + 1); }
+    return a / b;
+  }
+  public List<List<Integer>> generate(int numRows) {
+    List<List<Integer>> out = new ArrayList<List<Integer>>();
+    for (int i = 0; i < numRows; i++) {
+      List<Integer> row = new ArrayList<Integer>();
+      for (int j = 0; j <= i; j++) row.add((int) nCr(i, j));
+      out.add(row);
+    }
+    return out;
+  }
+}`,
+            cpp: `vector<vector<int>> generate(int numRows) {
+  auto nCr = [](int n, int r) {
+    long a = 1, b = 1;
+    for (int i = 0; i < r; i++) { a *= (n - i); b *= (i + 1); }
+    return (int)(a / b);
+  };
+  vector<vector<int>> out;
+  for (int i = 0; i < numRows; i++) {
+    vector<int> row;
+    for (int j = 0; j <= i; j++) row.push_back(nCr(i, j));
+    out.push_back(row);
+  }
+  return out;
+}`,
+            c: `long nCr(int n, int r) {
+  long a = 1, b = 1; int i;
+  for (i = 0; i < r; i++) { a *= (n - i); b *= (i + 1); }
+  return a / b;
+}`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n²)",
+          space: "O(n²)",
+          why: "Row 0 is [1]. Each next row starts and ends with 1. Inner slot j is prev[j-1] + prev[j]. No overflow beyond 32-bit on the usual n <= 30 constraint.",
+          code: `function generate(numRows) {
+  const out = [[1]];
+  for (let r = 1; r < numRows; r++) {
+    const prev = out[r - 1];
+    const row = [1];
+    for (let j = 1; j < r; j++) row.push(prev[j - 1] + prev[j]);
+    row.push(1);
+    out.push(row);
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function generate(numRows) {
+  const out = [[1]];
+  for (let r = 1; r < numRows; r++) {
+    const prev = out[r - 1];
+    const row = [1];
+    for (let j = 1; j < r; j++) row.push(prev[j - 1] + prev[j]);
+    row.push(1);
+    out.push(row);
+  }
+  return out;
+}`,
+            python: `def generate(numRows):
+  out = [[1]]
+  for r in range(1, numRows):
+    prev = out[-1]
+    row = [1]
+    for j in range(1, r):
+      row.append(prev[j - 1] + prev[j])
+    row.append(1)
+    out.append(row)
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  public List<List<Integer>> generate(int numRows) {
+    List<List<Integer>> out = new ArrayList<List<Integer>>();
+    out.add(Arrays.asList(1));
+    for (int r = 1; r < numRows; r++) {
+      List<Integer> prev = out.get(r - 1);
+      List<Integer> row = new ArrayList<Integer>();
+      row.add(1);
+      for (int j = 1; j < r; j++) row.add(prev.get(j - 1) + prev.get(j));
+      row.add(1);
+      out.add(row);
+    }
+    return out;
+  }
+}`,
+            cpp: `vector<vector<int>> generate(int numRows) {
+  vector<vector<int>> out = {{1}};
+  for (int r = 1; r < numRows; r++) {
+    vector<int>& prev = out.back();
+    vector<int> row = {1};
+    for (int j = 1; j < r; j++) row.push_back(prev[j - 1] + prev[j]);
+    row.push_back(1);
+    out.push_back(row);
+  }
+  return out;
+}`,
+            c: `void generate(int numRows, int out[][32], int* lens) {
+  int r, j;
+  out[0][0] = 1; lens[0] = 1;
+  for (r = 1; r < numRows; r++) {
+    out[r][0] = 1;
+    for (j = 1; j < r; j++) out[r][j] = out[r - 1][j - 1] + out[r - 1][j];
+    out[r][r] = 1;
+    lens[r] = r + 1;
+  }
+}`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n²)",
+          space: "O(n²)",
+          why: "Each row built independently with the running product formula. Useful when you only need row r (Pascal's Triangle II) and do not want the whole triangle.",
+          code: `function generate(numRows) {
+  const out = [];
+  for (let r = 0; r < numRows; r++) {
+    const row = [1];
+    let v = 1;
+    for (let k = 1; k <= r; k++) {
+      v = v * (r - k + 1) / k;
+      row.push(Math.round(v));
+    }
+    out.push(row);
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function generate(numRows) {
+  const out = [];
+  for (let r = 0; r < numRows; r++) {
+    const row = [1];
+    let v = 1;
+    for (let k = 1; k <= r; k++) {
+      v = v * (r - k + 1) / k;
+      row.push(Math.round(v));
+    }
+    out.push(row);
+  }
+  return out;
+}`,
+            python: `def generate(numRows):
+  out = []
+  for r in range(numRows):
+    row = [1]
+    v = 1
+    for k in range(1, r + 1):
+      v = v * (r - k + 1) // k
+      row.append(v)
+    out.append(row)
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  public List<List<Integer>> generate(int numRows) {
+    List<List<Integer>> out = new ArrayList<List<Integer>>();
+    for (int r = 0; r < numRows; r++) {
+      List<Integer> row = new ArrayList<Integer>();
+      long v = 1;
+      row.add(1);
+      for (int k = 1; k <= r; k++) {
+        v = v * (r - k + 1) / k;
+        row.add((int) v);
+      }
+      out.add(row);
+    }
+    return out;
+  }
+}`,
+            cpp: `vector<vector<int>> generate(int numRows) {
+  vector<vector<int>> out;
+  for (int r = 0; r < numRows; r++) {
+    vector<int> row;
+    long v = 1;
+    row.push_back(1);
+    for (int k = 1; k <= r; k++) {
+      v = v * (r - k + 1) / k;
+      row.push_back((int)v);
+    }
+    out.push_back(row);
+  }
+  return out;
+}`,
+            c: `void generateRow(int r, int* row) {
+  int k; long v = 1;
+  row[0] = 1;
+  for (k = 1; k <= r; k++) {
+    v = v * (r - k + 1) / k;
+    row[k] = (int)v;
+  }
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 31,
+      level: "intermediate",
+      q: "Find All Duplicates in an Array",
+      ask: "Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/find-all-duplicates-in-an-array/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/find-duplicates-in-an-array/1"}],
+      a: "nums holds n integers, each in 1..n. Some appear twice, the rest once. Return every value that appears twice. O(n) time and O(1) extra space is the follow-up (you may mutate nums).\n\nExample: [4, 3, 2, 7, 8, 2, 3, 1] answers [2, 3].\n\nBrute is nested counts. Optimal sorts. More optimal marks index abs(x)-1 negative; a second negative means a duplicate.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n²)",
+          space: "O(1)",
+          why: "For each value, count how many times it appears. Push it once if the count is 2. Slow, no extra set.",
+          code: `function findDuplicates(nums) {
+  const out = [];
+  const n = nums.length;
+  for (let i = 0; i < n; i++) {
+    let c = 0;
+    for (let j = 0; j < n; j++) if (nums[j] === nums[i]) c++;
+    if (c === 2) {
+      let seen = false;
+      for (let k = 0; k < out.length; k++) if (out[k] === nums[i]) seen = true;
+      if (!seen) out.push(nums[i]);
+    }
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function findDuplicates(nums) {
+  const out = [];
+  const n = nums.length;
+  for (let i = 0; i < n; i++) {
+    let c = 0;
+    for (let j = 0; j < n; j++) if (nums[j] === nums[i]) c++;
+    if (c === 2) {
+      let seen = false;
+      for (let k = 0; k < out.length; k++) if (out[k] === nums[i]) seen = true;
+      if (!seen) out.push(nums[i]);
+    }
+  }
+  return out;
+}`,
+            python: `def findDuplicates(nums):
+  out = []
+  n = len(nums)
+  for i in range(n):
+    c = sum(1 for j in range(n) if nums[j] == nums[i])
+    if c == 2 and nums[i] not in out:
+      out.append(nums[i])
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  public List<Integer> findDuplicates(int[] nums) {
+    List<Integer> out = new ArrayList<Integer>();
+    int n = nums.length;
+    for (int i = 0; i < n; i++) {
+      int c = 0;
+      for (int j = 0; j < n; j++) if (nums[j] == nums[i]) c++;
+      if (c == 2 && !out.contains(nums[i])) out.add(nums[i]);
+    }
+    return out;
+  }
+}`,
+            cpp: `vector<int> findDuplicates(vector<int>& nums) {
+  vector<int> out;
+  int n = (int)nums.size();
+  for (int i = 0; i < n; i++) {
+    int c = 0;
+    for (int j = 0; j < n; j++) if (nums[j] == nums[i]) c++;
+    if (c == 2 && find(out.begin(), out.end(), nums[i]) == out.end()) out.push_back(nums[i]);
+  }
+  return out;
+}`,
+            c: `int findDuplicates(int* nums, int n, int* out) {
+  int i, j, on = 0;
+  for (i = 0; i < n; i++) {
+    int c = 0, seen = 0, k;
+    for (j = 0; j < n; j++) if (nums[j] == nums[i]) c++;
+    if (c != 2) continue;
+    for (k = 0; k < on; k++) if (out[k] == nums[i]) seen = 1;
+    if (!seen) out[on++] = nums[i];
+  }
+  return on;
+}`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n log n)",
+          space: "O(1) extra",
+          why: "Sort, then walk adjacent pairs. Equal neighbors are a duplicate. Simple, mutates order.",
+          code: `function findDuplicates(nums) {
+  const a = nums.slice().sort(function (x, y) { return x - y; });
+  const out = [];
+  for (let i = 1; i < a.length; i++) {
+    if (a[i] === a[i - 1]) out.push(a[i]);
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function findDuplicates(nums) {
+  const a = nums.slice().sort(function (x, y) { return x - y; });
+  const out = [];
+  for (let i = 1; i < a.length; i++) {
+    if (a[i] === a[i - 1]) out.push(a[i]);
+  }
+  return out;
+}`,
+            python: `def findDuplicates(nums):
+  a = sorted(nums)
+  out = []
+  for i in range(1, len(a)):
+    if a[i] == a[i - 1]:
+      out.append(a[i])
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  public List<Integer> findDuplicates(int[] nums) {
+    Arrays.sort(nums);
+    List<Integer> out = new ArrayList<Integer>();
+    for (int i = 1; i < nums.length; i++) if (nums[i] == nums[i - 1]) out.add(nums[i]);
+    return out;
+  }
+}`,
+            cpp: `vector<int> findDuplicates(vector<int>& nums) {
+  auto a = nums;
+  sort(a.begin(), a.end());
+  vector<int> out;
+  for (int i = 1; i < (int)a.size(); i++) if (a[i] == a[i - 1]) out.push_back(a[i]);
+  return out;
+}`,
+            c: `int cmpInt(const void* a, const void* b) { return *(const int*)a - *(const int*)b; }
+int findDuplicates(int* nums, int n, int* out) {
+  int i, on = 0;
+  qsort(nums, n, sizeof(int), cmpInt);
+  for (i = 1; i < n; i++) if (nums[i] == nums[i - 1]) out[on++] = nums[i];
+  return on;
+}`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n)",
+          space: "O(1) extra",
+          why: "Value x belongs at index x-1. Negate that slot when you first see x. If it is already negative, x is the duplicate. Restore signs later if you must.",
+          code: `function findDuplicates(nums) {
+  const out = [];
+  for (let i = 0; i < nums.length; i++) {
+    const x = nums[i] < 0 ? -nums[i] : nums[i];
+    const slot = x - 1;
+    if (nums[slot] < 0) out.push(x);
+    else nums[slot] = -nums[slot];
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function findDuplicates(nums) {
+  const out = [];
+  for (let i = 0; i < nums.length; i++) {
+    const x = nums[i] < 0 ? -nums[i] : nums[i];
+    const slot = x - 1;
+    if (nums[slot] < 0) out.push(x);
+    else nums[slot] = -nums[slot];
+  }
+  return out;
+}`,
+            python: `def findDuplicates(nums):
+  out = []
+  for i in range(len(nums)):
+    x = abs(nums[i])
+    slot = x - 1
+    if nums[slot] < 0:
+      out.append(x)
+    else:
+      nums[slot] = -nums[slot]
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  public List<Integer> findDuplicates(int[] nums) {
+    List<Integer> out = new ArrayList<Integer>();
+    for (int i = 0; i < nums.length; i++) {
+      int x = Math.abs(nums[i]);
+      int slot = x - 1;
+      if (nums[slot] < 0) out.add(x);
+      else nums[slot] = -nums[slot];
+    }
+    return out;
+  }
+}`,
+            cpp: `vector<int> findDuplicates(vector<int>& nums) {
+  vector<int> out;
+  for (int i = 0; i < (int)nums.size(); i++) {
+    int x = nums[i] < 0 ? -nums[i] : nums[i];
+    int slot = x - 1;
+    if (nums[slot] < 0) out.push_back(x);
+    else nums[slot] = -nums[slot];
+  }
+  return out;
+}`,
+            c: `int findDuplicatesMark(int* nums, int n, int* out) {
+  int i, on = 0;
+  for (i = 0; i < n; i++) {
+    int x = nums[i] < 0 ? -nums[i] : nums[i];
+    int slot = x - 1;
+    if (nums[slot] < 0) out[on++] = x;
+    else nums[slot] = -nums[slot];
+  }
+  return on;
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 32,
+      level: "beginner",
+      q: "Find All Numbers Disappeared in an Array",
+      ask: "Google · Amazon · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/find-all-numbers-disappeared-in-an-array/"}],
+      a: "nums has length n. Values are in 1..n. Some numbers in 1..n never appear (replaced by duplicates). Return the missing ones. Follow-up: O(n) time, O(1) extra, you may mutate nums.\n\nExample: [4, 3, 2, 7, 8, 2, 3, 1] answers [5, 6].\n\nBrute checks 1..n with a scan. Optimal uses a boolean / set. More optimal negates index x-1, then collects indexes that stayed positive.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n²)",
+          space: "O(1)",
+          why: "For each candidate v in 1..n, scan the array. If it never appears, it is missing.",
+          code: `function findDisappearedNumbers(nums) {
+  const n = nums.length;
+  const out = [];
+  for (let v = 1; v <= n; v++) {
+    let found = false;
+    for (let i = 0; i < n; i++) if (nums[i] === v) { found = true; break; }
+    if (!found) out.push(v);
+  }
+  return out;
+}`,
+          codes: {
+            javascript: `function findDisappearedNumbers(nums) {
+  const n = nums.length;
+  const out = [];
+  for (let v = 1; v <= n; v++) {
+    let found = false;
+    for (let i = 0; i < n; i++) if (nums[i] === v) { found = true; break; }
+    if (!found) out.push(v);
+  }
+  return out;
+}`,
+            python: `def findDisappearedNumbers(nums):
+  n = len(nums)
+  out = []
+  for v in range(1, n + 1):
+    if v not in nums:
+      out.append(v)
+  return out`,
+            java: `import java.util.*;
+class Solution {
+  public List<Integer> findDisappearedNumbers(int[] nums) {
+    List<Integer> out = new ArrayList<Integer>();
+    int n = nums.length;
+    for (int v = 1; v <= n; v++) {
+      boolean found = false;
+      for (int x : nums) if (x == v) { found = true; break; }
+      if (!found) out.add(v);
+    }
+    return out;
+  }
+}`,
+            cpp: `vector<int> findDisappearedNumbers(vector<int>& nums) {
+  vector<int> out;
+  int n = (int)nums.size();
+  for (int v = 1; v <= n; v++) {
+    bool found = false;
+    for (int x : nums) if (x == v) { found = true; break; }
+    if (!found) out.push_back(v);
+  }
+  return out;
+}`,
+            c: `int findDisappearedNumbers(int* nums, int n, int* out) {
+  int v, i, on = 0;
+  for (v = 1; v <= n; v++) {
+    int found = 0;
+    for (i = 0; i < n; i++) if (nums[i] == v) { found = 1; break; }
+    if (!found) out[on++] = v;
+  }
+  return on;
+}`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n)",
+          space: "O(n)",
+          why: "A boolean array (or a set) of seen values. Then walk 1..n and collect the false slots.",
+          code: `function findDisappearedNumbers(nums) {
+  const n = nums.length;
+  const seen = Array(n + 1).fill(false);
+  for (let i = 0; i < n; i++) seen[nums[i]] = true;
+  const out = [];
+  for (let v = 1; v <= n; v++) if (!seen[v]) out.push(v);
+  return out;
+}`,
+          codes: {
+            javascript: `function findDisappearedNumbers(nums) {
+  const n = nums.length;
+  const seen = Array(n + 1).fill(false);
+  for (let i = 0; i < n; i++) seen[nums[i]] = true;
+  const out = [];
+  for (let v = 1; v <= n; v++) if (!seen[v]) out.push(v);
+  return out;
+}`,
+            python: `def findDisappearedNumbers(nums):
+  n = len(nums)
+  seen = [False] * (n + 1)
+  for x in nums:
+    seen[x] = True
+  return [v for v in range(1, n + 1) if not seen[v]]`,
+            java: `import java.util.*;
+class Solution {
+  public List<Integer> findDisappearedNumbers(int[] nums) {
+    int n = nums.length;
+    boolean[] seen = new boolean[n + 1];
+    for (int x : nums) seen[x] = true;
+    List<Integer> out = new ArrayList<Integer>();
+    for (int v = 1; v <= n; v++) if (!seen[v]) out.add(v);
+    return out;
+  }
+}`,
+            cpp: `vector<int> findDisappearedNumbers(vector<int>& nums) {
+  int n = (int)nums.size();
+  vector<int> seen(n + 1), out;
+  for (int x : nums) seen[x] = 1;
+  for (int v = 1; v <= n; v++) if (!seen[v]) out.push_back(v);
+  return out;
+}`,
+            c: `int findDisappearedNumbers(int* nums, int n, int* out) {
+  int seen[10001] = {0};
+  int i, v, on = 0;
+  for (i = 0; i < n; i++) seen[nums[i]] = 1;
+  for (v = 1; v <= n; v++) if (!seen[v]) out[on++] = v;
+  return on;
+}`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n)",
+          space: "O(1) extra",
+          why: "For each value x, negate nums[abs(x)-1]. Values whose slots stay positive never appeared. Same marking trick as Find All Duplicates.",
+          code: `function findDisappearedNumbers(nums) {
+  for (let i = 0; i < nums.length; i++) {
+    const x = nums[i] < 0 ? -nums[i] : nums[i];
+    const slot = x - 1;
+    if (nums[slot] > 0) nums[slot] = -nums[slot];
+  }
+  const out = [];
+  for (let i = 0; i < nums.length; i++) if (nums[i] > 0) out.push(i + 1);
+  return out;
+}`,
+          codes: {
+            javascript: `function findDisappearedNumbers(nums) {
+  for (let i = 0; i < nums.length; i++) {
+    const x = nums[i] < 0 ? -nums[i] : nums[i];
+    const slot = x - 1;
+    if (nums[slot] > 0) nums[slot] = -nums[slot];
+  }
+  const out = [];
+  for (let i = 0; i < nums.length; i++) if (nums[i] > 0) out.push(i + 1);
+  return out;
+}`,
+            python: `def findDisappearedNumbers(nums):
+  for x in nums:
+    slot = abs(x) - 1
+    if nums[slot] > 0:
+      nums[slot] = -nums[slot]
+  return [i + 1 for i in range(len(nums)) if nums[i] > 0]`,
+            java: `import java.util.*;
+class Solution {
+  public List<Integer> findDisappearedNumbers(int[] nums) {
+    for (int x : nums) {
+      int slot = Math.abs(x) - 1;
+      if (nums[slot] > 0) nums[slot] = -nums[slot];
+    }
+    List<Integer> out = new ArrayList<Integer>();
+    for (int i = 0; i < nums.length; i++) if (nums[i] > 0) out.add(i + 1);
+    return out;
+  }
+}`,
+            cpp: `vector<int> findDisappearedNumbers(vector<int>& nums) {
+  for (int x : nums) {
+    int slot = abs(x) - 1;
+    if (nums[slot] > 0) nums[slot] = -nums[slot];
+  }
+  vector<int> out;
+  for (int i = 0; i < (int)nums.size(); i++) if (nums[i] > 0) out.push_back(i + 1);
+  return out;
+}`,
+            c: `int findDisappearedMark(int* nums, int n, int* out) {
+  int i, on = 0;
+  for (i = 0; i < n; i++) {
+    int x = nums[i] < 0 ? -nums[i] : nums[i];
+    int slot = x - 1;
+    if (nums[slot] > 0) nums[slot] = -nums[slot];
+  }
+  for (i = 0; i < n; i++) if (nums[i] > 0) out[on++] = i + 1;
+  return on;
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 33,
+      level: "intermediate",
+      q: "Rotate Image",
+      ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/rotate-image/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/rotate-by-90-degree-1587115621/1"}],
+      a: "Rotate an n by n matrix 90 degrees clockwise, in place.\n\nExample: [[1,2,3],[4,5,6],[7,8,9]] becomes [[7,4,1],[8,5,2],[9,6,3]].\n\nBrute writes into a new matrix. Optimal transposes then reverses each row. More optimal rotates 4-cycles on each layer so you never allocate n² extra cells.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n²)",
+          space: "O(n²)",
+          why: "new[c][n-1-r] = old[r][c]. Copy back. Clear picture, extra matrix.",
+          code: `function rotate(matrix) {
+  const n = matrix.length;
+  const neu = Array.from({ length: n }, function () { return Array(n); });
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) neu[c][n - 1 - r] = matrix[r][c];
+  }
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) matrix[r][c] = neu[r][c];
+  }
+  return matrix;
+}`,
+          codes: {
+            javascript: `function rotate(matrix) {
+  const n = matrix.length;
+  const neu = Array.from({ length: n }, function () { return Array(n); });
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) neu[c][n - 1 - r] = matrix[r][c];
+  }
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) matrix[r][c] = neu[r][c];
+  }
+  return matrix;
+}`,
+            python: `def rotate(matrix):
+  n = len(matrix)
+  neu = [[0] * n for _ in range(n)]
+  for r in range(n):
+    for c in range(n):
+      neu[c][n - 1 - r] = matrix[r][c]
+  for r in range(n):
+    for c in range(n):
+      matrix[r][c] = neu[r][c]
+  return matrix`,
+            java: `class Solution {
+  public void rotate(int[][] matrix) {
+    int n = matrix.length;
+    int[][] neu = new int[n][n];
+    for (int r = 0; r < n; r++)
+      for (int c = 0; c < n; c++) neu[c][n - 1 - r] = matrix[r][c];
+    for (int r = 0; r < n; r++)
+      for (int c = 0; c < n; c++) matrix[r][c] = neu[r][c];
+  }
+}`,
+            cpp: `void rotate(vector<vector<int>>& matrix) {
+  int n = (int)matrix.size();
+  vector<vector<int>> neu(n, vector<int>(n));
+  for (int r = 0; r < n; r++)
+    for (int c = 0; c < n; c++) neu[c][n - 1 - r] = matrix[r][c];
+  matrix = neu;
+}`,
+            c: `void rotate(int n, int matrix[][16]) {
+  int neu[16][16];
+  int r, c;
+  for (r = 0; r < n; r++)
+    for (c = 0; c < n; c++) neu[c][n - 1 - r] = matrix[r][c];
+  for (r = 0; r < n; r++)
+    for (c = 0; c < n; c++) matrix[r][c] = neu[r][c];
+}`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n²)",
+          space: "O(1)",
+          why: "Transpose (swap across the diagonal) then reverse each row. Two easy passes, in place.",
+          code: `function rotate(matrix) {
+  const n = matrix.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const t = matrix[i][j];
+      matrix[i][j] = matrix[j][i];
+      matrix[j][i] = t;
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    let L = 0, R = n - 1;
+    while (L < R) {
+      const t = matrix[i][L];
+      matrix[i][L] = matrix[i][R];
+      matrix[i][R] = t;
+      L++;
+      R--;
+    }
+  }
+  return matrix;
+}`,
+          codes: {
+            javascript: `function rotate(matrix) {
+  const n = matrix.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const t = matrix[i][j];
+      matrix[i][j] = matrix[j][i];
+      matrix[j][i] = t;
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    let L = 0, R = n - 1;
+    while (L < R) {
+      const t = matrix[i][L];
+      matrix[i][L] = matrix[i][R];
+      matrix[i][R] = t;
+      L++;
+      R--;
+    }
+  }
+  return matrix;
+}`,
+            python: `def rotate(matrix):
+  n = len(matrix)
+  for i in range(n):
+    for j in range(i + 1, n):
+      matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+  for i in range(n):
+    L, R = 0, n - 1
+    while L < R:
+      matrix[i][L], matrix[i][R] = matrix[i][R], matrix[i][L]
+      L += 1
+      R -= 1
+  return matrix`,
+            java: `class Solution {
+  public void rotate(int[][] matrix) {
+    int n = matrix.length;
+    for (int i = 0; i < n; i++)
+      for (int j = i + 1; j < n; j++) {
+        int t = matrix[i][j]; matrix[i][j] = matrix[j][i]; matrix[j][i] = t;
+      }
+    for (int i = 0; i < n; i++) {
+      int L = 0, R = n - 1;
+      while (L < R) {
+        int t = matrix[i][L]; matrix[i][L] = matrix[i][R]; matrix[i][R] = t;
+        L++; R--;
+      }
+    }
+  }
+}`,
+            cpp: `void rotate(vector<vector<int>>& matrix) {
+  int n = (int)matrix.size();
+  for (int i = 0; i < n; i++)
+    for (int j = i + 1; j < n; j++) swap(matrix[i][j], matrix[j][i]);
+  for (int i = 0; i < n; i++) reverse(matrix[i].begin(), matrix[i].end());
+}`,
+            c: `void rotate(int n, int matrix[][16]) {
+  int i, j, L, R, t;
+  for (i = 0; i < n; i++)
+    for (j = i + 1; j < n; j++) {
+      t = matrix[i][j]; matrix[i][j] = matrix[j][i]; matrix[j][i] = t;
+    }
+  for (i = 0; i < n; i++) {
+    L = 0; R = n - 1;
+    while (L < R) {
+      t = matrix[i][L]; matrix[i][L] = matrix[i][R]; matrix[i][R] = t;
+      L++; R--;
+    }
+  }
+}`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n²)",
+          space: "O(1)",
+          why: "Layer by layer. For each offset, rotate the four cells of the cycle in one temp. Same work, no transpose helper. Nice to draw on a whiteboard.",
+          code: `function rotate(matrix) {
+  const n = matrix.length;
+  for (let layer = 0; layer < (n >> 1); layer++) {
+    const last = n - 1 - layer;
+    for (let i = 0; i < last - layer; i++) {
+      const top = matrix[layer][layer + i];
+      matrix[layer][layer + i] = matrix[last - i][layer];
+      matrix[last - i][layer] = matrix[last][last - i];
+      matrix[last][last - i] = matrix[layer + i][last];
+      matrix[layer + i][last] = top;
+    }
+  }
+  return matrix;
+}`,
+          codes: {
+            javascript: `function rotate(matrix) {
+  const n = matrix.length;
+  for (let layer = 0; layer < (n >> 1); layer++) {
+    const last = n - 1 - layer;
+    for (let i = 0; i < last - layer; i++) {
+      const top = matrix[layer][layer + i];
+      matrix[layer][layer + i] = matrix[last - i][layer];
+      matrix[last - i][layer] = matrix[last][last - i];
+      matrix[last][last - i] = matrix[layer + i][last];
+      matrix[layer + i][last] = top;
+    }
+  }
+  return matrix;
+}`,
+            python: `def rotate(matrix):
+  n = len(matrix)
+  for layer in range(n // 2):
+    last = n - 1 - layer
+    for i in range(last - layer):
+      top = matrix[layer][layer + i]
+      matrix[layer][layer + i] = matrix[last - i][layer]
+      matrix[last - i][layer] = matrix[last][last - i]
+      matrix[last][last - i] = matrix[layer + i][last]
+      matrix[layer + i][last] = top
+  return matrix`,
+            java: `class Solution {
+  public void rotate(int[][] matrix) {
+    int n = matrix.length;
+    for (int layer = 0; layer < n / 2; layer++) {
+      int last = n - 1 - layer;
+      for (int i = 0; i < last - layer; i++) {
+        int top = matrix[layer][layer + i];
+        matrix[layer][layer + i] = matrix[last - i][layer];
+        matrix[last - i][layer] = matrix[last][last - i];
+        matrix[last][last - i] = matrix[layer + i][last];
+        matrix[layer + i][last] = top;
+      }
+    }
+  }
+}`,
+            cpp: `void rotate(vector<vector<int>>& matrix) {
+  int n = (int)matrix.size();
+  for (int layer = 0; layer < n / 2; layer++) {
+    int last = n - 1 - layer;
+    for (int i = 0; i < last - layer; i++) {
+      int top = matrix[layer][layer + i];
+      matrix[layer][layer + i] = matrix[last - i][layer];
+      matrix[last - i][layer] = matrix[last][last - i];
+      matrix[last][last - i] = matrix[layer + i][last];
+      matrix[layer + i][last] = top;
+    }
+  }
+}`,
+            c: `void rotateCycles(int n, int matrix[][16]) {
+  int layer, i, last, top;
+  for (layer = 0; layer < n / 2; layer++) {
+    last = n - 1 - layer;
+    for (i = 0; i < last - layer; i++) {
+      top = matrix[layer][layer + i];
+      matrix[layer][layer + i] = matrix[last - i][layer];
+      matrix[last - i][layer] = matrix[last][last - i];
+      matrix[last][last - i] = matrix[layer + i][last];
+      matrix[layer + i][last] = top;
+    }
+  }
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 34,
+      level: "intermediate",
+      q: "Valid Sudoku",
+      ask: "Amazon · Apple · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/valid-sudoku/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/is-sudoku-valid4825/1"}],
+      a: "A 9 by 9 board of digits and '.'. Return true if every filled row, column, and 3 by 3 box has no duplicate digit. Empty cells are ignored. The board does not have to be a completed puzzle.\n\nExample: a standard valid (partial) grid returns true. Two 8s in the same box returns false.\n\nBrute, for each filled cell, rescans its row, column, and box. Optimal uses 27 sets. More optimal packs the same idea into bitmasks.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(1) for 9x9",
+          space: "O(1)",
+          why: "For every filled cell, walk its row, column, and 3x3 box looking for the same digit elsewhere. On a 9x9 this is constant, but the nested scans are noisy.",
+          code: `function isValidSudoku(board) {
+  function ok(r, c, d) {
+    for (let i = 0; i < 9; i++) {
+      if (i !== c && board[r][i] === d) return false;
+      if (i !== r && board[i][c] === d) return false;
+    }
+    const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const rr = br + i, cc = bc + j;
+        if ((rr !== r || cc !== c) && board[rr][cc] === d) return false;
+      }
+    }
+    return true;
+  }
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (board[r][c] === ".") continue;
+      if (!ok(r, c, board[r][c])) return false;
+    }
+  }
+  return true;
+}`,
+          codes: {
+            javascript: `function isValidSudoku(board) {
+  function ok(r, c, d) {
+    for (let i = 0; i < 9; i++) {
+      if (i !== c && board[r][i] === d) return false;
+      if (i !== r && board[i][c] === d) return false;
+    }
+    const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const rr = br + i, cc = bc + j;
+        if ((rr !== r || cc !== c) && board[rr][cc] === d) return false;
+      }
+    }
+    return true;
+  }
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (board[r][c] === ".") continue;
+      if (!ok(r, c, board[r][c])) return false;
+    }
+  }
+  return true;
+}`,
+            python: `def isValidSudoku(board):
+  def ok(r, c, d):
+    for i in range(9):
+      if i != c and board[r][i] == d:
+        return False
+      if i != r and board[i][c] == d:
+        return False
+    br, bc = (r // 3) * 3, (c // 3) * 3
+    for i in range(3):
+      for j in range(3):
+        rr, cc = br + i, bc + j
+        if (rr != r or cc != c) and board[rr][cc] == d:
+          return False
+    return True
+  for r in range(9):
+    for c in range(9):
+      if board[r][c] == ".":
+        continue
+      if not ok(r, c, board[r][c]):
+        return False
+  return True`,
+            java: `class Solution {
+  boolean ok(char[][] board, int r, int c, char d) {
+    for (int i = 0; i < 9; i++) {
+      if (i != c && board[r][i] == d) return false;
+      if (i != r && board[i][c] == d) return false;
+    }
+    int br = (r / 3) * 3, bc = (c / 3) * 3;
+    for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 3; j++) {
+        int rr = br + i, cc = bc + j;
+        if ((rr != r || cc != c) && board[rr][cc] == d) return false;
+      }
+    return true;
+  }
+  public boolean isValidSudoku(char[][] board) {
+    for (int r = 0; r < 9; r++)
+      for (int c = 0; c < 9; c++)
+        if (board[r][c] != '.' && !ok(board, r, c, board[r][c])) return false;
+    return true;
+  }
+}`,
+            cpp: `bool isValidSudoku(vector<vector<char>>& board) {
+  auto ok = [&](int r, int c, char d) {
+    for (int i = 0; i < 9; i++) {
+      if (i != c && board[r][i] == d) return false;
+      if (i != r && board[i][c] == d) return false;
+    }
+    int br = (r / 3) * 3, bc = (c / 3) * 3;
+    for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 3; j++) {
+        int rr = br + i, cc = bc + j;
+        if ((rr != r || cc != c) && board[rr][cc] == d) return false;
+      }
+    return true;
+  };
+  for (int r = 0; r < 9; r++)
+    for (int c = 0; c < 9; c++)
+      if (board[r][c] != '.' && !ok(r, c, board[r][c])) return false;
+  return true;
+}`,
+            c: `int okCell(char board[9][9], int r, int c, char d) {
+  int i, j, br, bc;
+  for (i = 0; i < 9; i++) {
+    if (i != c && board[r][i] == d) return 0;
+    if (i != r && board[i][c] == d) return 0;
+  }
+  br = (r / 3) * 3; bc = (c / 3) * 3;
+  for (i = 0; i < 3; i++)
+    for (j = 0; j < 3; j++) {
+      int rr = br + i, cc = bc + j;
+      if ((rr != r || cc != c) && board[rr][cc] == d) return 0;
+    }
+  return 1;
+}`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(1)",
+          space: "O(1)",
+          why: "Nine sets for rows, nine for columns, nine for boxes. Box id is (r/3)*3 + c/3. Fail on the first repeat.",
+          code: `function isValidSudoku(board) {
+    const row = Array.from({ length: 9 }, function () { return Object.create(null); });
+    const col = Array.from({ length: 9 }, function () { return Object.create(null); });
+    const box = Array.from({ length: 9 }, function () { return Object.create(null); });
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        const d = board[r][c];
+        if (d === ".") continue;
+        const b = Math.floor(r / 3) * 3 + Math.floor(c / 3);
+        if (row[r][d] || col[c][d] || box[b][d]) return false;
+        row[r][d] = col[c][d] = box[b][d] = true;
+      }
+    }
+    return true;
+  }`,
+          codes: {
+            javascript: `function isValidSudoku(board) {
+    const row = Array.from({ length: 9 }, function () { return Object.create(null); });
+    const col = Array.from({ length: 9 }, function () { return Object.create(null); });
+    const box = Array.from({ length: 9 }, function () { return Object.create(null); });
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        const d = board[r][c];
+        if (d === ".") continue;
+        const b = Math.floor(r / 3) * 3 + Math.floor(c / 3);
+        if (row[r][d] || col[c][d] || box[b][d]) return false;
+        row[r][d] = col[c][d] = box[b][d] = true;
+      }
+    }
+    return true;
+  }`,
+            python: `def isValidSudoku(board):
+  row = [set() for _ in range(9)]
+  col = [set() for _ in range(9)]
+  box = [set() for _ in range(9)]
+  for r in range(9):
+    for c in range(9):
+      d = board[r][c]
+      if d == ".":
+        continue
+      b = (r // 3) * 3 + (c // 3)
+      if d in row[r] or d in col[c] or d in box[b]:
+        return False
+      row[r].add(d)
+      col[c].add(d)
+      box[b].add(d)
+  return True`,
+            java: `import java.util.*;
+class Solution {
+  public boolean isValidSudoku(char[][] board) {
+    Set<Character>[] row = new HashSet[9];
+    Set<Character>[] col = new HashSet[9];
+    Set<Character>[] box = new HashSet[9];
+    for (int i = 0; i < 9; i++) {
+      row[i] = new HashSet<Character>();
+      col[i] = new HashSet<Character>();
+      box[i] = new HashSet<Character>();
+    }
+    for (int r = 0; r < 9; r++) {
+      for (int c = 0; c < 9; c++) {
+        char d = board[r][c];
+        if (d == '.') continue;
+        int b = (r / 3) * 3 + (c / 3);
+        if (!row[r].add(d) || !col[c].add(d) || !box[b].add(d)) return false;
+      }
+    }
+    return true;
+  }
+}`,
+            cpp: `bool isValidSudoku(vector<vector<char>>& board) {
+  vector<unordered_set<char>> row(9), col(9), box(9);
+  for (int r = 0; r < 9; r++) {
+    for (int c = 0; c < 9; c++) {
+      char d = board[r][c];
+      if (d == '.') continue;
+      int b = (r / 3) * 3 + (c / 3);
+      if (row[r].count(d) || col[c].count(d) || box[b].count(d)) return false;
+      row[r].insert(d); col[c].insert(d); box[b].insert(d);
+    }
+  }
+  return true;
+}`,
+            c: `int isValidSudoku(char board[9][9]) {
+  int row[9][10] = {0}, col[9][10] = {0}, box[9][10] = {0};
+  int r, c;
+  for (r = 0; r < 9; r++) {
+    for (c = 0; c < 9; c++) {
+      char d = board[r][c];
+      int v, b;
+      if (d == '.') continue;
+      v = d - '0';
+      b = (r / 3) * 3 + (c / 3);
+      if (row[r][v] || col[c][v] || box[b][v]) return 0;
+      row[r][v] = col[c][v] = box[b][v] = 1;
+    }
+  }
+  return 1;
+}`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(1)",
+          space: "O(1)",
+          why: "Nine ints for rows, columns, boxes. Bit (1 << digit) marks a used number. A second hit on the same bit is a duplicate. Same logic, no hash sets.",
+          code: `function isValidSudoku(board) {
+  const row = Array(9).fill(0);
+  const col = Array(9).fill(0);
+  const box = Array(9).fill(0);
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const ch = board[r][c];
+      if (ch === ".") continue;
+      const bit = 1 << (ch.charCodeAt(0) - 49);
+      const b = Math.floor(r / 3) * 3 + Math.floor(c / 3);
+      if ((row[r] & bit) || (col[c] & bit) || (box[b] & bit)) return false;
+      row[r] |= bit;
+      col[c] |= bit;
+      box[b] |= bit;
+    }
+  }
+  return true;
+}`,
+          codes: {
+            javascript: `function isValidSudoku(board) {
+  const row = Array(9).fill(0);
+  const col = Array(9).fill(0);
+  const box = Array(9).fill(0);
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const ch = board[r][c];
+      if (ch === ".") continue;
+      const bit = 1 << (ch.charCodeAt(0) - 49);
+      const b = Math.floor(r / 3) * 3 + Math.floor(c / 3);
+      if ((row[r] & bit) || (col[c] & bit) || (box[b] & bit)) return false;
+      row[r] |= bit;
+      col[c] |= bit;
+      box[b] |= bit;
+    }
+  }
+  return true;
+}`,
+            python: `def isValidSudoku(board):
+  row = [0] * 9
+  col = [0] * 9
+  box = [0] * 9
+  for r in range(9):
+    for c in range(9):
+      ch = board[r][c]
+      if ch == ".":
+        continue
+      bit = 1 << (ord(ch) - 49)
+      b = (r // 3) * 3 + (c // 3)
+      if (row[r] & bit) or (col[c] & bit) or (box[b] & bit):
+        return False
+      row[r] |= bit
+      col[c] |= bit
+      box[b] |= bit
+  return True`,
+            java: `class Solution {
+  public boolean isValidSudoku(char[][] board) {
+    int[] row = new int[9], col = new int[9], box = new int[9];
+    for (int r = 0; r < 9; r++) {
+      for (int c = 0; c < 9; c++) {
+        char ch = board[r][c];
+        if (ch == '.') continue;
+        int bit = 1 << (ch - '1');
+        int b = (r / 3) * 3 + (c / 3);
+        if ((row[r] & bit) != 0 || (col[c] & bit) != 0 || (box[b] & bit) != 0) return false;
+        row[r] |= bit; col[c] |= bit; box[b] |= bit;
+      }
+    }
+    return true;
+  }
+}`,
+            cpp: `bool isValidSudoku(vector<vector<char>>& board) {
+  int row[9] = {}, col[9] = {}, box[9] = {};
+  for (int r = 0; r < 9; r++) {
+    for (int c = 0; c < 9; c++) {
+      char ch = board[r][c];
+      if (ch == '.') continue;
+      int bit = 1 << (ch - '1');
+      int b = (r / 3) * 3 + (c / 3);
+      if ((row[r] & bit) || (col[c] & bit) || (box[b] & bit)) return false;
+      row[r] |= bit; col[c] |= bit; box[b] |= bit;
+    }
+  }
+  return true;
+}`,
+            c: `int isValidSudokuBits(char board[9][9]) {
+  int row[9] = {0}, col[9] = {0}, box[9] = {0};
+  int r, c;
+  for (r = 0; r < 9; r++) {
+    for (c = 0; c < 9; c++) {
+      char ch = board[r][c];
+      int bit, b;
+      if (ch == '.') continue;
+      bit = 1 << (ch - '1');
+      b = (r / 3) * 3 + (c / 3);
+      if ((row[r] & bit) || (col[c] & bit) || (box[b] & bit)) return 0;
+      row[r] |= bit; col[c] |= bit; box[b] |= bit;
+    }
+  }
+  return 1;
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 35,
+      level: "intermediate",
+      q: "Subarray Product Less Than K",
+      ask: "Amazon · Google · Bloomberg",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/subarray-product-less-than-k/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/count-the-subarrays-having-product-less-than-k1708/1"}],
+      a: "Count contiguous subarrays whose product is strictly less than k. nums[i] >= 1.\n\nExample: nums = [10, 5, 2, 6], k = 100. Answer 8: [10], [5], [2], [6], [10,5], [5,2], [2,6], [5,2,6].\n\nBrute multiplies every subarray. Optimal nested loops that break when the running product hits k. More optimal is a sliding window: all-positive so you only shrink from the left.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n²)",
+          space: "O(1)",
+          why: "For each L, grow R, multiply. Count when prod < k. Watch overflow in fixed-width ints; JS numbers are fine for the usual constraints.",
+          code: `function numSubarrayProductLessThanK(nums, k) {
+  const n = nums.length;
+  let c = 0;
+  for (let i = 0; i < n; i++) {
+    let p = 1;
+    for (let j = i; j < n; j++) {
+      p *= nums[j];
+      if (p < k) c++;
+      else break;
+    }
+  }
+  return c;
+}`,
+          codes: {
+            javascript: `function numSubarrayProductLessThanK(nums, k) {
+  const n = nums.length;
+  let c = 0;
+  for (let i = 0; i < n; i++) {
+    let p = 1;
+    for (let j = i; j < n; j++) {
+      p *= nums[j];
+      if (p < k) c++;
+      else break;
+    }
+  }
+  return c;
+}`,
+            python: `def numSubarrayProductLessThanK(nums, k):
+  n = len(nums)
+  c = 0
+  for i in range(n):
+    p = 1
+    for j in range(i, n):
+      p *= nums[j]
+      if p < k:
+        c += 1
+      else:
+        break
+  return c`,
+            java: `class Solution {
+  public int numSubarrayProductLessThanK(int[] nums, int k) {
+    int n = nums.length, c = 0;
+    for (int i = 0; i < n; i++) {
+      long p = 1;
+      for (int j = i; j < n; j++) {
+        p *= nums[j];
+        if (p < k) c++;
+        else break;
+      }
+    }
+    return c;
+  }
+}`,
+            cpp: `int numSubarrayProductLessThanK(vector<int>& nums, int k) {
+  int n = (int)nums.size(), c = 0;
+  for (int i = 0; i < n; i++) {
+    long long p = 1;
+    for (int j = i; j < n; j++) {
+      p *= nums[j];
+      if (p < k) c++;
+      else break;
+    }
+  }
+  return c;
+}`,
+            c: `int numSubarrayProductLessThanK(int* nums, int n, int k) {
+  int i, j, c = 0;
+  for (i = 0; i < n; i++) {
+    long long p = 1;
+    for (j = i; j < n; j++) {
+      p *= nums[j];
+      if (p < k) c++;
+      else break;
+    }
+  }
+  return c;
+}`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n²)",
+          space: "O(1)",
+          why: "Same nested loops, but this is already the best brute because products only grow (nums >= 1) so you can break. Still quadratic worst case when k is huge.",
+          code: `function numSubarrayProductLessThanK(nums, k) {
+  if (k <= 1) return 0;
+  let c = 0;
+  const n = nums.length;
+  for (let i = 0; i < n; i++) {
+    let p = 1;
+    for (let j = i; j < n && p * nums[j] < k; j++) {
+      p *= nums[j];
+      c++;
+    }
+  }
+  return c;
+}`,
+          codes: {
+            javascript: `function numSubarrayProductLessThanK(nums, k) {
+  if (k <= 1) return 0;
+  let c = 0;
+  const n = nums.length;
+  for (let i = 0; i < n; i++) {
+    let p = 1;
+    for (let j = i; j < n && p * nums[j] < k; j++) {
+      p *= nums[j];
+      c++;
+    }
+  }
+  return c;
+}`,
+            python: `def numSubarrayProductLessThanK(nums, k):
+  if k <= 1:
+    return 0
+  c = 0
+  n = len(nums)
+  for i in range(n):
+    p = 1
+    j = i
+    while j < n and p * nums[j] < k:
+      p *= nums[j]
+      c += 1
+      j += 1
+  return c`,
+            java: `class Solution {
+  public int numSubarrayProductLessThanK(int[] nums, int k) {
+    if (k <= 1) return 0;
+    int c = 0, n = nums.length;
+    for (int i = 0; i < n; i++) {
+      long p = 1;
+      for (int j = i; j < n && p * nums[j] < k; j++) {
+        p *= nums[j];
+        c++;
+      }
+    }
+    return c;
+  }
+}`,
+            cpp: `int numSubarrayProductLessThanK(vector<int>& nums, int k) {
+  if (k <= 1) return 0;
+  int c = 0, n = (int)nums.size();
+  for (int i = 0; i < n; i++) {
+    long long p = 1;
+    for (int j = i; j < n && p * nums[j] < k; j++) {
+      p *= nums[j];
+      c++;
+    }
+  }
+  return c;
+}`,
+            c: `int numSubarrayProductLessThanK(int* nums, int n, int k) {
+  int i, j, c = 0;
+  if (k <= 1) return 0;
+  for (i = 0; i < n; i++) {
+    long long p = 1;
+    for (j = i; j < n && p * nums[j] < k; j++) {
+      p *= nums[j];
+      c++;
+    }
+  }
+  return c;
+}`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n)",
+          space: "O(1)",
+          why: "Window [left, right]. Multiply nums[right]. While product >= k, divide nums[left] and left++. Every new right adds (right-left+1) subarrays that end at right. If k <= 1 the answer is 0.",
+          code: `function numSubarrayProductLessThanK(nums, k) {
+  if (k <= 1) return 0;
+  let prod = 1, left = 0, c = 0;
+  for (let right = 0; right < nums.length; right++) {
+    prod *= nums[right];
+    while (prod >= k) {
+      prod /= nums[left];
+      left++;
+    }
+    c += right - left + 1;
+  }
+  return c;
+}`,
+          codes: {
+            javascript: `function numSubarrayProductLessThanK(nums, k) {
+  if (k <= 1) return 0;
+  let prod = 1, left = 0, c = 0;
+  for (let right = 0; right < nums.length; right++) {
+    prod *= nums[right];
+    while (prod >= k) {
+      prod /= nums[left];
+      left++;
+    }
+    c += right - left + 1;
+  }
+  return c;
+}`,
+            python: `def numSubarrayProductLessThanK(nums, k):
+  if k <= 1:
+    return 0
+  prod = 1
+  left = 0
+  c = 0
+  for right, x in enumerate(nums):
+    prod *= x
+    while prod >= k:
+      prod //= nums[left]
+      left += 1
+    c += right - left + 1
+  return c`,
+            java: `class Solution {
+  public int numSubarrayProductLessThanK(int[] nums, int k) {
+    if (k <= 1) return 0;
+    int prod = 1, left = 0, c = 0;
+    for (int right = 0; right < nums.length; right++) {
+      prod *= nums[right];
+      while (prod >= k) { prod /= nums[left]; left++; }
+      c += right - left + 1;
+    }
+    return c;
+  }
+}`,
+            cpp: `int numSubarrayProductLessThanK(vector<int>& nums, int k) {
+  if (k <= 1) return 0;
+  int prod = 1, left = 0, c = 0;
+  for (int right = 0; right < (int)nums.size(); right++) {
+    prod *= nums[right];
+    while (prod >= k) { prod /= nums[left]; left++; }
+    c += right - left + 1;
+  }
+  return c;
+}`,
+            c: `int numSubarrayProductLessThanK(int* nums, int n, int k) {
+  int prod = 1, left = 0, c = 0, right;
+  if (k <= 1) return 0;
+  for (right = 0; right < n; right++) {
+    prod *= nums[right];
+    while (prod >= k) { prod /= nums[left]; left++; }
+    c += right - left + 1;
+  }
+  return c;
+}`
+          }
+        }
+      ]
+    },
+    {
+      id: 36,
+      level: "intermediate",
+      q: "Gas Station",
+      ask: "Amazon · Google · Microsoft · Bloomberg",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/gas-station/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/circular-tour-1587115620/1"}],
+      a: "n stations on a circle. gas[i] is fuel you get, cost[i] is fuel to reach i+1. Start with an empty tank. Return the unique start index that lets you complete one loop, or -1.\n\nExample: gas = [1, 2, 3, 4, 5], cost = [3, 4, 5, 1, 2]. Start at index 3.\n\nBrute tries every start and walks the circle. Optimal first checks total gas >= total cost, then still tries starts. More optimal is one pass: if the tank goes negative, the next start is i+1.",
+      solutions: [
+        {
+          name: "Brute",
+          time: "O(n²)",
+          space: "O(1)",
+          why: "From each start, simulate the circle. Fail when the tank goes negative. Return the first start that finishes n steps.",
+          code: `function canCompleteCircuit(gas, cost) {
+  const n = gas.length;
+  for (let start = 0; start < n; start++) {
+    let tank = 0, ok = true;
+    for (let step = 0; step < n; step++) {
+      const i = (start + step) % n;
+      tank += gas[i] - cost[i];
+      if (tank < 0) { ok = false; break; }
+    }
+    if (ok) return start;
+  }
+  return -1;
+}`,
+          codes: {
+            javascript: `function canCompleteCircuit(gas, cost) {
+  const n = gas.length;
+  for (let start = 0; start < n; start++) {
+    let tank = 0, ok = true;
+    for (let step = 0; step < n; step++) {
+      const i = (start + step) % n;
+      tank += gas[i] - cost[i];
+      if (tank < 0) { ok = false; break; }
+    }
+    if (ok) return start;
+  }
+  return -1;
+}`,
+            python: `def canCompleteCircuit(gas, cost):
+  n = len(gas)
+  for start in range(n):
+    tank = 0
+    ok = True
+    for step in range(n):
+      i = (start + step) % n
+      tank += gas[i] - cost[i]
+      if tank < 0:
+        ok = False
+        break
+    if ok:
+      return start
+  return -1`,
+            java: `class Solution {
+  public int canCompleteCircuit(int[] gas, int[] cost) {
+    int n = gas.length;
+    for (int start = 0; start < n; start++) {
+      int tank = 0;
+      boolean ok = true;
+      for (int step = 0; step < n; step++) {
+        int i = (start + step) % n;
+        tank += gas[i] - cost[i];
+        if (tank < 0) { ok = false; break; }
+      }
+      if (ok) return start;
+    }
+    return -1;
+  }
+}`,
+            cpp: `int canCompleteCircuit(vector<int>& gas, vector<int>& cost) {
+  int n = (int)gas.size();
+  for (int start = 0; start < n; start++) {
+    int tank = 0;
+    bool ok = true;
+    for (int step = 0; step < n; step++) {
+      int i = (start + step) % n;
+      tank += gas[i] - cost[i];
+      if (tank < 0) { ok = false; break; }
+    }
+    if (ok) return start;
+  }
+  return -1;
+}`,
+            c: `int canCompleteCircuit(int* gas, int n, int* cost) {
+  int start, step;
+  for (start = 0; start < n; start++) {
+    int tank = 0, ok = 1;
+    for (step = 0; step < n; step++) {
+      int i = (start + step) % n;
+      tank += gas[i] - cost[i];
+      if (tank < 0) { ok = 0; break; }
+    }
+    if (ok) return start;
+  }
+  return -1;
+}`
+          }
+        },
+        {
+          name: "Optimal",
+          time: "O(n)",
+          space: "O(1)",
+          why: "If the total of gas[i]-cost[i] is negative, no start works. Otherwise try starts in order but skip a failed prefix using a leftover tank. Still a linear check plus a second idea.",
+          code: `function canCompleteCircuit(gas, cost) {
+  const n = gas.length;
+  let total = 0;
+  for (let i = 0; i < n; i++) total += gas[i] - cost[i];
+  if (total < 0) return -1;
+  for (let start = 0; start < n; start++) {
+    let tank = 0, ok = true;
+    for (let step = 0; step < n; step++) {
+      const i = (start + step) % n;
+      tank += gas[i] - cost[i];
+      if (tank < 0) { ok = false; break; }
+    }
+    if (ok) return start;
+  }
+  return -1;
+}`,
+          codes: {
+            javascript: `function canCompleteCircuit(gas, cost) {
+  const n = gas.length;
+  let total = 0;
+  for (let i = 0; i < n; i++) total += gas[i] - cost[i];
+  if (total < 0) return -1;
+  for (let start = 0; start < n; start++) {
+    let tank = 0, ok = true;
+    for (let step = 0; step < n; step++) {
+      const i = (start + step) % n;
+      tank += gas[i] - cost[i];
+      if (tank < 0) { ok = false; break; }
+    }
+    if (ok) return start;
+  }
+  return -1;
+}`,
+            python: `def canCompleteCircuit(gas, cost):
+  n = len(gas)
+  if sum(gas[i] - cost[i] for i in range(n)) < 0:
+    return -1
+  for start in range(n):
+    tank = 0
+    ok = True
+    for step in range(n):
+      i = (start + step) % n
+      tank += gas[i] - cost[i]
+      if tank < 0:
+        ok = False
+        break
+    if ok:
+      return start
+  return -1`,
+            java: `class Solution {
+  public int canCompleteCircuit(int[] gas, int[] cost) {
+    int n = gas.length, total = 0;
+    for (int i = 0; i < n; i++) total += gas[i] - cost[i];
+    if (total < 0) return -1;
+    for (int start = 0; start < n; start++) {
+      int tank = 0;
+      boolean ok = true;
+      for (int step = 0; step < n; step++) {
+        int i = (start + step) % n;
+        tank += gas[i] - cost[i];
+        if (tank < 0) { ok = false; break; }
+      }
+      if (ok) return start;
+    }
+    return -1;
+  }
+}`,
+            cpp: `int canCompleteCircuit(vector<int>& gas, vector<int>& cost) {
+  int n = (int)gas.size(), total = 0;
+  for (int i = 0; i < n; i++) total += gas[i] - cost[i];
+  if (total < 0) return -1;
+  for (int start = 0; start < n; start++) {
+    int tank = 0;
+    bool ok = true;
+    for (int step = 0; step < n; step++) {
+      int i = (start + step) % n;
+      tank += gas[i] - cost[i];
+      if (tank < 0) { ok = false; break; }
+    }
+    if (ok) return start;
+  }
+  return -1;
+}`,
+            c: `int canCompleteCircuit(int* gas, int n, int* cost) {
+  int i, start, step, total = 0;
+  for (i = 0; i < n; i++) total += gas[i] - cost[i];
+  if (total < 0) return -1;
+  for (start = 0; start < n; start++) {
+    int tank = 0, ok = 1;
+    for (step = 0; step < n; step++) {
+      int j = (start + step) % n;
+      tank += gas[j] - cost[j];
+      if (tank < 0) { ok = 0; break; }
+    }
+    if (ok) return start;
+  }
+  return -1;
+}`
+          }
+        },
+        {
+          name: "More optimal",
+          time: "O(n)",
+          space: "O(1)",
+          why: "One pass. tank is the fuel since the current start. If tank drops below 0, no start in [oldStart, i] works, so start = i+1 and tank = 0. If the total is negative, return -1. Unique start is guaranteed.",
+          code: `function canCompleteCircuit(gas, cost) {
+  let total = 0, tank = 0, start = 0;
+  for (let i = 0; i < gas.length; i++) {
+    const d = gas[i] - cost[i];
+    total += d;
+    tank += d;
+    if (tank < 0) {
+      start = i + 1;
+      tank = 0;
+    }
+  }
+  return total < 0 ? -1 : start;
+}`,
+          codes: {
+            javascript: `function canCompleteCircuit(gas, cost) {
+  let total = 0, tank = 0, start = 0;
+  for (let i = 0; i < gas.length; i++) {
+    const d = gas[i] - cost[i];
+    total += d;
+    tank += d;
+    if (tank < 0) {
+      start = i + 1;
+      tank = 0;
+    }
+  }
+  return total < 0 ? -1 : start;
+}`,
+            python: `def canCompleteCircuit(gas, cost):
+  total = tank = start = 0
+  for i in range(len(gas)):
+    d = gas[i] - cost[i]
+    total += d
+    tank += d
+    if tank < 0:
+      start = i + 1
+      tank = 0
+  return -1 if total < 0 else start`,
+            java: `class Solution {
+  public int canCompleteCircuit(int[] gas, int[] cost) {
+    int total = 0, tank = 0, start = 0;
+    for (int i = 0; i < gas.length; i++) {
+      int d = gas[i] - cost[i];
+      total += d;
+      tank += d;
+      if (tank < 0) { start = i + 1; tank = 0; }
+    }
+    return total < 0 ? -1 : start;
+  }
+}`,
+            cpp: `int canCompleteCircuit(vector<int>& gas, vector<int>& cost) {
+  int total = 0, tank = 0, start = 0;
+  for (int i = 0; i < (int)gas.size(); i++) {
+    int d = gas[i] - cost[i];
+    total += d;
+    tank += d;
+    if (tank < 0) { start = i + 1; tank = 0; }
+  }
+  return total < 0 ? -1 : start;
+}`,
+            c: `int canCompleteCircuit(int* gas, int n, int* cost) {
+  int total = 0, tank = 0, start = 0, i;
+  for (i = 0; i < n; i++) {
+    int d = gas[i] - cost[i];
+    total += d;
+    tank += d;
+    if (tank < 0) { start = i + 1; tank = 0; }
+  }
+  return total < 0 ? -1 : start;
 }`
           }
         }

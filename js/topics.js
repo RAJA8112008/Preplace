@@ -18,7 +18,11 @@ window.PREP_TOPICS = [
   { id: "dsa-arrays", title: "Arrays", category: "DSA / Interview", icon: "📦", blurb: "FAANG array problems: Two Sum, Kadane, intervals, and more." },
   { id: "dsa-strings", title: "Strings", category: "DSA / Interview", icon: "🔤", blurb: "Anagrams, windows, palindromes, and string FAANG classics." },
   { id: "dsa-linkedlist", title: "Linked List", category: "DSA / Interview", icon: "🔗", blurb: "Reverse, cycle, merge, and the lists FAANG asks every year." },
-  { id: "dsa-tree", title: "Trees", category: "DSA / Interview", icon: "🌳", blurb: "BST, DFS, BFS, LCA, and binary-tree interview staples." },
+  { id: "dsa-tree", title: "Binary Trees", category: "DSA / Interview", icon: "🌳", blurb: "DFS, BFS, views, paths, and binary-tree interview staples." },
+  { id: "dsa-bst", title: "BST", category: "DSA / Interview", icon: "🌲", blurb: "Search, insert, delete, and the BST questions FAANG loves." },
+  { id: "dsa-binarysearch", title: "Binary Search", category: "DSA / Interview", icon: "🎯", blurb: "Low/high, rotated arrays, peaks, and answer-space search." },
+  { id: "dsa-backtracking", title: "Recursion & Backtracking", category: "DSA / Interview", icon: "↩️", blurb: "Subsets, permutations, N-Queens, mazes, and undo-a-choice." },
+  { id: "dsa-trie", title: "Tries", category: "DSA / Interview", icon: "🔠", blurb: "Prefix trees: autocomplete, word search, and dictionary design." },
   { id: "dsa-graph", title: "Graphs", category: "DSA / Interview", icon: "🕸️", blurb: "Islands, courses, BFS/DFS, and shortest-path patterns." },
   { id: "dsa-stackheap", title: "Stack, Queue & Heap", category: "DSA / Interview", icon: "📚", blurb: "Monotonic stack, top-K, sliding window max, and heaps." },
   { id: "dsa-dp", title: "Dynamic Programming", category: "DSA / Interview", icon: "♟️", blurb: "Climb stairs, knapsack, LIS, and the DP questions FAANG loves." }

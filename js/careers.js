@@ -186,9 +186,13 @@ window.PREP_CAREERS = [
       { topic: "dsa-arrays", learn: "Arrays", why: "Most first-round questions. Two pointers, prefix sums, hashing." },
       { topic: "dsa-strings", learn: "Strings", why: "Anagrams, sliding windows, and palindromes show up in every company." },
       { topic: "dsa-linkedlist", learn: "Linked List", why: "Reverse, cycle, and merge are warm-up questions at Amazon and Meta." },
+      { topic: "dsa-binarysearch", learn: "Binary Search", why: "Sorted arrays, peaks, and searching on the answer." },
       { topic: "dsa-stackheap", learn: "Stack, Queue & Heap", why: "Next greater, top-K, and sliding window max." },
-      { topic: "dsa-tree", learn: "Trees", why: "DFS/BFS on binary trees. Google and Apple ask these a lot." },
+      { topic: "dsa-tree", learn: "Binary Trees", why: "DFS/BFS, views, paths. Google and Apple ask these a lot." },
+      { topic: "dsa-bst", learn: "BST", why: "Ordered trees: search, insert, delete, kth, successor." },
       { topic: "dsa-graph", learn: "Graphs", why: "Islands, course schedule, and BFS shortest path." },
+      { topic: "dsa-backtracking", learn: "Recursion & Backtracking", why: "Subsets, permutations, N-Queens, word search." },
+      { topic: "dsa-trie", learn: "Tries", why: "Prefix trees for dictionaries and autocomplete." },
       { topic: "dsa-dp", learn: "Dynamic Programming", why: "The harder onsite round. Learn the pattern, not 200 random problems." }
     ],
     extra: [
@@ -196,7 +200,8 @@ window.PREP_CAREERS = [
       "Always start with a brute idea, then improve it",
       "Practice on a whiteboard or empty file, not only LeetCode hints",
       "Do 1–2 problems a day. Re-solve old ones after a week",
-      "Know one language well (JavaScript here; Java or Python is also fine in interviews)"
+      "Know one language well (Java, C++, Python, or JavaScript — switch on each problem)",
+      "Draw the tree or BST on paper before you code"
     ]
   }
 ];
