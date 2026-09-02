@@ -174,5 +174,29 @@ window.PREP_CAREERS = [
       "Learn to explain a number in one sentence",
       "One project: analyze a public CSV (sales, movies, or cricket)"
     ]
+  },
+  {
+    id: "sde",
+    title: "SDE / FAANG Interview",
+    icon: "💼",
+    blurb: "The DSA path MAANG and FAANG companies ask: arrays first, then graphs and DP.",
+    builds: "You can explain brute → better → best, with time and space, for the most asked problems.",
+    time: "3–6 months of daily practice",
+    steps: [
+      { topic: "dsa-arrays", learn: "Arrays", why: "Most first-round questions. Two pointers, prefix sums, hashing." },
+      { topic: "dsa-strings", learn: "Strings", why: "Anagrams, sliding windows, and palindromes show up in every company." },
+      { topic: "dsa-linkedlist", learn: "Linked List", why: "Reverse, cycle, and merge are warm-up questions at Amazon and Meta." },
+      { topic: "dsa-stackheap", learn: "Stack, Queue & Heap", why: "Next greater, top-K, and sliding window max." },
+      { topic: "dsa-tree", learn: "Trees", why: "DFS/BFS on binary trees. Google and Apple ask these a lot." },
+      { topic: "dsa-graph", learn: "Graphs", why: "Islands, course schedule, and BFS shortest path." },
+      { topic: "dsa-dp", learn: "Dynamic Programming", why: "The harder onsite round. Learn the pattern, not 200 random problems." }
+    ],
+    extra: [
+      "Speak Big-O out loud before you code",
+      "Always start with a brute idea, then improve it",
+      "Practice on a whiteboard or empty file, not only LeetCode hints",
+      "Do 1–2 problems a day. Re-solve old ones after a week",
+      "Know one language well (JavaScript here; Java or Python is also fine in interviews)"
+    ]
   }
 ];

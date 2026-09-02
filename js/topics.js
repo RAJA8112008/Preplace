@@ -14,7 +14,14 @@ window.PREP_TOPICS = [
   { id: "devops", title: "DevOps", category: "DevOps", icon: "🔁", blurb: "CI/CD, IaC, monitoring, and delivery practices." },
   { id: "aws", title: "AWS", category: "Cloud", icon: "☁️", blurb: "EC2, S3, IAM, VPC, Lambda, and common interview topics." },
   { id: "python", title: "Python", category: "ML / Data", icon: "🐍", blurb: "Syntax, lists, functions, files, and beginner Python." },
-  { id: "machinelearning", title: "Machine Learning", category: "ML / Data", icon: "🧠", blurb: "Train/test, models, metrics, and simple ML ideas." }
+  { id: "machinelearning", title: "Machine Learning", category: "ML / Data", icon: "🧠", blurb: "Train/test, models, metrics, and simple ML ideas." },
+  { id: "dsa-arrays", title: "Arrays", category: "DSA / Interview", icon: "📦", blurb: "FAANG array problems: Two Sum, Kadane, intervals, and more." },
+  { id: "dsa-strings", title: "Strings", category: "DSA / Interview", icon: "🔤", blurb: "Anagrams, windows, palindromes, and string FAANG classics." },
+  { id: "dsa-linkedlist", title: "Linked List", category: "DSA / Interview", icon: "🔗", blurb: "Reverse, cycle, merge, and the lists FAANG asks every year." },
+  { id: "dsa-tree", title: "Trees", category: "DSA / Interview", icon: "🌳", blurb: "BST, DFS, BFS, LCA, and binary-tree interview staples." },
+  { id: "dsa-graph", title: "Graphs", category: "DSA / Interview", icon: "🕸️", blurb: "Islands, courses, BFS/DFS, and shortest-path patterns." },
+  { id: "dsa-stackheap", title: "Stack, Queue & Heap", category: "DSA / Interview", icon: "📚", blurb: "Monotonic stack, top-K, sliding window max, and heaps." },
+  { id: "dsa-dp", title: "Dynamic Programming", category: "DSA / Interview", icon: "♟️", blurb: "Climb stairs, knapsack, LIS, and the DP questions FAANG loves." }
 ];
 
 window.PREP_DATA = window.PREP_DATA || {};

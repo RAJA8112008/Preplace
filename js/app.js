@@ -4,6 +4,35 @@
   const themeToggle = document.getElementById("themeToggle");
   const storageKey = "prepplace-progress-v1";
   const themeKey = "prepplace-theme";
+  const langKey = "prepplace-code-lang";
+  const CODE_LANGS = [
+    { id: "javascript", label: "JavaScript" },
+    { id: "python", label: "Python" },
+    { id: "java", label: "Java" },
+    { id: "cpp", label: "C++" },
+    { id: "c", label: "C" }
+  ];
+
+  const getLang = () => {
+    const saved = localStorage.getItem(langKey);
+    return CODE_LANGS.some((l) => l.id === saved) ? saved : "javascript";
+  };
+
+  const setLang = (id) => localStorage.setItem(langKey, id);
+
+  const pickCode = (block, lang) => {
+    if (!block) return "";
+    if (block.codes && block.codes[lang]) return block.codes[lang];
+    if (lang === "javascript") return block.code || block.codes?.javascript || "";
+    return "";
+  };
+
+  const langBar = (active) => `
+    <div class="lang-bar" role="tablist" aria-label="Code language">
+      ${CODE_LANGS.map((l) =>
+        `<button class="lang-btn ${l.id === active ? "active" : ""}" type="button" data-lang="${l.id}">${l.label}</button>`
+      ).join("")}
+    </div>`;
 
   const loadProgress = () => {
     try { return JSON.parse(localStorage.getItem(storageKey) || "{}"); }
@@ -59,6 +88,20 @@
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 
+  const copyText = async (code, btn) => {
+    try { await navigator.clipboard.writeText(code); }
+    catch {
+      const ta = document.createElement("textarea");
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    btn.textContent = "Copied";
+    setTimeout(() => { btn.textContent = "Copy"; }, 1200);
+  };
+
   const route = () => {
     const hash = location.hash.slice(2) || "";
     const [page, id] = hash.split("/");
@@ -100,7 +143,7 @@
     view.innerHTML = `
       <section class="hero">
         <h1>Pick a career. See what to learn.</h1>
-        <p>Frontend, backend, MERN, full stack, ML, and more. Each path shows the order, then opens notes, easy code, and 100 questions.</p>
+        <p>Frontend, backend, MERN, full stack, ML, DevOps, and a FAANG DSA path. Each path shows the order, then opens notes, easy code, and practice questions.</p>
         <div class="stats">
           <div class="stat"><b>${window.PREP_CAREERS.length}</b><span>career paths</span></div>
           <div class="stat"><b>${window.PREP_TOPICS.length}</b><span>subjects</span></div>
@@ -145,7 +188,7 @@
       <section class="topic-head">
         <button class="back-btn" type="button" id="backHome">← Career paths</button>
         <h1>All subjects</h1>
-        <p class="example-intro">Open any subject. Questions are explained in easy words with a small code example.</p>
+        <p class="example-intro">Open any subject. DSA topics include brute, optimal, and more optimal solutions — the ones MAANG / FAANG ask most.</p>
       </section>
       <div class="filters">
         ${categories.map((c) => `<button class="chip ${c === activeCat ? "active" : ""}" data-cat="${c}">${c}</button>`).join("")}
@@ -229,18 +272,52 @@
       return;
     }
 
-    const tab = window.topicTab || "examples";
+    const tab = window.topicTab || (data.kind === "dsa" ? "questions" : "examples");
     const level = window.topicLevel || "all";
     const query = (window.topicQuery || "").toLowerCase();
     const done = doneSet(id);
     const p = progressFor(id);
     const notes = data.notes || [];
     const examples = data.examples || [];
-    const questions = (data.questions || []).filter((item) => {
+    const allQuestions = data.questions || [];
+    const questions = allQuestions.filter((item) => {
       const matchLevel = level === "all" || item.level === level;
-      const matchQ = !query || `${item.q} ${item.a} ${item.code || ""}`.toLowerCase().includes(query);
-      return matchLevel && matchQ;
+      const solText = (item.solutions || []).map((s) => {
+        const langs = s.codes ? Object.values(s.codes).join(" ") : "";
+        return `${s.name} ${s.why} ${s.code || ""} ${langs}`;
+      }).join(" ");
+      const hay = `${item.q} ${item.a} ${item.code || ""} ${item.ask || ""} ${solText}`.toLowerCase();
+      return matchLevel && (!query || hay.includes(query));
     });
+
+    const lang = getLang();
+    const langLabel = CODE_LANGS.find((l) => l.id === lang)?.label || lang;
+
+    const renderSolutions = (item) => {
+      if (item.solutions && item.solutions.length) {
+        return `
+          <div class="sol-tabs">
+            ${item.solutions.map((s, i) => `<button class="sol-tab ${i === 0 ? "active" : ""}" type="button" data-sol="${i}">${escapeHtml(s.name)}</button>`).join("")}
+          </div>
+          ${item.solutions.map((s, i) => {
+            const src = pickCode(s, lang);
+            return `
+            <div class="sol-panel ${i === 0 ? "open" : ""}" data-sol-panel="${i}">
+              <p class="sol-meta"><span>Time ${escapeHtml(s.time || "")}</span><span>Space ${escapeHtml(s.space || "")}</span><span>${escapeHtml(langLabel)}</span></p>
+              <p class="teach-body">${escapeHtml(s.why || "")}</p>
+              ${src
+                ? `<div class="code-wrap">
+                <button class="copy-btn" type="button" data-sol-copy="${i}">Copy</button>
+                <pre><code>${escapeHtml(src)}</code></pre>
+              </div>`
+                : `<p class="empty">This solution is not in ${escapeHtml(langLabel)} yet. Pick JavaScript or another language.</p>`}
+            </div>`;
+          }).join("")}`;
+      }
+      const single = pickCode(item, lang) || item.code;
+      if (!single) return "";
+      return `<p class="answer-label">Code · ${escapeHtml(langLabel)}</p><div class="code-wrap"><pre><code>${escapeHtml(single)}</code></pre></div>`;
+    };
 
     view.innerHTML = `
       <section class="topic-head">
@@ -255,19 +332,20 @@
       <div class="tabs">
         <button class="tab ${tab === "examples" ? "active" : ""}" data-tab="examples">Easy code</button>
         <button class="tab ${tab === "notes" ? "active" : ""}" data-tab="notes">Notes</button>
-        <button class="tab ${tab === "questions" ? "active" : ""}" data-tab="questions">100 questions</button>
+        <button class="tab ${tab === "questions" ? "active" : ""}" data-tab="questions">${allQuestions.length} questions</button>
       </div>
       ${tab === "notes" ? `
         <section class="note-grid">
           ${notes.map((n) => `<article class="note"><h3>${escapeHtml(n.title)}</h3><p>${escapeHtml(n.body)}</p></article>`).join("")}
         </section>` : tab === "examples" ? `
-        <p class="example-intro">Read the explanation first, then the code. Each comment is there to teach, not to look fancy.</p>
+        ${data.kind === "dsa" ? langBar(lang) : ""}
+        <p class="example-intro">Read the explanation first, then the code. DSA topics can switch JavaScript, Python, Java, C++, or C.</p>
         <section class="example-list">
           ${examples.map((ex, i) => `
             <article class="example">
               <div class="example-head">
                 <h3>${escapeHtml(ex.title)}</h3>
-                <span class="badge">${escapeHtml(ex.lang || "code")}</span>
+                <span class="badge">${escapeHtml(data.kind === "dsa" ? langLabel : (ex.lang || "code"))}</span>
               </div>
               <div class="teach">
                 <p class="answer-label">Explanation</p>
@@ -276,7 +354,7 @@
               <p class="answer-label code-label">Code</p>
               <div class="code-wrap">
                 <button class="copy-btn" type="button" data-ex="${i}">Copy</button>
-                <pre><code>${escapeHtml(ex.code)}</code></pre>
+                <pre><code>${escapeHtml(pickCode(ex, data.kind === "dsa" ? lang : "javascript") || ex.code || "")}</code></pre>
               </div>
             </article>`).join("") || `<p class="empty">No code examples yet.</p>`}
         </section>` : `
@@ -286,18 +364,22 @@
             `<button class="level-btn ${level === lv ? "active" : ""}" data-level="${lv}">${lv}</button>`
           ).join("")}
         </div>
+        ${data.kind === "dsa" || allQuestions.some((q) => q.solutions) ? langBar(lang) : ""}
         <section class="qa">
           ${questions.map((item) => `
             <article class="item ${done.has(item.id) ? "done" : ""}" data-qid="${item.id}">
               <button class="q-row" type="button">
                 <span class="num">${item.id}</span>
-                <span>${escapeHtml(item.q)}</span>
+                <span>
+                  ${escapeHtml(item.q)}
+                  ${item.ask ? `<small class="ask">${escapeHtml(item.ask)}</small>` : ""}
+                </span>
                 <span class="level">${item.level}</span>
               </button>
               <div class="answer-wrap">
                 <p class="answer-label">Explanation</p>
                 <p class="answer">${escapeHtml(item.a)}</p>
-                ${item.code ? `<p class="answer-label">Code</p><div class="code-wrap"><pre><code>${escapeHtml(item.code)}</code></pre></div>` : ""}
+                ${renderSolutions(item)}
                 <button class="done-btn" type="button">${done.has(item.id) ? "Marked done · undo" : "Mark as done"}</button>
               </div>
             </article>`).join("") || `<p class="empty">No questions match this filter.</p>`}
@@ -317,6 +399,14 @@
     view.querySelectorAll("[data-level]").forEach((btn) => {
       btn.addEventListener("click", () => { window.topicLevel = btn.dataset.level; renderTopic(id); });
     });
+    view.querySelectorAll("[data-lang]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const open = [...view.querySelectorAll(".item.open")].map((el) => el.dataset.qid);
+        setLang(btn.dataset.lang);
+        renderTopic(id);
+        open.forEach((qid) => view.querySelector(`.item[data-qid="${qid}"]`)?.classList.add("open"));
+      });
+    });
     view.querySelectorAll(".q-row").forEach((btn) => {
       btn.addEventListener("click", () => btn.parentElement.classList.toggle("open"));
     });
@@ -329,18 +419,29 @@
     });
     view.querySelectorAll("[data-ex]").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        const code = examples[Number(btn.dataset.ex)]?.code || "";
-        try { await navigator.clipboard.writeText(code); }
-        catch {
-          const ta = document.createElement("textarea");
-          ta.value = code;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          ta.remove();
-        }
-        btn.textContent = "Copied";
-        setTimeout(() => { btn.textContent = "Copy"; }, 1200);
+          const ex = examples[Number(btn.dataset.ex)];
+          const code = pickCode(ex, data.kind === "dsa" ? getLang() : "javascript") || ex?.code || "";
+          await copyText(code, btn);
+      });
+    });
+    view.querySelectorAll(".item").forEach((itemEl) => {
+      const panels = itemEl.querySelectorAll("[data-sol-panel]");
+      const tabs = itemEl.querySelectorAll(".sol-tab");
+      tabs.forEach((tabBtn) => {
+        tabBtn.addEventListener("click", () => {
+          const i = tabBtn.dataset.sol;
+          tabs.forEach((t) => t.classList.toggle("active", t.dataset.sol === i));
+          panels.forEach((p) => p.classList.toggle("open", p.dataset.solPanel === i));
+        });
+      });
+      itemEl.querySelectorAll("[data-sol-copy]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const qid = Number(itemEl.dataset.qid);
+          const item = allQuestions.find((q) => q.id === qid);
+          const sol = item?.solutions?.[Number(btn.dataset.solCopy)];
+          const code = pickCode(sol, getLang()) || sol?.code || "";
+          await copyText(code, btn);
+        });
       });
     });
   };
@@ -356,7 +457,7 @@
   });
 
   window.addEventListener("hashchange", () => {
-    window.topicTab = "examples";
+    window.topicTab = undefined;
     window.topicQuery = "";
     window.topicLevel = "all";
     route();
