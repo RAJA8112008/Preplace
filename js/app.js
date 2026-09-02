@@ -5,6 +5,10 @@
   const storageKey = "prepplace-progress-v1";
   const themeKey = "prepplace-theme";
   const langKey = "prepplace-code-lang";
+  const starKey = "prepplace-stars-v1";
+  const noteKey = "prepplace-notes-v1";
+  const streakKey = "prepplace-streak-v1";
+  const COMPANIES = ["Google", "Meta", "Amazon", "Apple", "Microsoft", "Netflix", "Uber", "Adobe"];
   const CODE_LANGS = [
     { id: "javascript", label: "JavaScript" },
     { id: "python", label: "Python" },
@@ -49,7 +53,75 @@
     if (set.has(qid)) set.delete(qid); else set.add(qid);
     all[topicId] = [...set];
     saveProgress(all);
+    if (set.has(qid)) bumpStreak();
   };
+
+  const loadJson = (key, fallback) => {
+    try { return JSON.parse(localStorage.getItem(key) || "") || fallback; }
+    catch { return fallback; }
+  };
+
+  const starSet = (topicId) => new Set(loadJson(starKey, {})[topicId] || []);
+  const toggleStar = (topicId, qid) => {
+    const all = loadJson(starKey, {});
+    const set = new Set(all[topicId] || []);
+    if (set.has(qid)) set.delete(qid); else set.add(qid);
+    all[topicId] = [...set];
+    localStorage.setItem(starKey, JSON.stringify(all));
+  };
+
+  const noteId = (topicId, qid) => `${topicId}:${qid}`;
+  const getNote = (topicId, qid) => loadJson(noteKey, {})[noteId(topicId, qid)] || "";
+  const saveNote = (topicId, qid, text) => {
+    const all = loadJson(noteKey, {});
+    all[noteId(topicId, qid)] = text;
+    localStorage.setItem(noteKey, JSON.stringify(all));
+  };
+
+  const todayStamp = () => new Date().toISOString().slice(0, 10);
+  const readStreak = () => loadJson(streakKey, { count: 0, last: "" });
+  const bumpStreak = () => {
+    const s = readStreak();
+    const today = todayStamp();
+    if (s.last === today) return;
+    const y = new Date();
+    y.setDate(y.getDate() - 1);
+    const yesterday = y.toISOString().slice(0, 10);
+    s.count = s.last === yesterday ? s.count + 1 : 1;
+    s.last = today;
+    localStorage.setItem(streakKey, JSON.stringify(s));
+  };
+
+  const dsaTopics = () => window.PREP_TOPICS.filter((t) => t.id.startsWith("dsa-"));
+  const allDsaProblems = () => dsaTopics().flatMap((t) =>
+    (pack(t.id)?.questions || []).map((q) => ({
+      ...q,
+      topicId: t.id,
+      topicTitle: t.title,
+      topicIcon: t.icon
+    }))
+  );
+
+  const companyList = (ask) => String(ask || "").split(/[·,]/).map((s) => s.trim()).filter(Boolean);
+
+  const dailyProblem = () => {
+    const list = allDsaProblems();
+    if (!list.length) return null;
+    const day = todayStamp();
+    let h = 0;
+    for (let i = 0; i < day.length; i++) h = (h * 33 + day.charCodeAt(i)) >>> 0;
+    return list[h % list.length];
+  };
+
+  const randomProblem = (topicId) => {
+    const list = topicId
+      ? (pack(topicId)?.questions || []).map((q) => ({ ...q, topicId }))
+      : allDsaProblems();
+    if (!list.length) return null;
+    return list[Math.floor(Math.random() * list.length)];
+  };
+
+  const goProblem = (topicId, qid) => { location.hash = `#/topic/${topicId}/${qid}`; };
 
   const applyTheme = (theme) => {
     document.documentElement.dataset.theme = theme;
@@ -104,10 +176,11 @@
 
   const route = () => {
     const hash = location.hash.slice(2) || "";
-    const [page, id] = hash.split("/");
-    if (page === "topic" && id && topicById(id)) renderTopic(id);
+    const [page, id, extra] = hash.split("/");
+    if (page === "topic" && id && topicById(id)) renderTopic(id, extra);
     else if (page === "career" && id && careerById(id)) renderCareer(id);
     else if (page === "topics") renderTopics(searchInput.value);
+    else if (page === "dsa") renderDsaSheet();
     else renderHome();
   };
 
@@ -148,8 +221,31 @@
           <div class="stat"><b>${window.PREP_CAREERS.length}</b><span>career paths</span></div>
           <div class="stat"><b>${window.PREP_TOPICS.length}</b><span>subjects</span></div>
           <div class="stat"><b>${totals.questions}</b><span>questions</span></div>
+          <div class="stat"><b>${readStreak().count}</b><span>day streak</span></div>
         </div>
       </section>
+      ${(() => {
+        const daily = dailyProblem();
+        const dsaDone = dsaTopics().reduce((n, t) => n + progressFor(t.id).done, 0);
+        const dsaTotal = dsaTopics().reduce((n, t) => n + progressFor(t.id).total, 0);
+        return `
+      <div class="quick-row">
+        <article class="quick-card">
+          <h3>Today's problem</h3>
+          <p>${daily ? `${daily.topicIcon} ${escapeHtml(daily.q)} · ${escapeHtml(daily.topicTitle)} · ${escapeHtml(daily.level || "")}` : "DSA topics are still loading."}</p>
+          <div class="quick-actions">
+            ${daily ? `<button class="tab" type="button" id="openDaily">Open</button>` : ""}
+            <button class="tab" type="button" id="openRandom">Random problem</button>
+            <a class="tab" href="#/dsa">Full problem sheet</a>
+          </div>
+        </article>
+        <article class="quick-card">
+          <h3>Your DSA progress</h3>
+          <p>${dsaDone} / ${dsaTotal} interview problems done. Star a problem to revise it later.</p>
+          <div class="progress"><span style="width:${dsaTotal ? Math.round((dsaDone / dsaTotal) * 100) : 0}%"></span></div>
+        </article>
+      </div>`;
+      })()}
       <section class="career-grid">
         ${careers.map((c) => {
           const p = careerProgress(c);
@@ -169,9 +265,104 @@
         }).join("") || `<p class="empty">No career matches that search.</p>`}
       </section>
       <p class="example-intro" style="margin-top:22px">
-        Want one subject only? <a href="#/topics">Browse all subjects</a>
+        Want one subject only? <a href="#/topics">Browse all subjects</a> · <a href="#/dsa">Search every DSA problem</a>
       </p>
     `;
+    document.getElementById("openDaily")?.addEventListener("click", () => {
+      const p = dailyProblem();
+      if (p) goProblem(p.topicId, p.id);
+    });
+    document.getElementById("openRandom")?.addEventListener("click", () => {
+      const p = randomProblem();
+      if (p) goProblem(p.topicId, p.id);
+    });
+  };
+
+  const renderDsaSheet = () => {
+    const q = (searchInput.value || "").trim().toLowerCase();
+    const topicF = window.dsaTopic || "all";
+    const levelF = window.dsaLevel || "all";
+    const companyF = window.dsaCompany || "all";
+    const bagF = window.dsaBag || "all";
+    const list = allDsaProblems().filter((item) => {
+      const done = doneSet(item.topicId).has(item.id);
+      const starred = starSet(item.topicId).has(item.id);
+      const hay = `${item.q} ${item.ask || ""} ${item.topicTitle} ${item.level}`.toLowerCase();
+      const matchQ = !q || hay.includes(q);
+      const matchT = topicF === "all" || item.topicId === topicF;
+      const matchL = levelF === "all" || item.level === levelF;
+      const matchC = companyF === "all" || companyList(item.ask).some((c) => c.toLowerCase() === companyF.toLowerCase());
+      const matchB = bagF === "all" || (bagF === "done" && done) || (bagF === "todo" && !done) || (bagF === "starred" && starred);
+      return matchQ && matchT && matchL && matchC && matchB;
+    });
+
+    view.innerHTML = `
+      <section class="topic-head">
+        <button class="back-btn" type="button" id="backHome">← Career paths</button>
+        <h1>Problem sheet</h1>
+        <p class="example-intro">Every FAANG-style problem in one place. Filter by topic, company, level, or your stars. Click a name to study brute → optimal → more optimal.</p>
+        <div class="topic-meta">
+          <span class="badge">${list.length} shown</span>
+          <span>${readStreak().count} day streak</span>
+        </div>
+      </section>
+      <div class="filters">
+        <button class="chip ${topicF === "all" ? "active" : ""}" data-dsa-topic="all">All topics</button>
+        ${dsaTopics().map((t) => `<button class="chip ${topicF === t.id ? "active" : ""}" data-dsa-topic="${t.id}">${t.title}</button>`).join("")}
+      </div>
+      <div class="filters">
+        ${["all", "beginner", "intermediate", "advanced"].map((lv) =>
+          `<button class="level-btn ${levelF === lv ? "active" : ""}" data-dsa-level="${lv}">${lv}</button>`
+        ).join("")}
+        ${["all", "todo", "done", "starred"].map((b) =>
+          `<button class="level-btn ${bagF === b ? "active" : ""}" data-dsa-bag="${b}">${b}</button>`
+        ).join("")}
+      </div>
+      <div class="filters">
+        <button class="chip ${companyF === "all" ? "active" : ""}" data-dsa-co="all">All companies</button>
+        ${COMPANIES.map((c) => `<button class="chip ${companyF === c ? "active" : ""}" data-dsa-co="${c}">${c}</button>`).join("")}
+      </div>
+      <div class="quick-actions" style="margin:0 0 14px">
+        <button class="tab" type="button" id="sheetRandom">Random from this list</button>
+      </div>
+      <table class="sheet-table">
+        <thead>
+          <tr><th>#</th><th>Problem</th><th>Topic</th><th>Level</th><th>Companies</th><th></th></tr>
+        </thead>
+        <tbody>
+          ${list.map((item, i) => {
+            const done = doneSet(item.topicId).has(item.id);
+            const starred = starSet(item.topicId).has(item.id);
+            return `<tr>
+              <td>${i + 1}</td>
+              <td><a href="#/topic/${item.topicId}/${item.id}">${escapeHtml(item.q)}</a></td>
+              <td>${item.topicIcon} ${escapeHtml(item.topicTitle)}</td>
+              <td>${escapeHtml(item.level || "")}</td>
+              <td>${escapeHtml(item.ask || "")}</td>
+              <td>${starred ? "★" : ""}${done ? " ✓" : ""}</td>
+            </tr>`;
+          }).join("") || `<tr><td colspan="6">No problems match.</td></tr>`}
+        </tbody>
+      </table>
+    `;
+    document.getElementById("backHome").addEventListener("click", () => { location.hash = "#/"; });
+    view.querySelectorAll("[data-dsa-topic]").forEach((btn) => {
+      btn.addEventListener("click", () => { window.dsaTopic = btn.dataset.dsaTopic; renderDsaSheet(); });
+    });
+    view.querySelectorAll("[data-dsa-level]").forEach((btn) => {
+      btn.addEventListener("click", () => { window.dsaLevel = btn.dataset.dsaLevel; renderDsaSheet(); });
+    });
+    view.querySelectorAll("[data-dsa-bag]").forEach((btn) => {
+      btn.addEventListener("click", () => { window.dsaBag = btn.dataset.dsaBag; renderDsaSheet(); });
+    });
+    view.querySelectorAll("[data-dsa-co]").forEach((btn) => {
+      btn.addEventListener("click", () => { window.dsaCompany = btn.dataset.dsaCo; renderDsaSheet(); });
+    });
+    document.getElementById("sheetRandom")?.addEventListener("click", () => {
+      if (!list.length) return;
+      const p = list[Math.floor(Math.random() * list.length)];
+      goProblem(p.topicId, p.id);
+    });
   };
 
   const renderTopics = (filter = "") => {
@@ -264,7 +455,7 @@
     document.getElementById("backHome").addEventListener("click", () => { location.hash = "#/"; });
   };
 
-  const renderTopic = (id) => {
+  const renderTopic = (id, openQid) => {
     const meta = topicById(id);
     const data = pack(id);
     if (!data) {
@@ -274,7 +465,10 @@
 
     const tab = window.topicTab || (data.kind === "dsa" ? "questions" : "examples");
     const level = window.topicLevel || "all";
+    const companyF = window.topicCompany || "all";
+    const bagF = window.topicBag || "all";
     const query = (window.topicQuery || "").toLowerCase();
+    const stars = starSet(id);
     const done = doneSet(id);
     const p = progressFor(id);
     const notes = data.notes || [];
@@ -282,12 +476,16 @@
     const allQuestions = data.questions || [];
     const questions = allQuestions.filter((item) => {
       const matchLevel = level === "all" || item.level === level;
+      const matchC = companyF === "all" || companyList(item.ask).some((c) => c.toLowerCase() === companyF.toLowerCase());
+      const isDone = done.has(item.id);
+      const isStar = stars.has(item.id);
+      const matchB = bagF === "all" || (bagF === "done" && isDone) || (bagF === "todo" && !isDone) || (bagF === "starred" && isStar);
       const solText = (item.solutions || []).map((s) => {
         const langs = s.codes ? Object.values(s.codes).join(" ") : "";
         return `${s.name} ${s.why} ${s.code || ""} ${langs}`;
       }).join(" ");
       const hay = `${item.q} ${item.a} ${item.code || ""} ${item.ask || ""} ${solText}`.toLowerCase();
-      return matchLevel && (!query || hay.includes(query));
+      return matchLevel && matchC && matchB && (!query || hay.includes(query));
     });
 
     const lang = getLang();
@@ -363,30 +561,59 @@
           ${["all", "beginner", "intermediate", "advanced"].map((lv) =>
             `<button class="level-btn ${level === lv ? "active" : ""}" data-level="${lv}">${lv}</button>`
           ).join("")}
+          ${["all", "todo", "done", "starred"].map((b) =>
+            `<button class="level-btn ${bagF === b ? "active" : ""}" data-bag="${b}">${b}</button>`
+          ).join("")}
+          <button class="tab" type="button" id="topicRandom">Random</button>
         </div>
+        ${data.kind === "dsa" ? `
+        <div class="filters">
+          <button class="chip ${companyF === "all" ? "active" : ""}" data-co="all">All companies</button>
+          ${COMPANIES.map((c) => `<button class="chip ${companyF === c ? "active" : ""}" data-co="${c}">${c}</button>`).join("")}
+        </div>` : ""}
         ${data.kind === "dsa" || allQuestions.some((q) => q.solutions) ? langBar(lang) : ""}
         <section class="qa">
           ${questions.map((item) => `
-            <article class="item ${done.has(item.id) ? "done" : ""}" data-qid="${item.id}">
-              <button class="q-row" type="button">
-                <span class="num">${item.id}</span>
-                <span>
-                  ${escapeHtml(item.q)}
-                  ${item.ask ? `<small class="ask">${escapeHtml(item.ask)}</small>` : ""}
-                  ${item.links && item.links.length ? `<small class="ask-links">${item.links.map((l) => escapeHtml(l.name)).join(" · ")}</small>` : ""}
-                </span>
-                <span class="level">${item.level}</span>
-              </button>
+            <article class="item ${done.has(item.id) ? "done" : ""} ${stars.has(item.id) ? "starred" : ""}" data-qid="${item.id}">
+              <div class="q-bar">
+                <button class="star-btn ${stars.has(item.id) ? "on" : ""}" type="button" data-star title="Save for revision">★</button>
+                <button class="q-row" type="button">
+                  <span class="num">${item.id}</span>
+                  <span>
+                    ${escapeHtml(item.q)}
+                    ${item.ask ? `<small class="ask">${escapeHtml(item.ask)}</small>` : ""}
+                    ${item.links && item.links.length ? `<small class="ask-links">${item.links.map((l) => escapeHtml(l.name)).join(" · ")}</small>` : ""}
+                  </span>
+                  <span class="level">${item.level}</span>
+                </button>
+              </div>
               <div class="answer-wrap">
                 ${item.links && item.links.length ? `
                   <p class="answer-label">Solve on</p>
                   <p class="plink-row">
                     ${item.links.map((l) => `<a class="plink" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.name)} ↗</a>`).join("")}
                   </p>` : ""}
+                ${item.solutions && item.solutions.length ? `
+                  <p class="answer-label">Complexity</p>
+                  <table class="cx-table">
+                    <tr><th>Method</th><th>Time</th><th>Space</th></tr>
+                    ${item.solutions.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.time || "")}</td><td>${escapeHtml(s.space || "")}</td></tr>`).join("")}
+                  </table>` : ""}
                 <p class="answer-label">Explanation</p>
                 <p class="answer">${escapeHtml(item.a)}</p>
-                ${renderSolutions(item)}
-                <button class="done-btn" type="button">${done.has(item.id) ? "Marked done · undo" : "Mark as done"}</button>
+                <div class="q-tools">
+                  ${item.solutions ? `<button class="tab" type="button" data-reveal>Show solutions</button>` : ""}
+                  <button class="tab" type="button" data-timer>20 min timer</button>
+                  <span class="timer-chip" data-timer-view hidden>20:00</span>
+                </div>
+                <div class="sol-spoiler">${renderSolutions(item)}</div>
+                <label class="answer-label" for="note-${item.id}">My notes</label>
+                <textarea class="self-note" id="note-${item.id}" data-note placeholder="Your approach, a bug you hit, or a follow-up…">${escapeHtml(getNote(id, item.id))}</textarea>
+                <div class="q-tools">
+                  <button class="done-btn" type="button">${done.has(item.id) ? "Marked done · undo" : "Mark as done"}</button>
+                  <button class="tab" type="button" data-prev>Previous</button>
+                  <button class="tab" type="button" data-next>Next</button>
+                </div>
               </div>
             </article>`).join("") || `<p class="empty">No questions match this filter.</p>`}
         </section>`}
@@ -396,20 +623,30 @@
       location.hash = window.lastCareer ? `#/career/${window.lastCareer}` : "#/";
     });
     view.querySelectorAll("[data-tab]").forEach((btn) => {
-      btn.addEventListener("click", () => { window.topicTab = btn.dataset.tab; renderTopic(id); });
+      btn.addEventListener("click", () => { window.topicTab = btn.dataset.tab; renderTopic(id, openQid); });
     });
     const qSearch = document.getElementById("qSearch");
     if (qSearch) {
-      qSearch.addEventListener("input", (e) => { window.topicQuery = e.target.value; renderTopic(id); qSearch.focus(); qSearch.setSelectionRange(e.target.value.length, e.target.value.length); });
+      qSearch.addEventListener("input", (e) => { window.topicQuery = e.target.value; renderTopic(id, openQid); qSearch.focus(); qSearch.setSelectionRange(e.target.value.length, e.target.value.length); });
     }
     view.querySelectorAll("[data-level]").forEach((btn) => {
-      btn.addEventListener("click", () => { window.topicLevel = btn.dataset.level; renderTopic(id); });
+      btn.addEventListener("click", () => { window.topicLevel = btn.dataset.level; renderTopic(id, openQid); });
+    });
+    view.querySelectorAll("[data-bag]").forEach((btn) => {
+      btn.addEventListener("click", () => { window.topicBag = btn.dataset.bag; renderTopic(id, openQid); });
+    });
+    view.querySelectorAll("[data-co]").forEach((btn) => {
+      btn.addEventListener("click", () => { window.topicCompany = btn.dataset.co; renderTopic(id, openQid); });
+    });
+    document.getElementById("topicRandom")?.addEventListener("click", () => {
+      const p = randomProblem(id);
+      if (p) goProblem(id, p.id);
     });
     view.querySelectorAll("[data-lang]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const open = [...view.querySelectorAll(".item.open")].map((el) => el.dataset.qid);
         setLang(btn.dataset.lang);
-        renderTopic(id);
+        renderTopic(id, openQid);
         open.forEach((qid) => view.querySelector(`.item[data-qid="${qid}"]`)?.classList.add("open"));
       });
     });
@@ -420,9 +657,68 @@
       btn.addEventListener("click", (e) => {
         const qid = Number(e.target.closest(".item").dataset.qid);
         toggleDone(id, qid);
-        renderTopic(id);
+        renderTopic(id, String(qid));
       });
     });
+    view.querySelectorAll("[data-star]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const qid = Number(e.target.closest(".item").dataset.qid);
+        toggleStar(id, qid);
+        renderTopic(id, String(qid));
+        view.querySelector(`.item[data-qid="${qid}"]`)?.classList.add("open");
+      });
+    });
+    view.querySelectorAll("[data-reveal]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const box = btn.closest(".answer-wrap").querySelector(".sol-spoiler");
+        const open = box.classList.toggle("open");
+        btn.textContent = open ? "Hide solutions" : "Show solutions";
+      });
+    });
+    view.querySelectorAll("[data-timer]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const chip = btn.parentElement.querySelector("[data-timer-view]");
+        chip.hidden = false;
+        if (chip.dataset.running === "1") return;
+        chip.dataset.running = "1";
+        let left = 20 * 60;
+        const tick = () => {
+          const m = Math.floor(left / 60);
+          const s = left % 60;
+          chip.textContent = `${m}:${String(s).padStart(2, "0")}`;
+          if (left-- <= 0) {
+            clearInterval(chip._tid);
+            chip.textContent = "Time up — write brute first";
+            chip.dataset.running = "0";
+          }
+        };
+        tick();
+        chip._tid = setInterval(tick, 1000);
+      });
+    });
+    view.querySelectorAll("[data-note]").forEach((area) => {
+      area.addEventListener("change", () => {
+        saveNote(id, Number(area.closest(".item").dataset.qid), area.value);
+      });
+    });
+    view.querySelectorAll("[data-prev], [data-next]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const qid = Number(btn.closest(".item").dataset.qid);
+        const ids = allQuestions.map((q) => q.id);
+        const i = ids.indexOf(qid);
+        const next = btn.hasAttribute("data-next") ? ids[i + 1] : ids[i - 1];
+        if (next) goProblem(id, next);
+      });
+    });
+    const focusId = openQid || (location.hash.split("/")[3] || "");
+    if (focusId) {
+      const el = view.querySelector(`.item[data-qid="${focusId}"]`);
+      if (el) {
+        el.classList.add("open");
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
     view.querySelectorAll("[data-ex]").forEach((btn) => {
       btn.addEventListener("click", async () => {
           const ex = examples[Number(btn.dataset.ex)];
@@ -457,8 +753,9 @@
     if (hash.startsWith("#/topic/")) {
       window.topicQuery = searchInput.value;
       renderTopic(hash.split("/")[2]);
-    } else if (hash.startsWith("#/career/")) renderCareer(hash.split("/")[2]);
+    }     else if (hash.startsWith("#/career/")) renderCareer(hash.split("/")[2]);
     else if (hash.startsWith("#/topics")) renderTopics(searchInput.value);
+    else if (hash.startsWith("#/dsa")) renderDsaSheet();
     else renderHome(searchInput.value);
   });
 
@@ -466,6 +763,8 @@
     window.topicTab = undefined;
     window.topicQuery = "";
     window.topicLevel = "all";
+    window.topicCompany = "all";
+    window.topicBag = "all";
     route();
   });
 
