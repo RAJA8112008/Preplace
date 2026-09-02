@@ -35,8 +35,261 @@
     return "";
   };
 
+  const commentMark = (lang) => (lang === "python" ? "#" : "//");
+
+  const stripTrailComment = (text, lang) => {
+    const t = String(text || "");
+    if (lang === "python") return t.replace(/\s+#.*$/, "").trim();
+    return t.replace(/\s+\/\/.*$/, "").trim();
+  };
+
+  const isNoiseCodeLine = (t, lang) => {
+    const s = t.trim();
+    if (!s) return true;
+    if (s === "{" || s === "}" || s === "};" || s === "});" || s === "},") return true;
+    if (/^(public|private|protected):$/.test(s)) return true;
+    if (s === "@Override" || s === "from __future__ import annotations") return true;
+    if (/^(#include|using namespace|import |from |package )/.test(s)) return true;
+    if (/^class (ListNode|TreeNode|Node)\b/.test(s)) return true;
+    if (/^struct (ListNode|TreeNode|Node)\b/.test(s)) return true;
+    if (/^(int val;|ListNode \*?next|TreeNode \*?(left|right)|Node \*?(next|prev))/.test(s)) return true;
+    if (lang === "python") return s.startsWith("#");
+    return s.startsWith("//") || s.startsWith("/*") || s.startsWith("*") || s.startsWith("*/");
+  };
+
+  const explainDsaLine = (raw, lang) => {
+    const s = stripTrailComment(raw, lang).replace(/;$/, "");
+    if (!s) return "";
+
+    if (/^class Solution\b/.test(s)) return "leetcode class — put the method you submit inside here";
+    const fn = s.match(/^(?:function|def)\s+(\w+)/) || s.match(/\b(?:public|private|static|ListNode|TreeNode|vector<\w+>|int|string|bool|void|long)\s+(?:\w+\s+)*(\w+)\s*\(/);
+    if (fn && fn[1] && !/^(if|for|while|switch|main|ListNode|TreeNode)$/.test(fn[1])) {
+      return `${fn[1]} — this is the function you submit`;
+    }
+
+    if (/\b(const|let|var|int|size_t)\s+n\b/.test(s) || /\bn\s*=\s*(len\(|.*\.length|.*\.size\(\))/.test(s)) return "n = how many items we have";
+    if (/\b(left|lo|l)\b\s*=\s*0\b/.test(s)) return "left pointer starts at the first index";
+    if (/\b(right|hi|r)\b\s*=\s*(n\s*-\s*1|\w+\.length\s*-\s*1|len\()/.test(s)) return "right pointer starts at the last index";
+    if (/\bslow\b\s*=\s*(head|0)\b/.test(s)) return "slow starts at the beginning (moves 1 step)";
+    if (/\bfast\b\s*=\s*(head|0)\b/.test(s)) return "fast starts at the beginning (moves 2 steps)";
+    if (/\b(prev)\b\s*=\s*(null|None|nullptr|NULL)\b/.test(s)) return "prev is the node behind us (starts empty)";
+    if (/\b(curr|cur|current)\b\s*=\s*head\b/.test(s)) return "curr walks the list from the head";
+    if (/\bnext\b\s*=\s*(curr|cur)(->|\.)next/.test(s)) return "save next node before we break the link";
+    if (/(curr|cur)(->|\.)next\s*=\s*prev/.test(s)) return "reverse this link: point to the previous node";
+    if (/(curr|cur)(->|\.)prev\s*=\s*next/.test(s)) return "doubly list: old next becomes prev";
+    if (/prev\s*=\s*(curr|cur)\b/.test(s)) return "this node is now the previous one";
+    if (/(curr|cur)\s*=\s*next\b/.test(s)) return "walk forward to the saved next node";
+    if (/slow\s*=\s*slow(->|\.)next\b/.test(s)) return "slow takes one step";
+    if (/fast\s*=\s*fast(->|\.)next(->|\.)next/.test(s)) return "fast takes two steps";
+    if (/\bleft\b\s*(\+\+| \+= 1| = left \+ 1)/.test(s)) return "move left pointer forward";
+    if (/\bright\b\s*(--| \-= 1| = right - 1)/.test(s)) return "move right pointer backward";
+
+    if (/new Map|unordered_map|HashMap|dict\(\)/.test(s)) return "hash map: remember a value we already saw";
+    if (/new Set|unordered_set|HashSet|set\(\)/.test(s)) return "set: remember unique values we already saw";
+    if (/\.set\(|\.put\(/.test(s)) return "store this value so we can look it up later";
+    if (/\.has\(|\.containsKey\(|\.get\(/.test(s) && /map|seen|need|freq|index|want/i.test(s)) return "have we already seen the partner we need?";
+
+    if (/for\s*\(.*\bj\b/.test(s) || /for j in/.test(s)) return "second loop: pick a later index j";
+    if (/for\s*\(.*\bk\b/.test(s) || /for k in/.test(s)) return "third loop / walk this window";
+    if (/for\s*\(.*\bi\b/.test(s) || /for i in/.test(s)) return "first loop: pick index i";
+    if (/for\s*\(/.test(s) || /^for /.test(s)) return "walk each item in this collection";
+    if (/while\s*\(.*fast/.test(s)) return "keep going while a two-step is still safe";
+    if (/while\s*\(.*left.*right|while\s*\(.*\bl\b\s*<\s*\br\b/.test(s)) return "two pointers walk toward each other";
+    if (/while\s*\(.*curr|while\s*\(.*cur/.test(s)) return "walk until we run out of nodes";
+    if (/while\s*\(/.test(s)) return "repeat while this condition is still true";
+
+    if (/if\s*\(.*===?\s*target|== target/.test(s)) return "this pair (or value) hits the target";
+    if (/if\s*\(.*null|None|nullptr|NULL/.test(s)) return "stop if this pointer is empty";
+    if (/if\s*\(/.test(s) || /elif |else if/.test(s)) return "only do the next lines when this is true";
+    if (/^else\b/.test(s)) return "the if above was false, so do this instead";
+
+    if (/return \[\]|return \{\}|return null|return nullptr|return None|return 0$|return -1/.test(s)) return "no valid answer — send the empty / fail value";
+    if (/^return\b/.test(s)) return "answer is ready — leave the function";
+
+    if (/Math\.max|\bmax\(/.test(s)) return "keep the bigger of these two values";
+    if (/Math\.min|\bmin\(/.test(s)) return "keep the smaller of these two values";
+    if (/\.sort\(|\bsort\(/.test(s)) return "sort so nearby values sit together";
+    if (/\.push\(|\.append\(|\.add\(/.test(s)) return "add this item to the result";
+    if (/\.pop\(|\.poll\(/.test(s)) return "take one item off the stack / queue";
+    if (/\btemp\b\s*=/.test(s)) return "hold one value so we can swap safely";
+
+    if (/\bdp\[/.test(s) && /=/.test(s)) return "fill this dp cell from smaller answers we already know";
+    if (/(new Array|vector<|memset|fill\().*(dp|memo)|((dp|memo).*(new Array|vector<|memset|fill\())/i.test(s)) return "make the dp table (empty / impossible at first)";
+
+    if (/const |let |var |int |long |bool |string |auto |def /.test(s) && /=/.test(s)) return "name this value so later lines can use it";
+    return "";
+  };
+
+  const annotateDsaCode = (code, lang) => {
+    if (!code) return "";
+    const mark = commentMark(lang);
+    const out = [];
+    for (const line of String(code).split("\n")) {
+      const t = line.trim();
+      if (isNoiseCodeLine(t, lang) || /(?:\/\/|#)\s+\S/.test(t)) {
+        out.push(line);
+        continue;
+      }
+      const meaning = explainDsaLine(t, lang);
+      if (meaning) {
+        const indent = (line.match(/^\s*/) || [""])[0];
+        const tagged = `${indent}${mark} ${meaning}`;
+        const prev = out.length ? out[out.length - 1].trim() : "";
+        if (prev !== tagged.trim()) out.push(tagged);
+      }
+      out.push(line);
+    }
+    return out.join("\n");
+  };
+
+  const paintCode = (src, lang) => {
+    if (!src) return "";
+    const isPy = lang === "python";
+    return String(src).split("\n").map((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return `<span class="code-line"><span class="code-src"> </span></span>`;
+      if (/^(\/\/|#|\/\*|\*)/.test(trimmed) || trimmed.startsWith("*/")) {
+        return `<span class="code-line is-cmt"><span class="code-cmt">${escapeHtml(line)}</span></span>`;
+      }
+      const cut = isPy ? line.indexOf(" #") : line.indexOf(" //");
+      if (cut >= 0) {
+        return `<span class="code-line"><span class="code-src">${escapeHtml(line.slice(0, cut))}</span><span class="code-cmt">${escapeHtml(line.slice(cut))}</span></span>`;
+      }
+      return `<span class="code-line"><span class="code-src">${escapeHtml(line)}</span></span>`;
+    }).join("\n");
+  };
+
+  const dsaSrc = (block, lang) => annotateDsaCode(pickCode(block, lang) || block?.code || "", lang);
+
+  const lcSlugOf = (item) => {
+    const u = (item.links || []).find((l) => /leetcode\.com\/problems\//.test(l.url || ""));
+    return u ? ((u.url.match(/leetcode\.com\/problems\/([^/]+)/) || [])[1] || "") : "";
+  };
+
+  const rajFor = (item) => {
+    const pack = window.RAJ_SOLUTIONS || {};
+    const slug = lcSlugOf(item);
+    if (slug && pack[slug]) return pack[slug];
+    const key = String(item.q || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    return pack[key] || null;
+  };
+
+  const dsaSols = (item) => {
+    const sols = (item.solutions || []).map((s) => Object.assign({}, s));
+    const raj = rajFor(item);
+    const src = raj && (raj.codes?.cpp || raj.codes?.javascript);
+    if (src) {
+      sols.unshift({
+        name: "Raj's C++",
+        time: "accepted",
+        space: "from repo",
+        why: `This is Raj Kumar's accepted file from ${raj.source === "gfg" ? "gfg-solutions" : "Leetcode"} — the comments are how he wrote the steps.`,
+        code: src,
+        codes: { cpp: src },
+        raj: true,
+        repo: raj.repo
+      });
+    }
+    return sols;
+  };
+
+  const dsaLinks = (item) => (item.links || []).slice();
+
+  const prettyLabel = (s) => (s === "all" ? "All" : String(s).charAt(0).toUpperCase() + String(s).slice(1));
+
+  const renderFlow = (steps) => {
+    if (!steps || !steps.length) return "";
+    return `<ol class="flow-row">${steps.map((s, i) => `
+      <li>
+        <span class="flow-box">${escapeHtml(s)}</span>
+        ${i < steps.length - 1 ? `<span class="flow-arrow" aria-hidden="true">→</span>` : ""}
+      </li>`).join("")}</ol>`;
+  };
+
+  const renderLayers = (layers) => {
+    if (!layers || !layers.length) return "";
+    return `<div class="arch" role="img" aria-label="Architecture">${layers.map((row, ri) => `
+      ${ri ? `<div class="arch-join" aria-hidden="true">↓</div>` : ""}
+      <div class="arch-row">${row.map((cell) => {
+        const label = typeof cell === "string" ? cell : cell.label;
+        const tone = typeof cell === "string" ? "" : (cell.tone || "");
+        return `<div class="arch-box ${escapeHtml(tone)}">${escapeHtml(label)}</div>`;
+      }).join("")}</div>`).join("")}</div>`;
+  };
+
+  const renderVisuals = (item) => {
+    if (!item) return "";
+    const parts = [];
+    if (item.layers) parts.push(`<p class="answer-label">Architecture</p>${renderLayers(item.layers)}`);
+    if (item.flow) parts.push(`<p class="answer-label">Request flow</p>${renderFlow(item.flow)}`);
+    return parts.join("");
+  };
+
+  const formalTitle = (q) => {
+    const t = String(q || "").trim().replace(/\?+$/, "");
+    if (!t) return "";
+    if (/^(What|How|Why|When|Which|Who|Where|Explain|Describe|Compare|Name)\b/i.test(t)) return `${t}?`;
+    if (/\svs\.?\s/i.test(t)) {
+      const [left, right] = t.split(/\s+vs\.?\s+/i);
+      return `What is the difference between ${left.trim()} and ${right.trim()}?`;
+    }
+    if (/\s\/\s/.test(t)) return `What are ${t.replace(/\s+\/\s+/g, " and ")}?`;
+    return `What is ${t}?`;
+  };
+
+  const dropCasual = (text) => String(text || "")
+    .split(/(?<=[.!?])\s+/)
+    .filter((s) => {
+      const line = s.trim();
+      if (!line) return false;
+      if (/teaching snippet|not a command list/i.test(line)) return false;
+      if (/^(A|An)\s.+\.$/.test(line) && line.length < 92) return false;
+      if (/\b(post office|waiter|fridge|bouncer|phone book|coat-check|hotel key|nametag|photocopy of a clean|subway map|valet ticket)\b/i.test(line)) return false;
+      return true;
+    })
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const formalAnswerSections = (text) => {
+    const parts = String(text || "").split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+    const labeled = { definition: [], works: [], config: [], risk: [] };
+    for (const part of parts) {
+      const labeledHead = part.match(/^(Definition|How it works|Configuration|Operational risk)\.\s*([\s\S]*)$/i);
+      if (labeledHead) {
+        const key = labeledHead[1].toLowerCase().startsWith("def") ? "definition"
+          : labeledHead[1].toLowerCase().startsWith("how") ? "works"
+          : labeledHead[1].toLowerCase().startsWith("conf") ? "config"
+          : "risk";
+        labeled[key].push(dropCasual(labeledHead[2]));
+        continue;
+      }
+      if (/^In the code:/i.test(part)) labeled.config.push(dropCasual(part.replace(/^In the code:\s*/i, "")));
+      else if (/^A common mistake/i.test(part)) labeled.risk.push(dropCasual(part.replace(/^A common mistake is\s*/i, "A frequent operational error is ")));
+      else if (!labeled.definition.length) labeled.definition.push(dropCasual(part));
+      else labeled.works.push(dropCasual(part));
+    }
+    const rows = [
+      ["Definition", labeled.definition.join(" ")],
+      ["How it works", labeled.works.join(" ")],
+      ["Configuration", labeled.config.join(" ")],
+      ["Operational risk", labeled.risk.join(" ")]
+    ].filter(([, body]) => body);
+    return rows;
+  };
+
+  const renderFormalAnswer = (text) => {
+    const rows = formalAnswerSections(text);
+    if (!rows.length) return `<p class="answer">${escapeHtml(text || "")}</p>`;
+    return `<div class="answer-sections">${rows.map(([title, body]) => `
+      <section class="answer-block">
+        <h4>${escapeHtml(title)}</h4>
+        <p>${escapeHtml(body)}</p>
+      </section>`).join("")}</div>`;
+  };
+
   const langBar = (active) => `
-    <div class="lang-bar" role="tablist" aria-label="Code language">
+    <div class="lang-bar btn-group" role="tablist" aria-label="Code language">
       ${CODE_LANGS.map((l) =>
         `<button class="lang-btn ${l.id === active ? "active" : ""}" type="button" data-lang="${l.id}">${l.label}</button>`
       ).join("")}
@@ -151,19 +404,28 @@
     return h.toString(16);
   };
 
-  const paintAuth = () => {
+  const currentPage = () => {
+    const hash = location.hash.slice(2) || "";
+    return hash.split("/")[0] || "home";
+  };
+
+  const paintChrome = () => {
+    const page = currentPage();
+    document.body.dataset.page = page;
+    document.querySelectorAll("[data-nav]").forEach((a) => {
+      a.classList.toggle("active", a.dataset.nav === page);
+    });
     const bar = document.getElementById("authBar");
     if (!bar) return;
     const user = currentUser();
     bar.innerHTML = user
       ? `<span class="auth-hello">Hi, ${escapeHtml(user.name)}</span>
-         <a class="tab" href="#/contact">Message</a>
-         <button class="tab" type="button" id="logoutBtn">Log out</button>`
-      : `<a class="tab" href="#/login">Log in</a>
-         <a class="tab" href="#/signup">Sign up</a>`;
+         <button class="btn" type="button" id="logoutBtn">Log out</button>`
+      : `<a class="btn btn-ghost${page === "login" ? " active" : ""}" href="#/login">Log in</a>
+         <a class="btn btn-primary${page === "signup" ? " active" : ""}" href="#/signup">Sign up</a>`;
     document.getElementById("logoutBtn")?.addEventListener("click", () => {
       localStorage.removeItem(sessionKey);
-      paintAuth();
+      paintChrome();
       route();
     });
   };
@@ -262,39 +524,49 @@
     const user = currentUser();
     if (user) {
       view.innerHTML = `
-        <article class="auth-card">
-          <a class="back-btn" href="#/">← Home</a>
-          <h1>You are signed in</h1>
-          <p>Hi ${escapeHtml(user.name)}. Progress, stars, notes, and your streak are saved under ${escapeHtml(user.email)} on this device.</p>
-          <p><button class="tab" type="button" id="logoutPageBtn">Log out</button></p>
-        </article>`;
+        <section class="form-page">
+          <div class="page-actions">
+            <a class="btn btn-ghost" href="#/">← Home</a>
+          </div>
+          <article class="auth-card">
+            <h1>You are signed in</h1>
+            <p>Hi ${escapeHtml(user.name)}. Progress, stars, notes, and your streak are saved under ${escapeHtml(user.email)} on this device.</p>
+            <div class="form-actions">
+              <button class="btn btn-primary btn-wide" type="button" id="logoutPageBtn">Log out</button>
+            </div>
+          </article>
+        </section>`;
       document.getElementById("logoutPageBtn")?.addEventListener("click", () => {
         localStorage.removeItem(sessionKey);
-        paintAuth();
+        paintChrome();
         location.hash = "#/login";
       });
       return;
     }
 
     view.innerHTML = `
-      <article class="auth-card">
-        <a class="back-btn" href="#/">← Home</a>
-        <h1>${signup ? "Create your account" : "Log in"}</h1>
-        <p>${signup
-          ? "Sign up so marked questions, stars, notes, and your streak stay with your name. Guest progress on this browser is copied into the new account."
-          : "Log in to open the progress saved under your email on this device."}</p>
-        <form id="authForm" class="auth-form">
-          ${signup ? `<label>Your name<input class="auth-field" name="name" required maxlength="40" autocomplete="name" /></label>` : ""}
-          <label>Email<input class="auth-field" name="email" type="email" required autocomplete="email" /></label>
-          <label>Password<input class="auth-field" name="password" type="password" required minlength="6" autocomplete="${signup ? "new-password" : "current-password"}" /></label>
-          <p class="form-error" id="authError" hidden></p>
-          <button class="tab" type="submit">${signup ? "Sign up and keep my progress" : "Log in"}</button>
-        </form>
-        <p class="auth-switch">${signup
-          ? `Already have an account? <a href="#/login">Log in</a>`
-          : `New here? <a href="#/signup">Sign up</a>`}</p>
-        <p class="auth-note">Accounts stay in this browser. There is no PrepPlace server yet, so use the same device to see your progress.</p>
-      </article>`;
+      <section class="form-page">
+        <div class="page-actions">
+          <a class="btn btn-ghost" href="#/">← Home</a>
+        </div>
+        <article class="auth-card">
+          <h1>${signup ? "Create your account" : "Log in"}</h1>
+          <p>${signup
+            ? "Sign up so marked questions, stars, notes, and your streak stay with your name. Guest progress on this browser is copied into the new account."
+            : "Log in to open the progress saved under your email on this device."}</p>
+          <form id="authForm" class="auth-form">
+            ${signup ? `<label>Your name<input class="auth-field" name="name" required maxlength="40" autocomplete="name" /></label>` : ""}
+            <label>Email<input class="auth-field" name="email" type="email" required autocomplete="email" /></label>
+            <label>Password<input class="auth-field" name="password" type="password" required minlength="6" autocomplete="${signup ? "new-password" : "current-password"}" /></label>
+            <p class="form-error" id="authError" hidden></p>
+            <div class="form-actions">
+              <button class="btn btn-primary btn-wide" type="submit">${signup ? "Sign up and keep my progress" : "Log in"}</button>
+              <a class="btn btn-ghost btn-wide" href="${signup ? "#/login" : "#/signup"}">${signup ? "I already have an account" : "Create an account"}</a>
+            </div>
+          </form>
+          <p class="auth-note">Accounts stay in this browser. There is no PrepPlace server yet, so use the same device to see your progress.</p>
+        </article>
+      </section>`;
 
     document.getElementById("authForm")?.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -351,33 +623,96 @@
     });
   };
 
+  const setContactStatus = (text, kind) => {
+    const el = document.getElementById("contactStatus");
+    if (!el) return;
+    el.hidden = !text;
+    el.textContent = text;
+    el.className = `form-status${kind ? ` ${kind}` : ""}`;
+  };
+
   const renderContact = () => {
     const user = currentUser();
     view.innerHTML = `
-      <article class="auth-card">
-        <a class="back-btn" href="#/">← Home</a>
-        <h1>Message Raj Kumar</h1>
-        <p>Questions, feedback, or help with PrepPlace. This opens your mail app to <a href="mailto:${CONTACT.email}">${CONTACT.email}</a>.</p>
-        <form id="contactForm" class="auth-form">
-          <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
-          <label>Your email<input class="auth-field" name="from" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
-          <label>Message<textarea class="auth-field" name="msg" rows="7" required minlength="8" placeholder="What do you want Raj to know?"></textarea></label>
-          <button class="tab" type="submit">Open email to Raj</button>
-        </form>
-        <p class="auth-note">If your mail app does not open, write directly to <strong>${CONTACT.email}</strong>.</p>
-      </article>`;
+      <section class="form-page">
+        <div class="page-actions">
+          <a class="btn btn-ghost" href="#/">← Home</a>
+        </div>
+        <article class="auth-card">
+          <h1>Message Raj Kumar</h1>
+          <p>Write your note and press <strong>Send message</strong>. It goes to <strong>${CONTACT.email}</strong>.</p>
+          <form id="contactForm" class="auth-form">
+            <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+            <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
+            <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
+            <label>Message<textarea class="auth-field" name="message" rows="7" required minlength="8" placeholder="What do you want Raj to know?"></textarea></label>
+            <p class="form-status" id="contactStatus" hidden></p>
+            <div class="form-actions">
+              <button class="btn btn-primary btn-wide" type="submit" id="contactSend">Send message</button>
+            </div>
+          </form>
+          <p class="auth-note">The first send asks Raj to confirm his inbox once. After that, every message lands in <strong>${CONTACT.email}</strong>.</p>
+        </article>
+      </section>`;
 
-    document.getElementById("contactForm")?.addEventListener("submit", (e) => {
+    const form = document.getElementById("contactForm");
+    const sendBtn = document.getElementById("contactSend");
+    form?.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const fd = new FormData(e.target);
-      const subject = encodeURIComponent(`PrepPlace message from ${fd.get("name")}`);
-      const body = encodeURIComponent(`From: ${fd.get("name")} <${fd.get("from")}>\n\n${fd.get("msg")}`);
-      location.href = `mailto:${CONTACT.email}?subject=${subject}&body=${body}`;
+      const fd = new FormData(form);
+      if (String(fd.get("_gotcha") || "").trim()) return;
+      const name = String(fd.get("name") || "").trim();
+      const email = String(fd.get("email") || "").trim();
+      const message = String(fd.get("message") || "").trim();
+      if (!name || !email || message.length < 8) {
+        setContactStatus("Please add your name, email, and a short message.", "is-error");
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Sending…";
+      setContactStatus("Sending to Raj…", "");
+
+      try {
+        const res = await fetch(`https://formsubmit.co/ajax/${CONTACT.email}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            message,
+            _subject: `PrepPlace message from ${name}`,
+            _template: "table",
+            _captcha: "false"
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        const ok = res.ok && data.success !== false && data.success !== "false";
+        if (!ok) throw new Error(data.message || "Send failed");
+        form.reset();
+        if (user) {
+          form.elements.name.value = user.name || "";
+          form.elements.email.value = user.email || "";
+        }
+        setContactStatus(`Sent. Raj will see this at ${CONTACT.email}.`, "is-ok");
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Send another";
+      } catch {
+        setContactStatus(`Could not send from this browser. Write Raj at ${CONTACT.email}.`, "is-error");
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Send message";
+        const subject = encodeURIComponent(`PrepPlace message from ${name}`);
+        const body = encodeURIComponent(`From: ${name} <${email}>\n\n${message}`);
+        window.open(`mailto:${CONTACT.email}?subject=${subject}&body=${body}`, "_blank");
+      }
     });
   };
 
   const route = () => {
-    paintAuth();
+    paintChrome();
     const hash = location.hash.slice(2) || "";
     const [page, id, extra] = hash.split("/");
     if (page === "topic" && id && topicById(id)) renderTopic(id, extra);
@@ -400,7 +735,7 @@
         </div>
         <h2>${t.title}</h2>
         <p>${t.blurb}</p>
-        <p>${(pack(t.id)?.examples || []).length} code examples · ${p.done}/${p.total} done</p>
+        <p>${(pack(t.id)?.examples || []).length} ${(pack(t.id)?.kind === "design" ? "workflows" : "code examples")} · ${p.done}/${p.total} done</p>
         <div class="progress"><span style="width:${p.pct}%"></span></div>
       </a>`;
   };
@@ -446,9 +781,9 @@
           <h3>Today's problem</h3>
           <p>${daily ? `${daily.topicIcon} ${escapeHtml(daily.q)} · ${escapeHtml(daily.topicTitle)} · ${escapeHtml(daily.level || "")}` : "DSA topics are still loading."}</p>
           <div class="quick-actions">
-            ${daily ? `<button class="tab" type="button" id="openDaily">Open</button>` : ""}
-            <button class="tab" type="button" id="openRandom">Random problem</button>
-            <a class="tab" href="#/dsa">Full problem sheet</a>
+            ${daily ? `<button class="btn btn-primary" type="button" id="openDaily">Open today's problem</button>` : ""}
+            <button class="btn" type="button" id="openRandom">Random problem</button>
+            <a class="btn btn-ghost" href="#/dsa">Full problem sheet</a>
           </div>
         </article>
         <article class="quick-card">
@@ -518,24 +853,45 @@
           <span>${readStreak().count} day streak</span>
         </div>
       </section>
-      <div class="filters">
-        <button class="chip ${topicF === "all" ? "active" : ""}" data-dsa-topic="all">All topics</button>
-        ${dsaTopics().map((t) => `<button class="chip ${topicF === t.id ? "active" : ""}" data-dsa-topic="${t.id}">${t.title}</button>`).join("")}
-      </div>
-      <div class="filters">
-        ${["all", "beginner", "intermediate", "advanced"].map((lv) =>
-          `<button class="level-btn ${levelF === lv ? "active" : ""}" data-dsa-level="${lv}">${lv}</button>`
-        ).join("")}
-        ${["all", "todo", "done", "starred"].map((b) =>
-          `<button class="level-btn ${bagF === b ? "active" : ""}" data-dsa-bag="${b}">${b}</button>`
-        ).join("")}
-      </div>
-      <div class="filters">
-        <button class="chip ${companyF === "all" ? "active" : ""}" data-dsa-co="all">All companies</button>
-        ${COMPANIES.map((c) => `<button class="chip ${companyF === c ? "active" : ""}" data-dsa-co="${c}">${c}</button>`).join("")}
-      </div>
-      <div class="quick-actions" style="margin:0 0 14px">
-        <button class="tab" type="button" id="sheetRandom">Random from this list</button>
+      <div class="control-board">
+        <div class="control-top">
+          <span class="result-count">${list.length} problems</span>
+          <div class="control-top-actions">
+            <button class="btn btn-primary" type="button" id="sheetRandom">Random from list</button>
+          </div>
+        </div>
+        <div class="control-block">
+          <span class="filter-label">Topic</span>
+          <div class="btn-group">
+            <button class="chip ${topicF === "all" ? "active" : ""}" data-dsa-topic="all">All topics</button>
+            ${dsaTopics().map((t) => `<button class="chip ${topicF === t.id ? "active" : ""}" data-dsa-topic="${t.id}">${t.title}</button>`).join("")}
+          </div>
+        </div>
+        <div class="control-grid">
+          <div class="control-block">
+            <span class="filter-label">Level</span>
+            <div class="btn-group">
+              ${["all", "beginner", "intermediate", "advanced"].map((lv) =>
+                `<button class="level-btn ${levelF === lv ? "active" : ""}" data-dsa-level="${lv}">${prettyLabel(lv)}</button>`
+              ).join("")}
+            </div>
+          </div>
+          <div class="control-block">
+            <span class="filter-label">Status</span>
+            <div class="btn-group">
+              ${["all", "todo", "done", "starred"].map((b) =>
+                `<button class="level-btn ${bagF === b ? "active" : ""}" data-dsa-bag="${b}">${prettyLabel(b)}</button>`
+              ).join("")}
+            </div>
+          </div>
+        </div>
+        <div class="control-block">
+          <span class="filter-label">Company</span>
+          <div class="btn-group">
+            <button class="chip ${companyF === "all" ? "active" : ""}" data-dsa-co="all">All companies</button>
+            ${COMPANIES.map((c) => `<button class="chip ${companyF === c ? "active" : ""}" data-dsa-co="${c}">${c}</button>`).join("")}
+          </div>
+        </div>
       </div>
       <table class="sheet-table">
         <thead>
@@ -593,8 +949,13 @@
         <h1>All subjects</h1>
         <p class="example-intro">Open any subject. DSA topics include brute, optimal, and more optimal solutions — the ones MAANG / FAANG ask most.</p>
       </section>
-      <div class="filters">
-        ${categories.map((c) => `<button class="chip ${c === activeCat ? "active" : ""}" data-cat="${c}">${c}</button>`).join("")}
+      <div class="control-board">
+        <div class="control-block">
+          <span class="filter-label">Category</span>
+          <div class="btn-group">
+            ${categories.map((c) => `<button class="chip ${c === activeCat ? "active" : ""}" data-cat="${c}">${c}</button>`).join("")}
+          </div>
+        </div>
       </div>
       <section class="grid">
         ${topics.map(topicCard).join("") || `<p class="empty">No subjects match that search.</p>`}
@@ -675,7 +1036,7 @@
       return;
     }
 
-    const tab = window.topicTab || (data.kind === "dsa" ? "questions" : "examples");
+    const tab = window.topicTab || (data.kind === "dsa" ? "questions" : data.kind === "design" ? "notes" : "examples");
     const level = window.topicLevel || "all";
     const companyF = window.topicCompany || "all";
     const bagF = window.topicBag || "all";
@@ -704,29 +1065,33 @@
     const langLabel = CODE_LANGS.find((l) => l.id === lang)?.label || lang;
 
     const renderSolutions = (item) => {
-      if (item.solutions && item.solutions.length) {
+      const sols = data.kind === "dsa" ? dsaSols(item) : (item.solutions || []);
+      if (sols && sols.length) {
         return `
           <div class="sol-tabs">
-            ${item.solutions.map((s, i) => `<button class="sol-tab ${i === 0 ? "active" : ""}" type="button" data-sol="${i}">${escapeHtml(s.name)}</button>`).join("")}
+            ${sols.map((s, i) => `<button class="sol-tab ${i === 0 ? "active" : ""}" type="button" data-sol="${i}">${escapeHtml(s.name)}</button>`).join("")}
           </div>
-          ${item.solutions.map((s, i) => {
-            const src = pickCode(s, lang);
+          ${sols.map((s, i) => {
+            const isRaj = s.raj || s.name === "Raj's C++";
+            const useLang = isRaj ? "cpp" : lang;
+            const raw = isRaj ? (s.codes?.cpp || s.code || "") : (pickCode(s, lang) || s.code || "");
+            const src = data.kind === "dsa" ? annotateDsaCode(raw, useLang) : raw;
             return `
             <div class="sol-panel ${i === 0 ? "open" : ""}" data-sol-panel="${i}">
-              <p class="sol-meta"><span>Time ${escapeHtml(s.time || "")}</span><span>Space ${escapeHtml(s.space || "")}</span><span>${escapeHtml(langLabel)}</span></p>
+              <p class="sol-meta"><span>Time ${escapeHtml(s.time || "")}</span><span>Space ${escapeHtml(s.space || "")}</span><span>${escapeHtml(isRaj ? "C++ · repo" : langLabel)}</span>${data.kind === "dsa" ? `<span>simple words on each line</span>` : ""}</p>
               <p class="teach-body">${escapeHtml(s.why || "")}</p>
               ${src
                 ? `<div class="code-wrap">
                 <button class="copy-btn" type="button" data-sol-copy="${i}">Copy</button>
-                <pre><code>${escapeHtml(src)}</code></pre>
+                <pre class="dsa-pre"><code>${data.kind === "dsa" ? paintCode(src, useLang) : escapeHtml(src)}</code></pre>
               </div>`
                 : `<p class="empty">This solution is not in ${escapeHtml(langLabel)} yet. Pick JavaScript or another language.</p>`}
             </div>`;
           }).join("")}`;
       }
-      const single = pickCode(item, lang) || item.code;
+      const single = data.kind === "dsa" ? dsaSrc(item, lang) : (pickCode(item, lang) || item.code);
       if (!single) return "";
-      return `<p class="answer-label">Code · ${escapeHtml(langLabel)}</p><div class="code-wrap"><pre><code>${escapeHtml(single)}</code></pre></div>`;
+      return `<p class="answer-label">Code · ${escapeHtml(langLabel)}</p><div class="code-wrap"><pre class="dsa-pre"><code>${data.kind === "dsa" ? paintCode(single, lang) : escapeHtml(single)}</code></pre></div>`;
     };
 
     view.innerHTML = `
@@ -739,71 +1104,104 @@
         </div>
         <div class="progress"><span style="width:${p.pct}%"></span></div>
       </section>
-      <div class="tabs">
-        <button class="tab ${tab === "examples" ? "active" : ""}" data-tab="examples">Easy code</button>
+      <div class="tabs" role="tablist">
+        <button class="tab ${tab === "examples" ? "active" : ""}" data-tab="examples">${data.kind === "design" ? "Workflows" : "Easy code"}</button>
         <button class="tab ${tab === "notes" ? "active" : ""}" data-tab="notes">Notes</button>
         <button class="tab ${tab === "questions" ? "active" : ""}" data-tab="questions">${allQuestions.length} questions</button>
       </div>
       ${tab === "notes" ? `
-        <section class="note-grid">
-          ${notes.map((n) => `<article class="note"><h3>${escapeHtml(n.title)}</h3><p>${escapeHtml(n.body)}</p></article>`).join("")}
+        <section class="${data.kind === "design" ? "design-stack" : "note-grid"}">
+          ${notes.map((n) => `<article class="note${data.kind === "design" ? " note-wide" : ""}"><h3>${escapeHtml(n.title)}</h3>${renderVisuals(n)}<p>${escapeHtml(n.body)}</p></article>`).join("")}
         </section>` : tab === "examples" ? `
         ${data.kind === "dsa" ? langBar(lang) : ""}
-        <p class="example-intro">Read the explanation first, then the code. DSA topics can switch JavaScript, Python, Java, C++, or C.</p>
+        <p class="example-intro">${data.kind === "design"
+          ? "Each card is a complete design: architecture diagram, request flow, and the points you should state in an interview."
+          : data.kind === "dsa"
+            ? "Read the explanation first, then the code. Each line is commented the way Raj writes it on LeetCode. Switch JavaScript, Python, Java, C++, or C."
+            : "Read the explanation first, then the code. DSA topics can switch JavaScript, Python, Java, C++, or C."}</p>
         <section class="example-list">
           ${examples.map((ex, i) => `
             <article class="example">
               <div class="example-head">
                 <h3>${escapeHtml(ex.title)}</h3>
-                <span class="badge">${escapeHtml(data.kind === "dsa" ? langLabel : (ex.lang || "code"))}</span>
+                <span class="badge">${escapeHtml(data.kind === "dsa" ? langLabel : data.kind === "design" ? "workflow" : (ex.lang || "code"))}</span>
               </div>
+              ${renderVisuals(ex)}
               <div class="teach">
-                <p class="answer-label">Explanation</p>
+                <p class="answer-label">${data.kind === "design" ? "Design notes" : "Explanation"}</p>
                 <p class="teach-body">${escapeHtml(ex.desc || "")}</p>
               </div>
-              <p class="answer-label code-label">Code</p>
+              ${pickCode(ex, data.kind === "dsa" ? lang : "javascript") || ex.code ? `
+              <p class="answer-label code-label">${data.kind === "design" ? "Interface sketch" : "Code"}</p>
               <div class="code-wrap">
                 <button class="copy-btn" type="button" data-ex="${i}">Copy</button>
-                <pre><code>${escapeHtml(pickCode(ex, data.kind === "dsa" ? lang : "javascript") || ex.code || "")}</code></pre>
-              </div>
-            </article>`).join("") || `<p class="empty">No code examples yet.</p>`}
+                <pre class="${data.kind === "dsa" ? "dsa-pre" : ""}"><code>${data.kind === "dsa" ? paintCode(dsaSrc(ex, lang), lang) : escapeHtml(pickCode(ex, "javascript") || ex.code || "")}</code></pre>
+              </div>` : ""}
+            </article>`).join("") || `<p class="empty">${data.kind === "design" ? "No workflows yet." : "No code examples yet."}</p>`}
         </section>` : `
-        <div class="toolbar">
-          <input class="field" id="qSearch" type="search" placeholder="Filter questions…" value="${escapeHtml(window.topicQuery || "")}" />
-          ${["all", "beginner", "intermediate", "advanced"].map((lv) =>
-            `<button class="level-btn ${level === lv ? "active" : ""}" data-level="${lv}">${lv}</button>`
-          ).join("")}
-          ${["all", "todo", "done", "starred"].map((b) =>
-            `<button class="level-btn ${bagF === b ? "active" : ""}" data-bag="${b}">${b}</button>`
-          ).join("")}
-          <button class="tab" type="button" id="topicRandom">Random</button>
+        <div class="control-board">
+          <div class="control-top">
+            <input class="field board-search" id="qSearch" type="search" placeholder="Filter questions…" value="${escapeHtml(window.topicQuery || "")}" />
+            <div class="control-top-actions">
+              <span class="result-count">${questions.length} shown</span>
+              <button class="btn btn-primary" type="button" id="topicRandom">Random</button>
+            </div>
+          </div>
+          <div class="control-grid">
+            <div class="control-block">
+              <span class="filter-label">Level</span>
+              <div class="btn-group">
+                ${["all", "beginner", "intermediate", "advanced"].map((lv) =>
+                  `<button class="level-btn ${level === lv ? "active" : ""}" data-level="${lv}">${prettyLabel(lv)}</button>`
+                ).join("")}
+              </div>
+            </div>
+            <div class="control-block">
+              <span class="filter-label">Status</span>
+              <div class="btn-group">
+                ${["all", "todo", "done", "starred"].map((b) =>
+                  `<button class="level-btn ${bagF === b ? "active" : ""}" data-bag="${b}">${prettyLabel(b)}</button>`
+                ).join("")}
+              </div>
+            </div>
+          </div>
+          ${data.kind === "dsa" ? `
+          <div class="control-block">
+            <span class="filter-label">Company</span>
+            <div class="btn-group">
+              <button class="chip ${companyF === "all" ? "active" : ""}" data-co="all">All companies</button>
+              ${COMPANIES.map((c) => `<button class="chip ${companyF === c ? "active" : ""}" data-co="${c}">${c}</button>`).join("")}
+            </div>
+          </div>` : ""}
+          ${data.kind === "dsa" || allQuestions.some((q) => q.solutions) ? `
+          <div class="control-block">
+            <span class="filter-label">Language</span>
+            ${langBar(lang)}
+          </div>` : ""}
         </div>
-        ${data.kind === "dsa" ? `
-        <div class="filters">
-          <button class="chip ${companyF === "all" ? "active" : ""}" data-co="all">All companies</button>
-          ${COMPANIES.map((c) => `<button class="chip ${companyF === c ? "active" : ""}" data-co="${c}">${c}</button>`).join("")}
-        </div>` : ""}
-        ${data.kind === "dsa" || allQuestions.some((q) => q.solutions) ? langBar(lang) : ""}
         <section class="qa">
           ${questions.map((item) => `
             <article class="item ${done.has(item.id) ? "done" : ""} ${stars.has(item.id) ? "starred" : ""}" data-qid="${item.id}">
               <div class="q-bar">
                 <button class="star-btn ${stars.has(item.id) ? "on" : ""}" type="button" data-star title="Save for revision">★</button>
                 <button class="q-row" type="button">
-                  <span class="num">${item.id}</span>
-                  <span>
-                    ${escapeHtml(item.q)}
-                    ${item.ask ? `<small class="ask">${escapeHtml(item.ask)}</small>` : ""}
-                    ${item.links && item.links.length ? `<small class="ask-links">${item.links.map((l) => escapeHtml(l.name)).join(" · ")}</small>` : ""}
+                  <span class="num">${String(item.id).padStart(2, "0")}</span>
+                  <span class="q-main">
+                    <span class="q-title">${escapeHtml(data.kind === "dsa" ? item.q : formalTitle(item.q))}</span>
+                    <span class="q-meta">
+                      ${(item.ask ? companyList(item.ask) : []).map((c) => `<span class="meta-chip">${escapeHtml(c)}</span>`).join("")}
+                      ${data.kind === "dsa" && rajFor(item) ? `<span class="meta-chip src">Raj's C++</span>` : ""}
+                      ${(data.kind === "dsa" ? dsaLinks(item) : (item.links || [])).map((l) => `<span class="meta-chip src">${escapeHtml(l.name)}</span>`).join("")}
+                    </span>
                   </span>
-                  <span class="level">${item.level}</span>
+                  <span class="level lv-${item.level || "all"}">${prettyLabel(item.level || "")}</span>
                 </button>
               </div>
               <div class="answer-wrap">
-                ${item.links && item.links.length ? `
+                ${(data.kind === "dsa" ? dsaLinks(item) : (item.links || [])).length ? `
                   <p class="answer-label">Solve on</p>
                   <p class="plink-row">
-                    ${item.links.map((l) => `<a class="plink" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.name)} ↗</a>`).join("")}
+                    ${(data.kind === "dsa" ? dsaLinks(item) : item.links).map((l) => `<a class="plink" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.name)} ↗</a>`).join("")}
                   </p>` : ""}
                 ${item.solutions && item.solutions.length ? `
                   <p class="answer-label">Complexity</p>
@@ -811,11 +1209,17 @@
                     <tr><th>Method</th><th>Time</th><th>Space</th></tr>
                     ${item.solutions.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.time || "")}</td><td>${escapeHtml(s.space || "")}</td></tr>`).join("")}
                   </table>` : ""}
-                <p class="answer-label">Explanation</p>
-                <p class="answer">${escapeHtml(item.a)}</p>
+                <p class="answer-label">${data.kind === "dsa" ? "Explanation" : "Technical note"}</p>
+                ${data.kind === "dsa" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderFormalAnswer(item.a)}
+                ${renderVisuals(item)}
+                ${data.kind !== "dsa" && item.code ? `
+                  <p class="answer-label">Reference configuration</p>
+                  <div class="code-wrap">
+                    <pre><code>${escapeHtml(item.code)}</code></pre>
+                  </div>` : ""}
                 <div class="q-tools">
-                  ${item.solutions ? `<button class="tab" type="button" data-reveal>Show solutions</button>` : ""}
-                  <button class="tab" type="button" data-timer>20 min timer</button>
+                  ${item.solutions ? `<button class="btn btn-primary" type="button" data-reveal>Show solutions</button>` : ""}
+                  <button class="btn" type="button" data-timer>20 min timer</button>
                   <span class="timer-chip" data-timer-view hidden>20:00</span>
                 </div>
                 <div class="sol-spoiler">${renderSolutions(item)}</div>
@@ -823,8 +1227,8 @@
                 <textarea class="self-note" id="note-${item.id}" data-note placeholder="Your approach, a bug you hit, or a follow-up…">${escapeHtml(getNote(id, item.id))}</textarea>
                 <div class="q-tools">
                   <button class="done-btn" type="button">${done.has(item.id) ? "Marked done · undo" : "Mark as done"}</button>
-                  <button class="tab" type="button" data-prev>Previous</button>
-                  <button class="tab" type="button" data-next>Next</button>
+                  <button class="btn" type="button" data-prev>Previous</button>
+                  <button class="btn" type="button" data-next>Next</button>
                 </div>
               </div>
             </article>`).join("") || `<p class="empty">No questions match this filter.</p>`}
@@ -934,7 +1338,8 @@
     view.querySelectorAll("[data-ex]").forEach((btn) => {
       btn.addEventListener("click", async () => {
           const ex = examples[Number(btn.dataset.ex)];
-          const code = pickCode(ex, data.kind === "dsa" ? getLang() : "javascript") || ex?.code || "";
+          const raw = pickCode(ex, data.kind === "dsa" ? getLang() : "javascript") || ex?.code || "";
+          const code = data.kind === "dsa" ? annotateDsaCode(raw, getLang()) : raw;
           await copyText(code, btn);
       });
     });
@@ -952,8 +1357,11 @@
         btn.addEventListener("click", async () => {
           const qid = Number(itemEl.dataset.qid);
           const item = allQuestions.find((q) => q.id === qid);
-          const sol = item?.solutions?.[Number(btn.dataset.solCopy)];
-          const code = pickCode(sol, getLang()) || sol?.code || "";
+          const sols = data.kind === "dsa" ? dsaSols(item) : item?.solutions;
+          const sol = sols?.[Number(btn.dataset.solCopy)];
+          const useLang = sol?.raj ? "cpp" : getLang();
+          const raw = sol?.raj ? (sol.codes?.cpp || sol.code || "") : (pickCode(sol, useLang) || sol?.code || "");
+          const code = data.kind === "dsa" ? annotateDsaCode(raw, useLang) : raw;
           await copyText(code, btn);
         });
       });

@@ -25,7 +25,13 @@ window.PREP_TOPICS = [
   { id: "dsa-trie", title: "Tries", category: "DSA / Interview", icon: "🔠", blurb: "Prefix trees: autocomplete, word search, and dictionary design." },
   { id: "dsa-graph", title: "Graphs", category: "DSA / Interview", icon: "🕸️", blurb: "Islands, courses, BFS/DFS, and shortest-path patterns." },
   { id: "dsa-stackheap", title: "Stack, Queue & Heap", category: "DSA / Interview", icon: "📚", blurb: "Monotonic stack, top-K, sliding window max, and heaps." },
-  { id: "dsa-dp", title: "Dynamic Programming", category: "DSA / Interview", icon: "♟️", blurb: "Climb stairs, knapsack, LIS, and the DP questions FAANG loves." }
+  { id: "dsa-dp", title: "Dynamic Programming", category: "DSA / Interview", icon: "♟️", blurb: "Climb stairs, knapsack, LIS, and the DP questions FAANG loves." },
+  { id: "sys-blocks", title: "System Design Blocks", category: "System Design", icon: "🏗️", blurb: "DNS, load balancers, cache, CDN, queues, sharding, and CAP — with diagrams." },
+  { id: "sys-cases", title: "System Design Cases", category: "System Design", icon: "🗺️", blurb: "URL shortener, feed, chat, rate limiter, and other interview designs with workflows." },
+  { id: "redis", title: "Redis", category: "Backend", icon: "🔴", blurb: "In-memory cache, sessions, TTL, rate limits, and when not to use Redis." },
+  { id: "nginx", title: "Nginx", category: "DevOps", icon: "🟩", blurb: "Reverse proxy, static files, HTTPS, load balancing, and VPS layouts." },
+  { id: "hosting", title: "Vercel, Render & Hosting", category: "DevOps", icon: "🚀", blurb: "Vercel, Render, Netlify, Railway — Git to HTTPS, env vars, and split UI/API." },
+  { id: "messaging", title: "Queues & Kafka", category: "Backend", icon: "📬", blurb: "RabbitMQ, Kafka, SQS, workers, retries, and dead-letter queues." }
 ];
 
 window.PREP_DATA = window.PREP_DATA || {};

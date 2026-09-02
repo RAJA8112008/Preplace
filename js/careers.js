@@ -11,7 +11,8 @@ window.PREP_CAREERS = [
       { topic: "javascript", learn: "JavaScript", why: "Makes the page do things: clicks, lists, talking to a server." },
       { topic: "git", learn: "Git & GitHub", why: "Save your work and share it. Every job asks for this." },
       { topic: "react", learn: "React", why: "The common way to build real frontend apps in jobs." },
-      { topic: "typescript", learn: "TypeScript", why: "JavaScript with types. Helps you make fewer mistakes." }
+      { topic: "typescript", learn: "TypeScript", why: "JavaScript with types. Helps you make fewer mistakes." },
+      { topic: "hosting", learn: "Vercel & hosting", why: "Put the React app on a real HTTPS URL from GitHub." }
     ],
     extra: [
       "Browser DevTools (inspect, console, network)",
@@ -34,7 +35,10 @@ window.PREP_CAREERS = [
       { topic: "sql", learn: "SQL & Databases", why: "Store users and data in tables. Most companies use SQL." },
       { topic: "mongodb", learn: "MongoDB", why: "A document database. Useful, and common in Node jobs." },
       { topic: "linux", learn: "Linux", why: "Servers run Linux. You need the terminal." },
-      { topic: "docker", learn: "Docker", why: "Run the app the same way on every computer." }
+      { topic: "docker", learn: "Docker", why: "Run the app the same way on every computer." },
+      { topic: "redis", learn: "Redis", why: "Cache, sessions, and rate limits. Every backend job asks this." },
+      { topic: "nginx", learn: "Nginx", why: "The door in front of Node on a real server." },
+      { topic: "messaging", learn: "Queues & Kafka", why: "Send email and jobs after the API answers." }
     ],
     extra: [
       "HTTP status codes (200, 400, 401, 404, 500)",
@@ -56,7 +60,9 @@ window.PREP_CAREERS = [
       { topic: "react", learn: "React", why: "The 'MERN' R. Build the user interface." },
       { topic: "nodeexpress", learn: "Node.js & Express", why: "The 'E' and 'N'. Build the API." },
       { topic: "mongodb", learn: "MongoDB", why: "The 'M'. Save users, posts, and lists." },
-      { topic: "fullstack", learn: "Full Stack glue", why: "Connect React to Express: fetch, login, errors." }
+      { topic: "fullstack", learn: "Full Stack glue", why: "Connect React to Express: fetch, login, errors." },
+      { topic: "hosting", learn: "Vercel & Render", why: "UI on Vercel, API on Render, a live link in your resume." },
+      { topic: "redis", learn: "Redis", why: "Sessions and cache once the app has real users." }
     ],
     extra: [
       "Put frontend and backend in one project (or two folders)",
@@ -83,7 +89,11 @@ window.PREP_CAREERS = [
       { topic: "fullstack", learn: "Full Stack", why: "Auth, REST, deploy ideas, end-to-end thinking." },
       { topic: "linux", learn: "Linux", why: "You will SSH or use a terminal on a server." },
       { topic: "docker", learn: "Docker", why: "Package the app for deploy." },
-      { topic: "aws", learn: "AWS basics", why: "A common place to host the app." }
+      { topic: "aws", learn: "AWS basics", why: "A common place to host the app." },
+      { topic: "hosting", learn: "Vercel & Render", why: "Ship a URL this week without a raw VM." },
+      { topic: "redis", learn: "Redis", why: "Cache and sessions in front of SQL." },
+      { topic: "nginx", learn: "Nginx", why: "When you move from Render to a VPS." },
+      { topic: "messaging", learn: "Queues", why: "Welcome email and thumbnails after the response." }
     ],
     extra: [
       "Build 2–3 full projects (not only tutorials)",
@@ -126,7 +136,10 @@ window.PREP_CAREERS = [
       { topic: "docker", learn: "Docker", why: "The usual way to package an app." },
       { topic: "devops", learn: "DevOps / CI-CD", why: "Tests, builds, and deploys on every change." },
       { topic: "kubernetes", learn: "Kubernetes", why: "Run many containers in a cluster." },
-      { topic: "aws", learn: "AWS", why: "Where those clusters and pipelines often live." }
+      { topic: "aws", learn: "AWS", why: "Where those clusters and pipelines often live." },
+      { topic: "nginx", learn: "Nginx", why: "Reverse proxy, TLS, and Ingress ideas." },
+      { topic: "hosting", learn: "Vercel & Render", why: "Platforms you will still debug in mixed teams." },
+      { topic: "redis", learn: "Redis", why: "The cache box next to the app." }
     ],
     extra: [
       "Learn to read logs before you restart things",
@@ -148,7 +161,9 @@ window.PREP_CAREERS = [
       { topic: "nodeexpress", learn: "Node.js & Express", why: "A simple app you can host." },
       { topic: "docker", learn: "Docker", why: "Same image on your PC and on AWS." },
       { topic: "aws", learn: "AWS", why: "EC2, S3, IAM, VPC, RDS — the core map." },
-      { topic: "devops", learn: "DevOps", why: "Deploy with a pipeline, not only the console." }
+      { topic: "devops", learn: "DevOps", why: "Deploy with a pipeline, not only the console." },
+      { topic: "nginx", learn: "Nginx", why: "TLS and proxy on EC2." },
+      { topic: "hosting", learn: "Vercel & Render", why: "Know when a platform is enough and when you need a VPC." }
     ],
     extra: [
       "Create a free-tier AWS account and turn on billing alarms",
@@ -201,7 +216,30 @@ window.PREP_CAREERS = [
       "Practice on a whiteboard or empty file, not only LeetCode hints",
       "Do 1–2 problems a day. Re-solve old ones after a week",
       "Know one language well (Java, C++, Python, or JavaScript — switch on each problem)",
-      "Draw the tree or BST on paper before you code"
+      "Draw the tree or BST on paper before you code",
+      "After DSA, open the System Design path and practice drawing the request flow"
+    ]
+  },
+  {
+    id: "sysdesign",
+    title: "System Design",
+    icon: "🏛️",
+    blurb: "High-level design for interviews: building blocks first, then full products with diagrams and request flows.",
+    builds: "You can sketch a URL shortener, news feed, chat, or rate limiter and walk through the request path.",
+    time: "4–8 weeks after core DSA",
+    steps: [
+      { topic: "sys-blocks", learn: "System Design Blocks", why: "Learn the pieces: DNS, load balancer, cache, database, queue, shard, CDN." },
+      { topic: "sys-cases", learn: "System Design Cases", why: "Assemble those pieces into the designs FAANG asks." },
+      { topic: "redis", learn: "Redis", why: "The cache and rate-limit box you will draw on the board." },
+      { topic: "nginx", learn: "Nginx", why: "The reverse proxy in front of the app tier." },
+      { topic: "messaging", learn: "Queues & Kafka", why: "Async fan-out, email, and event logs." },
+      { topic: "hosting", learn: "Vercel & Render", why: "Where student and startup apps actually go live." }
+    ],
+    extra: [
+      "Always start with requirements, then scale numbers, then the drawing",
+      "Name the bottleneck before you add a cache or a queue",
+      "Speak the request flow out loud: client → edge → app → store",
+      "State consistency, failover, and what you would measure"
     ]
   }
 ];

@@ -14,25 +14,30 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <a class="brand" href="#/">
-        <span class="brand-mark" aria-hidden="true">P</span>
-        <span>
-          <strong>PrepPlace</strong>
-          <small>Pick a career. See what to learn.</small>
-        </span>
-      </a>
-      <div class="topbar-actions">
+      <div class="topbar-main">
+        <a class="brand" href="#/">
+          <span class="brand-mark" aria-hidden="true">P</span>
+          <span>
+            <strong>PrepPlace</strong>
+            <small>Pick a career. See what to learn.</small>
+          </span>
+        </a>
+        <div class="topbar-tools">
+          <label class="search-wrap" data-home-search>
+            <span class="sr-only">Search topics</span>
+            <input id="globalSearch" type="search" placeholder="Search careers, topics, or questions…" autocomplete="off" />
+          </label>
+          <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme">☾</button>
+        </div>
+      </div>
+      <div class="topbar-row">
         <nav class="top-nav" aria-label="Main">
-          <a href="#/dsa">Problem sheet</a>
-          <a href="#/topics">Subjects</a>
-          <a href="#/contact">Message Raj</a>
+          <a href="#/" data-nav="home">Home</a>
+          <a href="#/dsa" data-nav="dsa">Problem sheet</a>
+          <a href="#/topics" data-nav="topics">Subjects</a>
+          <a href="#/contact" data-nav="contact">Message Raj</a>
         </nav>
         <div id="authBar" class="auth-bar"></div>
-        <label class="search-wrap" data-home-search>
-          <span class="sr-only">Search topics</span>
-          <input id="globalSearch" type="search" placeholder="Search careers, topics, or questions…" autocomplete="off" />
-        </label>
-        <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme">☾</button>
       </div>
     </header>
 
@@ -73,6 +78,13 @@
   <script src="data/dsa-graph.js"></script>
   <script src="data/dsa-stackheap.js"></script>
   <script src="data/dsa-dp.js"></script>
+  <script src="data/raj-solutions.js"></script>
+  <script src="data/sys-blocks.js"></script>
+  <script src="data/sys-cases.js"></script>
+  <script src="data/redis.js"></script>
+  <script src="data/nginx.js"></script>
+  <script src="data/hosting.js"></script>
+  <script src="data/messaging.js"></script>
   <script src="data/examples.js"></script>
   <script src="js/app.js"></script>
 </body>
