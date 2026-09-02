@@ -70,7 +70,8 @@
     if (item?.stack) ids.add(item.stack);
     const lang = String(item?.lang || "").toLowerCase();
     if (lang === "sql") ids.add("sql");
-    else if (lang === "html" || lang === "txt") ids.add("html");
+    else if (lang === "html") ids.add("html");
+    else if (lang === "txt") return ids;
     else if (item?.code || lang === "js" || lang === "javascript") ids.add("javascript");
     return ids;
   };
@@ -441,22 +442,72 @@
     return pack[key] || null;
   };
 
-  const dsaSols = (item) => {
-    const sols = (item.solutions || []).map((s) => Object.assign({}, s));
+  const pickSheetCpp = (item) => {
+    const sols = item?.solutions || [];
+    const score = (name) => {
+      const n = String(name || "").toLowerCase();
+      if (/more\s*optimal/.test(n)) return 0;
+      if (/optimal/.test(n)) return 1;
+      if (/brute/.test(n)) return 3;
+      return 2;
+    };
+    let best = null;
+    let bestScore = 99;
+    for (const s of sols) {
+      const cpp = s.codes?.cpp;
+      if (!cpp) continue;
+      const sc = score(s.name);
+      if (sc < bestScore) {
+        best = { sol: s, cpp };
+        bestScore = sc;
+      }
+    }
+    return best;
+  };
+
+  const wrapLeetCpp = (src) => {
+    const body = String(src || "").replace(/^\s*\/\/\s*vector,\s*unordered_map,\s*string\s*\n?/i, "").trim();
+    if (!body) return "";
+    if (/class\s+Solution\b/.test(body)) return body;
+    const indented = body.split("\n").map((l) => (l ? "    " + l : l)).join("\n");
+    return `class Solution {\npublic:\n${indented}\n};`;
+  };
+
+  const rajTabFor = (item) => {
     const raj = rajFor(item);
-    const src = raj && (raj.codes?.cpp || raj.codes?.javascript);
-    if (src) {
-      sols.unshift({
+    const repoSrc = raj && (raj.codes?.cpp || raj.codes?.javascript);
+    if (repoSrc) {
+      return {
         name: "Raj's C++",
         time: "accepted",
         space: "from repo",
         why: `This is Raj Kumar's accepted file from ${raj.source === "gfg" ? "gfg-solutions" : "Leetcode"} — the comments are how he wrote the steps.`,
-        code: src,
-        codes: { cpp: src },
+        code: repoSrc,
+        codes: { cpp: repoSrc },
         raj: true,
+        fromRepo: true,
         repo: raj.repo
-      });
+      };
     }
+    const sheet = pickSheetCpp(item);
+    if (!sheet) return null;
+    const cpp = wrapLeetCpp(sheet.cpp);
+    return {
+      name: "Raj's C++",
+      time: sheet.sol.time || "",
+      space: sheet.sol.space || "",
+      why: "C++ for this problem in the same class Solution shape as Raj's LeetCode files. Open this tab without switching the language buttons.",
+      code: cpp,
+      codes: { cpp },
+      raj: true,
+      fromRepo: false
+    };
+  };
+
+  const dsaSols = (item) => {
+    const sols = (item.solutions || []).map((s) => Object.assign({}, s));
+    const tab = rajTabFor(item);
+    if (tab) sols.unshift(tab);
     return sols;
   };
 
@@ -559,7 +610,7 @@
 
   const extraForQuestion = (q, a) => {
     const hay = `${q} ${a}`.toLowerCase();
-    const story = (problem, solves, example, uses, watch) => ({ problem, solves, example, uses, watch, before: problem, why: solves });
+    const story = (problem, solves, example, uses, watch, what) => ({ problem, solves, example, uses, watch, what, before: problem, why: solves });
     if (/reverse proxy/.test((q || "").toLowerCase()) || (/reverse proxy/.test(hay) && !/what is nginx|\bnginx\b/.test((q || "").toLowerCase()))) {
       return story(
         "Your Node or FastAPI app sat on the street: port 3000 open to the whole internet. Visitors had to know that ugly port. HTTPS was hard. Two apps could not share one website name.",
@@ -598,11 +649,12 @@
     }
     if (/postman|thunder client|\binsomnia\b|\bbruno\b|hoppscotch|newman/.test(hay)) {
       return story(
-        "You only tested through the website. A click hid the URL and the token. When the page failed you did not know if the kitchen was closed or the waiter wrote the order wrong.",
-        "An HTTP client is a separate window: method, URL, headers, body, Send. You read status and JSON. Postman is the common GUI. curl is the same idea in the terminal.",
-        "A restaurant counter that is not the dining hall. You say 'one dosa' (POST /orders) and see 201. If that fails, React is not the first suspect.",
-        "Hit localhost, save a collection, copy as curl, share with QA. Thunder Client lives in VS Code. Bruno stores the collection in Git. Swagger /docs is a live menu.",
-        "Postman is not a browser. CORS will not stop it. A green Send does not prove :5173 can call :3000."
+        "You tested the API only from the React page. A button hid the URL, the method, and the token. When the page failed you did not know if the kitchen was closed or the waiter wrote the order wrong. A teammate could not replay the same call. CI could not click Send. CORS hid another class of bugs that only the browser sees, so a green page still lied about the kitchen.",
+        "You prove the kitchen works before you blame the dining room. Mobile, web, and a teammate can share the same saved orders in a collection. You see status, headers, and JSON without a spinner. Copy as curl for Slack or a pipeline. Environments swap localhost for staging without rewriting every ticket. The waiter is no longer the only window into the kitchen.",
+        "A restaurant counter that is not the dining hall. You walk up, say one dosa (POST /orders), and see 201 plus the plate. If that fails, the waiter (React) is not the first suspect. The order pad shows method, URL, and the token header. A collection is a binder of those pads you can hand to QA. curl is the same pad spoken over the phone.",
+        "Hit localhost, a staging URL, or a teammate's ngrok. Save login once and reuse the token. Export the same calls as curl for Slack or CI. Thunder Client lives in VS Code. Bruno stores the collection in Git. Swagger /docs is a live menu. Newman runs the collection in a pipeline so a broken kitchen fails the weigh station before merge.",
+        "Postman is not a browser. CORS will not stop it. A green Send does not prove :5173 can call :3000. A token inside a shared collection is a leak if the collection lives in a public workspace. Do not treat 200 as 'the UI works'. Also do not paste production secrets into a cloud workspace you do not own or screenshot the Authorization header into Slack.",
+        "Postman is a separate window for talking to an API. You pick GET or POST, type the URL, add headers and a body, press Send, and read the status plus JSON. The website UI is not in the way. A collection saves those calls. Environments hold tokens. curl is the same idea in the terminal. The browser is a different guest with CORS rules that Postman will never enforce."
       );
     }
     if (/\bcurl\b/.test(hay)) {
@@ -625,20 +677,22 @@
     }
     if (/\bgithub\b/.test(hay)) {
       return story(
-        "The album lived on one laptop. The laptop died. A teammate could not review the work. There was no door called 'please merge this'.",
-        "GitHub is the school shelf: a hosted copy of Git, plus PRs, issues, and Actions. GitLab and Bitbucket do the same job.",
-        "Your bag is Git. The library shelf is GitHub. A PR is 'please put my chapter into the official book'.",
-        "Backup, clone on a new machine, review, CI on every push, Vercel deploys from a branch.",
-        "Saying 'I use GitHub' when you cannot name commit, branch, or PR. Git works offline."
+        "The album lived on one laptop. The laptop died. A teammate could not review the work. There was no door called please merge this. Backup was a zip in Downloads. CI had nowhere to run. A new machine meant copying a folder on a pen drive and hoping the hidden .git attic came along. Two people emailed patches and overwrote each other's chapter.",
+        "Clone on a new machine and you have the same history. Open a pull request so someone stamps your branch before main moves. Issues track the work. Actions can weigh every push. Pages or Vercel can ship a branch. The shelf holds the official book; your bag still holds Git even if the library website is down for an hour.",
+        "Your bag is Git. The library shelf is GitHub. A pull request is please put my chapter into the official book. Issues are the slip on the librarian's desk. Actions are the weigh station at the door. Forks are a photocopy of the shelf you can mark up at home, then ask the librarian to stamp your chapter back into the official copy.",
+        "Backup, clone on a new laptop, review, CI on every push, and deploys from a branch. Use PRs for internship work so a mentor can stamp the chapter. Host private homework or a public portfolio. GitLab and Bitbucket are other shelves with the same job: copy of Git, plus a door for merge and robots.",
+        "Saying I use GitHub when you cannot name commit, branch, or pull request. Git works offline; the site is extra. Do not commit secrets and then push them to a public shelf. A force-push to shared main rewrites the official book while classmates still hold the old page numbers. Protect main so a stamp is required.",
+        "GitHub is the school shelf: a hosted copy of your Git album, plus pull requests, issues, and Actions. GitLab and Bitbucket do the same job. Git still lives in the hidden .git folder on your laptop. The website is the librarian and the public shelf, not the camera. A clone is taking a copy of the shelf home. A PR is asking to add your chapter."
       );
     }
     if (/\bgit\b/.test(hay)) {
       return story(
-        "People saved project-final-v3.zip. Two laptops had different files. Nobody could say who changed login.js or how to go back.",
-        "Git is a local photo album. status, add, commit, pull, push are the daily words. A branch is a sticker. A commit is a photo.",
-        "A class notebook. status is messy pages. add is the envelope. commit is the photo. push hands the album to the GitHub shelf.",
-        "Every job. Feature branches, PRs, undo with restore / reset / revert.",
-        "git add . then commit without reading status — secrets ride along. Do not reset shared main; revert instead."
+        "People saved project-final-v3.zip. Two laptops had different files. Nobody could say who changed login.js or how to go back. A teammate overwrote a folder on a pen drive. The only history was a pile of zips named final2 and final2-really. A crash on Friday lost Thursday's work because the album lived in one bag with no shelf copy.",
+        "You take a named snapshot, send it to the shelf, and pull what the team already saved. You can name a change, go back, and see who edited a line. A branch is a sticker so two people can write at once. A pull request is the stamp before the official book moves. Undo has restore, reset, and revert — pick the one that matches whether the photo was already shared.",
+        "A class notebook. status is which pages are messy. add is put these pages in the envelope. commit is the photo. push hands the album to the school shelf. A branch is a sticker on one photo so you can write a new chapter without ripping the official book. merge copies the new pages back. rebase rewrites your private photos so they sit on the latest official page.",
+        "Every job. Feature branches, pull requests, and undo with restore, reset, or revert. Interviews ask the daily words and the story: commit, branch, merge, rebase, PR. Use Git on a solo homework repo so the habit is there before a team shelf. Learn status before add, and read the envelope before you click the camera.",
+        "git add . then commit without reading status — secrets and junk ride along. Do not reset shared main; revert instead, so classmates keep the same page numbers. Do not force-push a branch others already pulled. Write a message that names the change, not update. Keep .env out of the envelope. Nested git init makes a second attic nobody expected.",
+        "Git is a local photo album of the project. Snapshots live in a hidden .git folder on your computer. The working tree is the desk. The staging area is the envelope. A commit is one photo with a message. A branch is a sticker on a photo. GitHub is only a host that keeps a copy. Git works with no website at all. Daily words: status, add, commit, pull, push."
       );
     }
     if (/fastapi|pydantic|uvicorn/.test(hay)) {
@@ -776,6 +830,16 @@
         "Picking Mongo from a tutorial, then spending a year rebuilding relations, is the usual regret."
       );
     }
+    if (/cloudinary|upload preset|public_id|f_auto|q_auto/.test(hay) && !/ssh/.test((q || "").toLowerCase())) {
+      return story(
+        "Avatars sat in ./uploads on one Node box. A restart wiped the folder. The second server did not have the file. Mongo held base64 until documents got fat and every user read dragged a photo through the API. List pages shipped camera PNGs because nobody had a lab that could print a passport from a URL. Two waiters argued over a drawer that only existed under one dining-room table.",
+        "Bytes leave your Node disk and live in the lab. Any API replica can show the same picture from the ticket. A phone gets a small WebP from the URL; a desktop asks for a larger crop. You did not write two files or run ImageMagick. A restart no longer shreds the only copy under the table, because the negative sits in Cloudinary and the CDN still holds yesterday's prints.",
+        "Think of a print shop. You leave one negative: the original upload. The clerk prints a passport or a poster from that negative when the URL names the size. Your shop only keeps the ticket number, the public_id, in the register. Nobody tapes film under every table. Next year you can still order an 8x10 from roll 42 without hunting a second envelope in the kitchen.",
+        "Use Cloudinary for MERN avatars, product shots, and post images, and for take-homes that say do not store files in Mongo. Anywhere two Node boxes or a container restart would lose ./uploads, send the negative to the lab. The dining room stays stateless: the register notes public_id, the CDN hangs the print, and ImageMagick never runs under the API table.",
+        "Never put CLOUDINARY_API_SECRET in the React app or a VITE_ variable. That is handing the lab the master key to the safe. Anyone who opens DevTools can stamp fake tickets, shred Ada's negatives, or order huge prints on your bill. Do not treat the lab as a second Mongo for PDFs and backups. An unsigned preset with no size cap is an open dumpster.",
+        "Cloudinary is a hosted photo lab plus a CDN. You upload once; the lab keeps the original bytes. You store a public_id in Mongo — locker number, not a print. The delivery URL is the order slip: cloud name, transforms such as w_400 or f_auto, then the id. The CDN caches each derived print at the edge so phones fetch a small copy without hitting your Node disk."
+      );
+    }
     if (/\bjwt\b|json web token/.test(hay)) {
       return story(
         "The server kept every login in its own RAM. The second server did not know Ada was logged in. Sticky sessions glued her to one box. Logging out everywhere was a spreadsheet of session ids.",
@@ -783,6 +847,36 @@
         "A cinema ticket. The door person checks the stamp, not a phone call to the box office for every film. If you tear the ticket (change a field), the stamp no longer matches.",
         "Stateless APIs, mobile + web with the same /me, microservices that all trust one secret or public key.",
         "A JWT is not encrypted by default — anyone can read the payload. Do not put a password in it. Stealing the token is stealing the login until it expires."
+      );
+    }
+    if (/\bssh\b|secure shell|ssh-keygen|authorized_keys|known_hosts|ssh-agent|ssh config|scp vs|sftp|jump host|bastion|port forwarding|publickey/.test((q || "").toLowerCase()) || /ssh-copy-id|permission denied \(publickey\)/.test(hay)) {
+      return story(
+        "You needed a shell on a machine across the city. Telnet sent the password in the clear. Anyone on café Wi‑Fi could read ada slash secret123 and walk into the server before you finished the first command. FTP copied files the same way: the badge was printed on the postcard. A second laptop had no way in except another shared password written on a sticky note next to the monitor.",
+        "The line is encrypted, so the lobby cannot read the conversation. A public key sits in authorized_keys; the private file stays in your pocket and answers the challenge. You type on the laptop and the commands run on the other box. You can copy files with scp, tunnel a private database, and push git without pasting a password into every door on the street.",
+        "A hotel desk: you show a key card, which is the private key. The clerk checks the card on file, authorized_keys. Then you walk the staff corridor. The lobby does not hear the conversation or copy the badge. A bastion is one public door in front of private rooms. If you lose the card, the clerk can take your name off the list without changing every lock in the building.",
+        "VPS login, scp and rsync of folders, git at github.com, and a tunnel to a private database that must not sit on the street. Port 22 is the usual door. A jump host is one public lobby for many private rooms. Use an ssh config file so Host prod is a nickname, not a password you retype. Agents hold the unlocked card for the day so you do not type the passphrase every hop.",
+        "A stolen private key is a stolen badge. Do not commit id_ed25519 or paste it in Slack. Do not set StrictHostKeyChecking=no just to silence a warning and follow a stranger at the desk. chmod 600 the private file. Disable password login once keys work. A world-writable authorized_keys is a lobby that accepts any photocopied card from the sidewalk.",
+        "SSH is an encrypted phone line to another computer. You type on your laptop; the commands run on the remote box. The server stores your public key in authorized_keys. Your private key stays in your pocket and proves you are the card holder. The pipe is encryption, not a clear postcard. Port 22 is the usual door; a config file names Host aliases so you stop retyping long user-at-host strings."
+      );
+    }
+    if (/\boop\b|object[- ]oriented|encapsulation|polymorphism|four pillars|what is inheritance|what is abstraction/.test(hay)) {
+      return story(
+        "Code was a pile of loose functions and global variables. A student name lived in three lists. Changing a fee rule meant hunting twenty files, and a typo in one list left a student without a marksheet on result day. Two clerks updated marks in different drawers and nobody could say which copy was true. A new intern added payFees in a fourth file and broke the old print path.",
+        "Data and the actions that belong to it travel together. You change a fee rule in one class instead of twenty lists. A marksheet print reads the same folder that stored the marks. Interviews can ask you to draw Ada as one object, not a scatter of arrays. Polymorphism lets a list of shapes each draw themselves without a giant if-else of types in the hallway.",
+        "A school register: one Student folder holds the name and the actions pay fees and print marksheet. You do not keep marks in a random drawer down the hall and hope the clerk walks there for every report. The stamp is the class. Ada and Bob are two inked copies. If the fee rule changes, you fix the stamp, not twenty loose slips on the floor.",
+        "Java, C++, C#, Python, and modern JavaScript. Interviews always ask the four pillars plus class versus object, then they watch you write a tiny Student and call a method on one copy. Use objects when one thing has both data and rules. Use a short list of functions when the script is twenty lines and a class tree would be a costume on a shopping list.",
+        "Not every problem wants a class tree. A list of functions is fine for a twenty-line script. Deep inheritance is how code goes stiff when a Square pretends to be a stretchy Rectangle. Do not make a God class that pays fees, sends email, and draws the UI. Encapsulation is not just private fields; it is not leaking the marksheet drawer to every hallway.",
+        "OOP groups data and the actions that belong to it into objects. A class is the stamp. An object is one inked copy such as Ada or Bob. The four pillars are encapsulation, abstraction, inheritance, and polymorphism. You ask an object to print its marksheet instead of passing a name through five free functions that each open a different drawer down the hall."
+      );
+    }
+    if (/ci\/cd|continuous integration|continuous delivery|continuous deployment|github actions|gitlab ci|gitlab-ci|jenkinsfile|workflow_dispatch|npm ci|status check/.test(hay)) {
+      return story(
+        "Ada merged on Friday. Tests ran only on her laptop. Bob copied a zip to the server with FTP. Monday morning checkout was 500 and nobody knew which box was live. Staging had a different node_modules than Ada remembered. Rollback meant asking who still had last week's zip in Downloads. Two people shipped two zips in the same hour and overwrote each other on the same folder.",
+        "A red test stops the merge before the truck leaves. Prod runs the same artifact staging already tasted. Rollback is last week's stamped box, not a hunt through laptops. Every push gets the same recipe from a file in Git, so Bob cannot skip the weigh station because he is in a hurry. The sha on the box is the name you can revert to without baking again.",
+        "A factory: every batch is weighed (CI). Only a stamped box goes on the truck (CD). You do not bake a new cake in the parking lot and call it the same batch. The recipe hangs on the wall as a YAML file in the repo. If the cake on the truck is wrong, you send yesterday's stamped box back, not a new mix from memory.",
+        "GitHub Actions, GitLab CI, and Jenkins. Test on every pull request, build a sha, deploy to staging, then prod. Rollback is the previous sha. Use the same pipeline for Node, Python, Docker, and Terraform. A status check on the PR is the weigh ticket the clerk must see before main moves. Secrets live in the host, not in the YAML on the wall.",
+        "A green deploy with no tests is CD without CI: the truck left without the scale. :latest in prod is a box with the label peeled off. Secrets pasted into the YAML are the recipe with the safe combination printed on it. Do not deploy from a laptop after a red pipeline just to save the afternoon. Pin versions so the factory does not change flour overnight.",
+        "CI is a robot that tests every change on a clean machine. CD is putting that same tested box on a server, or keeping main always ready to ship. The recipe is a file in Git: install, test, build, maybe deploy. An artifact is the stamped box, named by commit sha. Staging tastes that box before prod. Rollback means the previous sha, not a new bake in the parking lot."
       );
     }
     if (/\bdocker\b|container image|dockerfile/.test(hay)) {
@@ -832,6 +926,13 @@
     const hasProblem = hasTeachHead(out, "The problem before") || hasTeachHead(out, "Before you use this");
     const hasSolves = hasTeachHead(out, "What it solves") || hasTeachHead(out, "Why we use it");
     if (problem && !hasProblem) out = `The problem before\n${problem}\n\n${out}`;
+    if (tip.what && !hasTeachHead(out, "What this is")) {
+      out = hasTeachHead(out, "The problem before")
+        ? insertAfterSection(out, "The problem before", "What this is", tip.what)
+        : hasTeachHead(out, "Before you use this")
+          ? insertAfterSection(out, "Before you use this", "What this is", tip.what)
+          : `What this is\n${tip.what}\n\n${out}`;
+    }
     if (solves && !hasSolves) {
       out = hasTeachHead(out, "What this is")
         ? insertAfterSection(out, "What this is", "What it solves", solves)
@@ -952,9 +1053,21 @@
       </section>`).join("")}</div>`;
   };
 
-  const langBar = (active) => `
+  const topicLangs = (data) => {
+    const ids = data?.langs;
+    if (ids && ids.length) return CODE_LANGS.filter((l) => ids.includes(l.id));
+    return CODE_LANGS;
+  };
+
+  const topicLang = (data) => {
+    const langs = topicLangs(data);
+    const saved = getLang();
+    return langs.some((l) => l.id === saved) ? saved : (langs[0]?.id || "javascript");
+  };
+
+  const langBar = (active, langs = CODE_LANGS) => `
     <div class="lang-bar btn-group" role="tablist" aria-label="Code language">
-      ${CODE_LANGS.map((l) =>
+      ${langs.map((l) =>
         `<button class="lang-btn ${l.id === active ? "active" : ""}" type="button" data-lang="${l.id}">${l.label}</button>`
       ).join("")}
     </div>`;
@@ -1317,8 +1430,13 @@
           <a class="btn btn-ghost" href="#/">← Home</a>
         </div>
         <article class="auth-card">
-          <h1>Message Raj Kumar</h1>
-          <p>Write your note and press <strong>Send message</strong>. It goes to <strong>${CONTACT.email}</strong>.</p>
+          <div class="contact-head">
+            <div>
+              <h1>Message Raj Kumar</h1>
+              <p>Write your note and press <strong>Send message</strong>. It goes to <strong>${CONTACT.email}</strong>.</p>
+            </div>
+            <img class="contact-photo" src="assets/raj.jpg" width="88" height="88" alt="Raj Kumar" />
+          </div>
           <form id="contactForm" class="auth-form">
             <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
             <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
@@ -1434,6 +1552,7 @@
 
     view.innerHTML = `
       <section class="hero">
+        <img class="hero-logo" src="assets/logo.svg" width="72" height="72" alt="PrepPlace" />
         <h1>Pick a career. See what to learn.</h1>
         <p>Frontend, backend, MERN, full stack, ML, DevOps, and a FAANG DSA path. Each path shows the order, then opens notes, easy code, and practice questions.</p>
         <p class="account-line">${(() => {
@@ -1718,16 +1837,23 @@
     const level = window.topicLevel || "all";
     const companyF = window.topicCompany || "all";
     const bagF = window.topicBag || "all";
+    const allQuestions = data.questions || [];
     const stacks = data.kind === "practice" ? collectStacks(data) : [];
-    let stackF = data.kind === "practice" ? getStack() : "all";
+    const showStacks = stacks.length > 1;
+    let stackF = showStacks ? getStack() : "all";
     if (stackF !== "all" && !stacks.some((s) => s.id === stackF)) stackF = "all";
+    const presentLevels = ["beginner", "intermediate", "advanced"].filter((lv) => allQuestions.some((q) => q.level === lv));
+    const showLevel = presentLevels.length > 1;
+    const askNames = allQuestions.flatMap((q) => companyList(q.ask));
+    const hasMostAsked = askNames.some((c) => c.toLowerCase() === "most asked");
+    const presentCos = COMPANIES.filter((c) => askNames.some((n) => n.toLowerCase() === c.toLowerCase()));
+    const showCompany = hasMostAsked || presentCos.length > 0;
     const query = (window.topicQuery || "").toLowerCase();
     const stars = starSet(id);
     const done = doneSet(id);
     const p = progressFor(id);
     const notes = data.notes || [];
     const examples = (data.examples || []).filter((ex) => itemHasStack(ex, stackF));
-    const allQuestions = data.questions || [];
     const questions = allQuestions.filter((item) => {
       const matchLevel = level === "all" || item.level === level;
       const matchC = companyF === "all" || companyList(item.ask).some((c) => c.toLowerCase() === companyF.toLowerCase());
@@ -1739,12 +1865,14 @@
         const langs = s.codes ? Object.values(s.codes).join(" ") : "";
         return `${s.name} ${s.why} ${s.code || ""} ${langs}`;
       }).join(" ");
-      const hay = `${item.q} ${item.a} ${item.code || ""} ${item.ask || ""} ${solText}`.toLowerCase();
+      const hay = `${item.q} ${item.a} ${item.code || ""} ${item.ask || ""} ${solText} ${item.codes ? Object.values(item.codes).join(" ") : ""}`.toLowerCase();
       return matchLevel && matchC && matchS && matchB && (!query || hay.includes(query));
     });
 
-    const lang = getLang();
-    const langLabel = CODE_LANGS.find((l) => l.id === lang)?.label || lang;
+    const useLangBar = data.kind === "dsa" || data.langBar;
+    const langs = topicLangs(data);
+    const lang = topicLang(data);
+    const langLabel = langs.find((l) => l.id === lang)?.label || lang;
 
     const renderSolutions = (item) => {
       const sols = data.kind === "dsa" ? dsaSols(item) : (item.solutions || []);
@@ -1760,7 +1888,7 @@
             const src = teachSrc(raw, data.kind === "dsa" ? useLang : inferLang(s) || "javascript", data.kind);
             return `
             <div class="sol-panel ${i === 0 ? "open" : ""}" data-sol-panel="${i}">
-              <p class="sol-meta"><span>Time ${escapeHtml(s.time || "")}</span><span>Space ${escapeHtml(s.space || "")}</span><span>${escapeHtml(isRaj ? "C++ · repo" : langLabel)}</span><span>simple words on each line</span></p>
+              <p class="sol-meta"><span>Time ${escapeHtml(s.time || "")}</span><span>Space ${escapeHtml(s.space || "")}</span><span>${escapeHtml(isRaj ? (s.fromRepo ? "C++ · repo" : "C++") : langLabel)}</span><span>simple words on each line</span></p>
               <p class="teach-body">${escapeHtml(s.why || "")}</p>
               ${src
                 ? `<div class="code-wrap">
@@ -1771,11 +1899,14 @@
             </div>`;
           }).join("")}`;
       }
-      const single = data.kind === "dsa" ? dsaSrc(item, lang) : data.kind === "practice" ? practiceSrc(item, stackF) : (pickCode(item, lang) || item.code);
+      const single = data.kind === "dsa" ? dsaSrc(item, lang)
+        : data.langBar ? (pickCode(item, lang) || item.code)
+        : data.kind === "practice" ? practiceSrc(item, stackF)
+        : (pickCode(item, lang) || item.code);
       if (!single) return "";
-      const codeLang = data.kind === "dsa" ? lang : data.kind === "practice" ? langOfStack(stackF, item) : inferLang(item);
+      const codeLang = useLangBar ? lang : data.kind === "practice" ? langOfStack(stackF, item) : inferLang(item);
       const stackLabel = STACKS.find((s) => s.id === (stackF === "all" ? "javascript" : stackF))?.label || codeLang;
-      return `<p class="answer-label">${data.kind === "practice" ? "Easy code" : "Code"} · ${escapeHtml(data.kind === "dsa" ? langLabel : data.kind === "practice" ? stackLabel : codeLang)}</p><div class="code-wrap"><button class="copy-btn" type="button" data-q-copy>Copy</button><pre class="dsa-pre"><code>${showCode(teachSrc(single, codeLang, data.kind), codeLang)}</code></pre></div>`;
+      return `<p class="answer-label">${data.kind === "practice" ? "Easy code" : "Code"} · ${escapeHtml(useLangBar ? langLabel : data.kind === "practice" ? stackLabel : codeLang)}</p><div class="code-wrap"><button class="copy-btn" type="button" data-q-copy>Copy</button><pre class="dsa-pre"><code>${showCode(teachSrc(single, codeLang, data.kind), codeLang)}</code></pre></div>`;
     };
 
     view.innerHTML = `
@@ -1791,38 +1922,42 @@
       <div class="tabs" role="tablist">
         <button class="tab ${tab === "examples" ? "active" : ""}" data-tab="examples">${data.kind === "design" ? "Workflows" : data.kind === "practice" ? "Starter code" : "Easy code"}</button>
         <button class="tab ${tab === "notes" ? "active" : ""}" data-tab="notes">Notes</button>
-        <button class="tab ${tab === "questions" ? "active" : ""}" data-tab="questions">${allQuestions.length} ${data.kind === "practice" ? "labs" : "questions"}</button>
+        <button class="tab ${tab === "questions" ? "active" : ""}" data-tab="questions">${allQuestions.length} ${data.kind === "practice" && !data.langBar ? "labs" : "questions"}</button>
       </div>
       ${tab === "notes" ? `
         <section class="${data.kind === "design" ? "design-stack" : "note-grid"}">
           ${notes.map((n) => `<article class="note${data.kind === "design" ? " note-wide" : ""}"><h3>${escapeHtml(n.title)}</h3>${renderVisuals(n)}${/^(What this is|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\b/im.test(n.body || "") ? renderTeachText(n.body, n.title) : `<p>${escapeHtml(n.body)}</p>`}</article>`).join("")}
         </section>` : tab === "examples" ? `
-        ${data.kind === "dsa" ? langBar(lang) : ""}
-        ${data.kind === "practice" && stacks.length ? `<div class="control-board stack-board">${stackBar(stacks, stackF)}</div>` : ""}
+        ${useLangBar ? langBar(lang, langs) : ""}
+        ${showStacks ? `<div class="control-board stack-board">${stackBar(stacks, stackF)}</div>` : ""}
         <p class="example-intro">${data.kind === "design"
           ? "Each card is a complete design: architecture diagram, request flow, and the points you should state in an interview."
           : data.kind === "dsa"
             ? "Read the explanation first, then the code. Each line is commented the way Raj writes it on LeetCode. Switch JavaScript, Python, Java, C++, or C."
-            : data.kind === "practice"
+            : data.langBar
+              ? "Pick a language above. Same OOP idea, four languages. Comments sit on the right of the same line."
+            : data.kind === "practice" && showStacks
               ? "Pick JS or React above. Same card project, two stacks. Code is on the left. Easy comments sit on the right of the same line."
+              : data.kind === "practice"
+                ? "Read the explanation, then the example. Comments sit on the right of the same line."
               : "Read the explanation first, then the code. Comments sit on the right in easy words."}</p>
         <section class="example-list">
           ${examples.map((ex, i) => `
             <article class="example">
               <div class="example-head">
                 <h3>${escapeHtml(ex.title)}</h3>
-                <span class="badge">${escapeHtml(data.kind === "dsa" ? langLabel : data.kind === "design" ? "workflow" : data.kind === "practice" ? (STACKS.find((s) => s.id === (stackF === "all" ? (ex.lang === "txt" || ex.lang === "html" ? "html" : "javascript") : stackF))?.label || ex.lang || "code") : (ex.lang || "code"))}</span>
+                <span class="badge">${escapeHtml(useLangBar ? langLabel : data.kind === "design" ? "workflow" : data.kind === "practice" ? (STACKS.find((s) => s.id === (stackF === "all" ? (ex.lang === "txt" || ex.lang === "html" ? "html" : "javascript") : stackF))?.label || ex.lang || "code") : (ex.lang || "code"))}</span>
               </div>
               ${renderVisuals(ex)}
               <div class="teach">
                 <p class="answer-label">${data.kind === "design" ? "Design notes" : "Explanation"}</p>
                 ${renderTeachText(ex.desc || "", ex.title)}
               </div>
-              ${((data.kind === "dsa" ? pickCode(ex, lang) : data.kind === "practice" ? practiceSrc(ex, stackF) : pickCode(ex, "javascript")) || ex.code) ? `
+              ${((useLangBar ? pickCode(ex, lang) : data.kind === "practice" ? practiceSrc(ex, stackF) : pickCode(ex, "javascript")) || ex.code) ? `
               <p class="answer-label code-label">${data.kind === "design" ? "Interface sketch" : data.kind === "practice" ? "Easy code · comments on the right" : "Code · comments on the right"}</p>
               <div class="code-wrap">
                 <button class="copy-btn" type="button" data-ex="${i}">Copy</button>
-                <pre class="dsa-pre"><code>${showCode(data.kind === "dsa" ? dsaSrc(ex, lang) : teachSrc(data.kind === "practice" ? practiceSrc(ex, stackF) : (pickCode(ex, "javascript") || ex.code || ""), data.kind === "practice" ? langOfStack(stackF, ex) : paintLang(ex), data.kind), data.kind === "dsa" ? lang : data.kind === "practice" ? langOfStack(stackF, ex) : paintLang(ex))}</code></pre>
+                <pre class="dsa-pre"><code>${showCode(data.kind === "dsa" ? dsaSrc(ex, lang) : teachSrc(data.langBar ? (pickCode(ex, lang) || ex.code) : data.kind === "practice" ? practiceSrc(ex, stackF) : (pickCode(ex, "javascript") || ex.code || ""), data.langBar ? lang : data.kind === "practice" ? langOfStack(stackF, ex) : paintLang(ex), data.kind), useLangBar ? lang : data.kind === "practice" ? langOfStack(stackF, ex) : paintLang(ex))}</code></pre>
               </div>` : ""}
             </article>`).join("") || `<p class="empty">${data.kind === "design" ? "No workflows yet." : "No code examples yet."}</p>`}
         </section>` : `
@@ -1835,14 +1970,15 @@
             </div>
           </div>
           <div class="control-grid">
+            ${showLevel ? `
             <div class="control-block">
               <span class="filter-label">Level</span>
               <div class="btn-group">
-                ${["all", "beginner", "intermediate", "advanced"].map((lv) =>
+                ${["all", ...presentLevels].map((lv) =>
                   `<button class="level-btn ${level === lv ? "active" : ""}" data-level="${lv}">${prettyLabel(lv)}</button>`
                 ).join("")}
               </div>
-            </div>
+            </div>` : ""}
             <div class="control-block">
               <span class="filter-label">Status</span>
               <div class="btn-group">
@@ -1851,21 +1987,21 @@
                 ).join("")}
               </div>
             </div>
-            ${data.kind === "practice" ? stackBar(stacks, stackF) : ""}
+            ${showStacks ? stackBar(stacks, stackF) : ""}
           </div>
-          ${data.kind === "dsa" || allQuestions.some((q) => q.ask) ? `
+          ${showCompany ? `
           <div class="control-block">
             <span class="filter-label">Company</span>
             <div class="btn-group">
               <button class="chip ${companyF === "all" ? "active" : ""}" data-co="all">All companies</button>
-              ${data.kind === "practice" ? `<button class="chip ${companyF === "Most asked" ? "active" : ""}" data-co="Most asked">Most asked</button>` : ""}
-              ${COMPANIES.map((c) => `<button class="chip ${companyF === c ? "active" : ""}" data-co="${c}">${c}</button>`).join("")}
+              ${hasMostAsked ? `<button class="chip ${companyF === "Most asked" ? "active" : ""}" data-co="Most asked">Most asked</button>` : ""}
+              ${presentCos.map((c) => `<button class="chip ${companyF === c ? "active" : ""}" data-co="${c}">${c}</button>`).join("")}
             </div>
           </div>` : ""}
-          ${data.kind === "dsa" || allQuestions.some((q) => q.solutions) ? `
+          ${useLangBar || allQuestions.some((q) => q.solutions) ? `
           <div class="control-block">
             <span class="filter-label">Language</span>
-            ${langBar(lang)}
+            ${langBar(lang, langs)}
           </div>` : ""}
         </div>
         <section class="qa">
@@ -1879,7 +2015,7 @@
                     <span class="q-title">${escapeHtml(data.kind === "dsa" || data.kind === "practice" ? item.q : formalTitle(item.q))}</span>
                     <span class="q-meta">
                       ${(item.ask ? companyList(item.ask) : []).map((c) => `<span class="meta-chip">${escapeHtml(c)}</span>`).join("")}
-                      ${data.kind === "dsa" && rajFor(item) ? `<span class="meta-chip src">Raj's C++</span>` : ""}
+                      ${data.kind === "dsa" && rajTabFor(item) ? `<span class="meta-chip src">Raj's C++</span>` : ""}
                       ${(data.kind === "dsa" ? dsaLinks(item) : (item.links || [])).map((l) => `<span class="meta-chip src">${escapeHtml(l.name)}</span>`).join("")}
                     </span>
                   </span>
@@ -1908,7 +2044,8 @@
                     <pre class="dsa-pre"><code>${showCode(teachSrc(item.code, inferLang(item), data.kind), inferLang(item))}</code></pre>
                   </div>` : ""}
                 <div class="q-tools">
-                  ${item.solutions ? `<button class="btn btn-primary" type="button" data-reveal>Show solutions</button>` : ""}
+                  ${(data.kind === "dsa" ? dsaSols(item).length : item.solutions) ? `<button class="btn btn-primary" type="button" data-reveal>Show solutions</button>` : ""}
+                  ${data.kind === "dsa" && rajTabFor(item) ? `<button class="btn btn-primary" type="button" data-raj-open>Raj's C++</button>` : ""}
                   <button class="btn" type="button" data-timer>20 min timer</button>
                   <span class="timer-chip" data-timer-view hidden>20:00</span>
                 </div>
@@ -1990,6 +2127,19 @@
         btn.textContent = open ? "Hide solutions" : "Show solutions";
       });
     });
+    view.querySelectorAll("[data-raj-open]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const itemEl = btn.closest(".item");
+        const wrap = btn.closest(".answer-wrap");
+        const box = wrap.querySelector(".sol-spoiler");
+        box.classList.add("open");
+        const reveal = wrap.querySelector("[data-reveal]");
+        if (reveal) reveal.textContent = "Hide solutions";
+        itemEl.querySelectorAll("[data-sol]").forEach((tab) => tab.classList.toggle("active", tab.dataset.sol === "0"));
+        itemEl.querySelectorAll("[data-sol-panel]").forEach((panel) => panel.classList.toggle("open", panel.dataset.solPanel === "0"));
+        box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    });
     view.querySelectorAll("[data-timer]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const chip = btn.parentElement.querySelector("[data-timer-view]");
@@ -2036,10 +2186,10 @@
     view.querySelectorAll("[data-ex]").forEach((btn) => {
       btn.addEventListener("click", async () => {
           const ex = examples[Number(btn.dataset.ex)];
-          const raw = data.kind === "dsa"
-            ? pickCode(ex, getLang())
+          const raw = useLangBar
+            ? pickCode(ex, lang)
             : data.kind === "practice" ? practiceSrc(ex, getStack()) : pickCode(ex, "javascript") || ex?.code || "";
-          const code = teachSrc(raw, data.kind === "dsa" ? getLang() : data.kind === "practice" ? langOfStack(getStack(), ex) : paintLang(ex), data.kind);
+          const code = teachSrc(raw, useLangBar ? lang : data.kind === "practice" ? langOfStack(getStack(), ex) : paintLang(ex), data.kind);
           await copyText(code, btn);
       });
     });
@@ -2069,8 +2219,10 @@
         btn.addEventListener("click", async () => {
           const qid = Number(itemEl.dataset.qid);
           const item = allQuestions.find((q) => q.id === qid);
-          const raw = data.kind === "practice" ? practiceSrc(item, getStack()) : pickCode(item, getLang()) || item?.code || "";
-          await copyText(teachSrc(raw, data.kind === "practice" ? langOfStack(getStack(), item) : inferLang(item), data.kind), btn);
+          const raw = data.langBar ? (pickCode(item, lang) || item?.code || "")
+            : data.kind === "practice" ? practiceSrc(item, getStack())
+            : pickCode(item, lang) || item?.code || "";
+          await copyText(teachSrc(raw, useLangBar ? lang : data.kind === "practice" ? langOfStack(getStack(), item) : inferLang(item), data.kind), btn);
         });
       });
     });
