@@ -12,6 +12,7 @@ window.PREP_CAREERS = [
       { topic: "practice-web", learn: "JS & Web interview", why: "var/let/const, closures, event loop, HTTP, DNS, CORS — with examples." },
       { topic: "practice-dom", learn: "Card & DOM projects", why: "Paint a card grid, listeners, delegation, add/delete, search, modal." },
       { topic: "git", learn: "Git & GitHub", why: "Save your work and share it. Every job asks for this." },
+      { topic: "postman", learn: "Postman & API tools", why: "Hit the API without the page. curl, collections, 401 vs 403." },
       { topic: "react", learn: "React", why: "The common way to build real frontend apps in jobs." },
       { topic: "typescript", learn: "TypeScript", why: "JavaScript with types. Helps you make fewer mistakes." },
       { topic: "hosting", learn: "Vercel & hosting", why: "Put the React app on a real HTTPS URL from GitHub." },
@@ -37,6 +38,7 @@ window.PREP_CAREERS = [
       { topic: "javascript", learn: "JavaScript", why: "Same language you will use in Node.js." },
       { topic: "practice-web", learn: "JS & Web interview", why: "HTTP methods, status codes, cookies, CORS, TCP, DNS." },
       { topic: "git", learn: "Git & GitHub", why: "Work with a team and keep history." },
+      { topic: "postman", learn: "Postman & API tools", why: "Prove the API works before you blame React. curl and status codes." },
       { topic: "nodeexpress", learn: "Node.js & Express", why: "Create APIs: GET, POST, login, errors." },
       { topic: "sql", learn: "SQL & Databases", why: "Store users and data in tables. Most companies use SQL." },
       { topic: "database", learn: "Databases", why: "ACID, replicas, and when SQL is not enough." },
@@ -69,6 +71,7 @@ window.PREP_CAREERS = [
       { topic: "practice-web", learn: "JS & Web interview", why: "Promises, this, REST, JWT, XSS, CSRF — the questions after JS." },
       { topic: "practice-dom", learn: "Card & DOM projects", why: "The UI of a MERN app is still cards, clicks, and the DOM." },
       { topic: "git", learn: "Git & GitHub", why: "Save frontend and backend in one repo." },
+      { topic: "postman", learn: "Postman & API tools", why: "Test Express routes with a collection before the React form." },
       { topic: "react", learn: "React", why: "The 'MERN' R. Build the user interface." },
       { topic: "nodeexpress", learn: "Node.js & Express", why: "The 'E' and 'N'. Build the API." },
       { topic: "mongodb", learn: "MongoDB", why: "The 'M'. Save users, posts, and lists." },
@@ -97,6 +100,7 @@ window.PREP_CAREERS = [
       { topic: "practice-web", learn: "JS & Web interview", why: "Full JS + HTTP + DNS + browser security sheet with examples." },
       { topic: "practice-dom", learn: "Card & DOM projects", why: "Build the card grid before you wrap it in React." },
       { topic: "git", learn: "Git & GitHub", why: "Daily tool for every developer." },
+      { topic: "postman", learn: "Postman & API tools", why: "Debug the API with curl and Postman, not only the UI." },
       { topic: "react", learn: "React", why: "Frontend of most full stack job posts." },
       { topic: "typescript", learn: "TypeScript", why: "Used in serious full stack teams." },
       { topic: "nodeexpress", learn: "Node.js & Express", why: "Your API server." },
@@ -134,6 +138,7 @@ window.PREP_CAREERS = [
       { topic: "machinelearning", learn: "Machine Learning", why: "Train, test, and judge a model without magic." },
       { topic: "vectordb", learn: "Vector databases", why: "Embeddings and RAG — how chat-with-your-PDF actually works." },
       { topic: "git", learn: "Git & GitHub", why: "Save notebooks and scripts like any other code." },
+      { topic: "postman", learn: "Postman & API tools", why: "Try POST /predict without writing a UI first." },
       { topic: "linux", learn: "Linux", why: "Training often happens on a Linux machine." },
       { topic: "docker", learn: "Docker", why: "Share an environment so the model runs the same place." },
       { topic: "practice-ml", learn: "Practice labs", why: "Train, save, /predict API, API key, admin retrain, HTTPS." }
@@ -156,6 +161,7 @@ window.PREP_CAREERS = [
     steps: [
       { topic: "linux", learn: "Linux", why: "You live in the terminal." },
       { topic: "git", learn: "Git & GitHub", why: "CI starts when you push code." },
+      { topic: "postman", learn: "Postman & API tools", why: "Newman and curl smoke-test the API in the pipeline." },
       { topic: "docker", learn: "Docker", why: "The usual way to package an app." },
       { topic: "devops", learn: "DevOps / CI-CD", why: "Tests, builds, and deploys on every change." },
       { topic: "kubernetes", learn: "Kubernetes", why: "Run many containers in a cluster." },
@@ -182,6 +188,7 @@ window.PREP_CAREERS = [
     steps: [
       { topic: "linux", learn: "Linux", why: "EC2 is a Linux computer." },
       { topic: "git", learn: "Git & GitHub", why: "You still ship code the normal way." },
+      { topic: "postman", learn: "Postman & API tools", why: "Hit Lambda or an ALB URL with curl before you wire the UI." },
       { topic: "javascript", learn: "JavaScript", why: "Useful for Lambda and many APIs." },
       { topic: "nodeexpress", learn: "Node.js & Express", why: "A simple app you can host." },
       { topic: "docker", learn: "Docker", why: "Same image on your PC and on AWS." },
@@ -211,6 +218,7 @@ window.PREP_CAREERS = [
       { topic: "python", learn: "Python", why: "Clean files, quick charts, pandas later." },
       { topic: "machinelearning", learn: "ML basics", why: "Enough to know average vs a model. Not all of ML." },
       { topic: "git", learn: "Git", why: "Save your queries and notebooks." },
+      { topic: "postman", learn: "Postman & API tools", why: "Call a data API and read the JSON before you chart it." },
       { topic: "practice-data", learn: "Practice labs", why: "SQL CRUD reports, region auth, pandas export, HTTPS dash." }
     ],
     extra: [

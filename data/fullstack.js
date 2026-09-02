@@ -51,7 +51,7 @@ app.get("/hello", function (req, res) {
   res.json({ name: "Ada" });
 });` },
     { id: 5, level: "beginner", q: "What is an API?",
-      a: "An API is a contract so two programs can talk without sharing one pile of code. A web API is usually HTTP plus JSON: URLs, methods, and bodies.\n\nThe UI calls the API. The API talks to the database. The browser should not hold the database password. Keep the JSON shape documented so frontend and backend stay aligned.\n\nIn the code: GET /api/users/1 returns { id: 1, name: \"Ada\" }. That JSON shape is the contract. The comment is the rule: the UI should not talk to the database itself.\n\nIf each route invents a new JSON shape, the UI becomes a pile of special cases.",
+      a: "The problem before\nThe website talked to the database from the browser, or every screen invented its own way to save a todo. Mobile and web could not share work. A password sat in the page.\n\nWhat this is\nAn API is a contract so two programs can talk. A web API is HTTP plus JSON: URLs, methods, and bodies.\n\nWhat it solves\nThe kitchen (server) owns the database. The dining room (UI) only orders. Phone and web call the same /todos.\n\nReal-life example\nA restaurant. You do not cook. You order 'one dosa' (POST /orders). The kitchen answers 'ready' (201) or 'we are closed' (503).\n\nUses\nMobile + web + another service all call the same routes. FastAPI, Express, Go — same idea.\n\nWatch out\nGET must not delete. The browser never holds the database password. If each route invents a new JSON shape, the UI becomes a pile of special cases.",
       code: `app.get("/api/users/1", function (req, res) {
   res.json({ id: 1, name: "Ada" }); // the contract: this JSON shape
 });
@@ -419,7 +419,7 @@ app.get("*", function (req, res) {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
 });` },
     { id: 57, level: "intermediate", q: "reverse proxy?",
-      a: "A reverse proxy sits in front of Node. nginx, Caddy, or a cloud load balancer terminate TLS, gzip, serve static files, and route paths.\n\nNode should not be the public HTTPS terminator if you can avoid it. Buffering and timeouts live here too. Health checks hit /healthz through the proxy. Your Express app still does authz.\n\nIn the code: GET /healthz still runs in Express after the proxy forwards, and sends \"ok\".\n\nA common mistake is exposing Node's port 3000 on the public internet with no proxy.",
+      a: "The problem before\nNode sat on the street on port 3000. HTTPS, gzip, and static files all lived in the app. Anyone could knock on the kitchen door.\n\nWhat this is\nA reverse proxy sits in front of Node. Nginx, Caddy, or a cloud load balancer terminate TLS, gzip, serve static files, and route paths.\n\nWhat it solves\nThe world talks to the lobby. Node stays on localhost and still does auth. Health checks hit /healthz through the desk.\n\nReal-life example\nA hotel receptionist. You ask for room 12. You do not wander the staff corridors.\n\nUses\nTLS, static files, path routing, buffering, one domain for UI and API.\n\nWatch out\nExposing Node's port 3000 on the public internet with no proxy.",
       code: `// Express still sees the path after the proxy forwards
 app.get("/healthz", function (req, res) {
   res.send("ok");

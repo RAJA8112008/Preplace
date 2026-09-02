@@ -33,7 +33,7 @@ window.PREP_DATA["nginx"] = {
         "Proxy or file",
         "Response"
       ],
-      "body": "Nginx is a web server and reverse proxy. It accepts HTTP and HTTPS from the internet, can serve HTML and images from disk, and can forward API paths to your Node, Python, or Java app. You almost never expose Express on port 3000 to the whole internet. Nginx sits in front, handles TLS, and passes /api to the app."
+      "body": "The problem before\nEach app was its own front door. Visitors had to hit localhost:3000. HTTPS, photos, and two apps on one domain all sat inside Node — a job Node is poor at.\n\nWhat this is\nNginx is a specialist front door: a web server and reverse proxy. It accepts 80/443 from the internet, can send HTML and images from disk, and can walk /api to your Node, Python, or Java app on localhost.\n\nWhat it solves\nThe world only talks to Nginx. Your code stays on 127.0.0.1:3000. One domain can host the React build and the API.\n\nReal-life example\nA mall has one main gate and many shops inside. Nginx is the gate. Express is one shop. Guests do not wander the service corridors.\n\nUses\nStatic sites, HTTPS, reverse proxy, load-balance two Node processes, send / to React and /api to FastAPI.\n\nWatch out\nPublishing Express :3000 on 0.0.0.0 without a proxy."
     },
     {
       "title": "Reverse proxy",
@@ -43,7 +43,7 @@ window.PREP_DATA["nginx"] = {
         "proxy_pass http://127.0.0.1:3000",
         "App"
       ],
-      "body": "A reverse proxy receives the browser request and opens a second request to an internal server. The browser only talks to Nginx. That lets you run several apps, add HTTPS, hide ports, and buffer slow clients. proxy_pass is the line that sends the request onward."
+      "body": "The problem before\nYour app sat on the street: port 3000 open. Visitors needed that ugly port. HTTPS was hard. Two apps could not share one website name. Anyone could knock on the kitchen door.\n\nWhat this is\nA reverse proxy is a front desk the client did not pick. It takes the browser request and opens a second request to an internal server. The browser only talks to Nginx.\n\nWhat it solves\nGuests stay in the lobby (443). The desk walks them to room 12 (127.0.0.1:3000). You hide ports, add HTTPS, serve photos, and put two apps behind one name.\n\nReal-life example\nA hotel receptionist. You ask for room 12. You do not wander the staff corridors. Nginx is the receptionist. Express is room 12. proxy_pass is 'please take this guest to room 12'.\n\nUses\nHide :3000, terminate TLS, /api to Node and / to React, buffer slow clients, one domain for many apps.\n\nWatch out\nThe app sees Nginx as the client unless you forward X-Forwarded-For. Do not leave :3000 public."
     },
     {
       "title": "Static files versus the app",
@@ -165,13 +165,13 @@ window.PREP_DATA["nginx"] = {
       "id": 1,
       "level": "beginner",
       "q": "What is Nginx?",
-      "a": "Definition. Nginx is a web server and reverse proxy that sits in front of your app.\n\nHow it works. It accepts 80/443, serves files or proxy_pass to Node.\n\nOperational risk. Publishing Express :3000 on 0.0.0.0 without a proxy."
+      "a": "The problem before\nEach app was its own front door. TLS, static files, and routing all sat inside Node.\n\nWhat this is\nNginx is a web server and reverse proxy that sits in front of your app.\n\nWhat it solves\nIt accepts 80/443, serves files or proxy_pass to Node. Your code stays on localhost.\n\nReal-life example\nA mall gate. Many shops inside. Guests only use the gate.\n\nUses\nStatic sites, HTTPS, reverse proxy, load-balance two Node processes.\n\nWatch out\nPublishing Express :3000 on 0.0.0.0 without a proxy."
     },
     {
       "id": 2,
       "level": "beginner",
       "q": "What is a reverse proxy?",
-      "a": "Definition. A proxy the client does not choose; it forwards to internal services.\n\nHow it works. Browser → Nginx → 127.0.0.1:3000.\n\nOperational risk. Thinking the app sees the real client IP without forwarded headers.",
+      "a": "The problem before\nYour Node or FastAPI app sat on the street: port 3000 open to the whole internet. Visitors had to know that ugly port. HTTPS was hard. Two apps could not share one website name.\n\nWhat this is\nA reverse proxy is a front desk the client does not pick. It forwards to internal services. The browser only talks to Nginx.\n\nWhat it solves\nGuests stay in the lobby (443). The desk walks the request to the kitchen (127.0.0.1:3000). You hide ports, add HTTPS, and put two apps behind one domain.\n\nReal-life example\nA hotel: you ask the receptionist for room 12. You do not wander the staff corridors. Nginx is the receptionist. Express is room 12.\n\nUses\nHide app ports, add HTTPS, serve photos from disk, send /api to Node and / to React, put two apps behind one name.\n\nWhat happens\nBrowser → Nginx → 127.0.0.1:3000. proxy_pass is the line that sends the guest onward.\n\nWatch out\nThe app sees Nginx as the client unless you forward X-Forwarded-For. Do not leave :3000 public.",
       "flow": [
         "Browser",
         "Nginx",
@@ -182,7 +182,7 @@ window.PREP_DATA["nginx"] = {
       "id": 3,
       "level": "beginner",
       "q": "Why not expose port 3000?",
-      "a": "Definition. The app port is an internal detail. The public door should be 80/443 on Nginx.\n\nHow it works. Firewall allows 80/443 only. Node listens on localhost.\n\nOperational risk. A debug server left on 0.0.0.0:3000 in production."
+      "a": "The problem before\nAnyone on the internet could knock on Node's kitchen door (:3000), skip HTTPS, and poke debug routes.\n\nWhat this is\nPort 3000 is a staff corridor. The public door should be 80/443 on Nginx.\n\nWhat it solves\nThe firewall only opens the lobby. Node listens on 127.0.0.1. Guests never learn the kitchen number.\n\nReal-life example\nA restaurant: diners use the front door. They do not walk into the kitchen through the alley.\n\nUses\nEvery production Node, FastAPI, or Django app behind Nginx or a cloud load balancer.\n\nWatch out\nA debug server left on 0.0.0.0:3000 in production."
     },
     {
       "id": 4,

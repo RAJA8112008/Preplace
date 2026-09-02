@@ -396,6 +396,7 @@
     if (/^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|WITH)\b/im.test(c)) return "sql";
     if (/^\s*(from |import |def |print\(|joblib)/m.test(c)) return "python";
     if (/^\s*(FROM |WORKDIR |COPY |RUN |CMD |services:|on: \[|listen )/m.test(c)) return "txt";
+    if (/^\s*(git |gh |curl |ssh-|npx newman |BASE=|### )/m.test(c)) return "txt";
     return "javascript";
   };
 
@@ -554,128 +555,261 @@
       </section>`).join("")}</div>`;
   };
 
-  const TEACH_HEAD = /^(What this is|What happens|What the code is doing|In the example|In the code|Also know|Say this in an interview|Watch out|Common mistake|How it works|Definition|Configuration|Operational risk|Before you use this|Why we use it|When to pick this)\.?$/i;
+  const TEACH_HEAD = /^(What this is|What happens|What the code is doing|In the example|In the code|Also know|Say this in an interview|Watch out|Common mistake|How it works|Definition|Configuration|Operational risk|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\.?$/i;
 
   const extraForQuestion = (q, a) => {
     const hay = `${q} ${a}`.toLowerCase();
+    const story = (problem, solves, example, uses, watch) => ({ problem, solves, example, uses, watch, before: problem, why: solves });
+    if (/reverse proxy/.test((q || "").toLowerCase()) || (/reverse proxy/.test(hay) && !/what is nginx|\bnginx\b/.test((q || "").toLowerCase()))) {
+      return story(
+        "Your Node or FastAPI app sat on the street: port 3000 open to the whole internet. Visitors had to know that ugly port. HTTPS was hard. Two apps could not share one website name.",
+        "A reverse proxy is the front desk. Guests only talk to the lobby (Nginx on 443). The desk walks the request to the kitchen (127.0.0.1:3000). Guests never enter the kitchen.",
+        "A hotel: you ask the receptionist for room 12. You do not wander the staff corridors. Nginx is the receptionist. Express is room 12.",
+        "Hide app ports, add HTTPS, serve photos from disk, send /api to Node and / to React, put two apps behind one domain.",
+        "The app sees Nginx as the client unless you forward X-Forwarded-For. Do not leave :3000 public."
+      );
+    }
+    if (/\bnginx\b/.test(hay) && !/kubernetes/.test(hay)) {
+      return story(
+        "Without Nginx, each app is its own front door. TLS, static files, and routing all sit inside Node — a job Node is poor at.",
+        "Nginx is a specialist front door: files, HTTPS, and proxy_pass to the app. Your code stays on localhost.",
+        "A mall has one main gate and many shops inside. Nginx is the gate. Your API is one shop.",
+        "Static sites, reverse proxy, load-balance two Node processes, terminate HTTPS.",
+        "Two server blocks both claiming default_server — the wrong site appears."
+      );
+    }
+    if (/load balancer/.test(hay)) {
+      return story(
+        "One server took every click. When it died or got slow at noon, the whole site died.",
+        "A load balancer is a traffic cop: it spreads requests across healthy boxes and stops sending to a dead one.",
+        "A bank with one teller vs a hall with four windows and a person who says 'window 2 is free'.",
+        "Scale reads, survive one machine dying, blue-green deploys.",
+        "If every session lives only in one machine's RAM, you still need Redis or sticky sessions."
+      );
+    }
+    if (/\bcdn\b/.test(hay)) {
+      return story(
+        "Every photo and JS file flew from one office in Mumbai to a user in New York. First paint was slow. That office melted on sale day.",
+        "A CDN keeps copies of public files near the user, so the long flight happens once, not for every visitor.",
+        "A newspaper printed in one city vs stacks at every railway station. The station stack is the CDN.",
+        "JS bundles, images, fonts, public pages. Not a logged-in /api/me.",
+        "A public CDN key that holds Ada's inbox is a leak."
+      );
+    }
+    if (/postman|thunder client|\binsomnia\b|\bbruno\b|hoppscotch|newman/.test(hay)) {
+      return story(
+        "You only tested through the website. A click hid the URL and the token. When the page failed you did not know if the kitchen was closed or the waiter wrote the order wrong.",
+        "An HTTP client is a separate window: method, URL, headers, body, Send. You read status and JSON. Postman is the common GUI. curl is the same idea in the terminal.",
+        "A restaurant counter that is not the dining hall. You say 'one dosa' (POST /orders) and see 201. If that fails, React is not the first suspect.",
+        "Hit localhost, save a collection, copy as curl, share with QA. Thunder Client lives in VS Code. Bruno stores the collection in Git. Swagger /docs is a live menu.",
+        "Postman is not a browser. CORS will not stop it. A green Send does not prove :5173 can call :3000."
+      );
+    }
+    if (/\bcurl\b/.test(hay)) {
+      return story(
+        "A teammate had no Postman. CI cannot click Send. You needed the same request as text.",
+        "curl is the terminal twin of Postman. Same method, URL, headers, and body. Postman can copy as curl.",
+        "A phone call instead of a paper order pad. 'One dosa' is still POST /orders.",
+        "README samples, GitHub issues, health checks, SSH on a server.",
+        "A token inside a curl you paste into Slack is a leak."
+      );
+    }
+    if (/openapi|\bswagger\b/.test(hay)) {
+      return story(
+        "The wiki listed routes that no longer exist. Frontend and backend argued about the JSON shape.",
+        "OpenAPI is a machine menu of paths, bodies, and status codes. Swagger UI (often /docs) lets you Try it. FastAPI builds both from your functions.",
+        "A menu the kitchen reprints when a dish dies — not a stained paper from last year.",
+        "FastAPI /docs, Spring springdoc, any public API catalog. Import the spec into Postman.",
+        "A public /docs on prod can leak admin routes."
+      );
+    }
+    if (/\bgithub\b/.test(hay)) {
+      return story(
+        "The album lived on one laptop. The laptop died. A teammate could not review the work. There was no door called 'please merge this'.",
+        "GitHub is the school shelf: a hosted copy of Git, plus PRs, issues, and Actions. GitLab and Bitbucket do the same job.",
+        "Your bag is Git. The library shelf is GitHub. A PR is 'please put my chapter into the official book'.",
+        "Backup, clone on a new machine, review, CI on every push, Vercel deploys from a branch.",
+        "Saying 'I use GitHub' when you cannot name commit, branch, or PR. Git works offline."
+      );
+    }
+    if (/\bgit\b/.test(hay)) {
+      return story(
+        "People saved project-final-v3.zip. Two laptops had different files. Nobody could say who changed login.js or how to go back.",
+        "Git is a local photo album. status, add, commit, pull, push are the daily words. A branch is a sticker. A commit is a photo.",
+        "A class notebook. status is messy pages. add is the envelope. commit is the photo. push hands the album to the GitHub shelf.",
+        "Every job. Feature branches, PRs, undo with restore / reset / revert.",
+        "git add . then commit without reading status — secrets ride along. Do not reset shared main; revert instead."
+      );
+    }
+    if (/fastapi|pydantic|uvicorn/.test(hay)) {
+      return story(
+        "A Python notebook cannot be called by a phone app. Flask made you check JSON by hand and write docs in a wiki that went stale.",
+        "FastAPI turns a typed function into a URL. Wrong JSON is 422. /docs is a live menu. A model becomes POST /predict.",
+        "A kitchen window: you read the menu (/docs), order POST /dosa, and get a plate (JSON). The cook is your Python function.",
+        "CRUD APIs, login, ML /predict, file upload, internal tools. Same REST idea as Express, in Python.",
+        "Validation is not login. A valid body can still be the wrong user. Put JWT in Depends."
+      );
+    }
+    if ((/\brest\b|\bwhat is an api\b|\bapi\b/.test(hay)) && /http|json|endpoint|route|fastapi|express|resource/.test(hay)) {
+      return story(
+        "The website talked to the database from the browser, or every screen invented its own way to save a todo. Mobile and web could not share work. A password sat in the page.",
+        "An API is a shared window: method + URL in, status + JSON out. The kitchen (server) owns the database. The dining room (UI) only orders.",
+        "A restaurant: you do not cook. You order 'one dosa' (POST /orders). The kitchen answers 'ready' (201) or 'we are closed' (503).",
+        "Mobile + web + another service all call the same /todos. FastAPI, Express, Go — same idea.",
+        "GET must not delete. The browser never holds the database password."
+      );
+    }
     if (/webpage load|enter a url|type a url|type google/.test(hay)) {
-      return {
-        before: "You only need to know that a URL is a name (google.com) plus a path (/search). The browser does not already know the computer's number.",
-        why: "We tell this story because every web feature — login, API, image — rides the same steps. If you skip DNS or TLS, the rest of the answer sounds guessed.",
-        extra: "A CDN or cache can skip a step if you have been here before. Service workers can serve a saved page offline. Always tell the story in this order: find the computer, open a safe pipe, ask, get HTML, fetch extras, paint.",
-        watch: "Do not start at HTML. Interviewers wait for DNS and HTTPS first. Do not say the browser talks to the database."
-      };
+      return story(
+        "You typed a name. The browser did not know which computer that name is, or how to ask it safely. People jumped straight to 'HTML arrives' and skipped the hard parts.",
+        "The page-load story is the shared path: find the computer (DNS), open a safe pipe (HTTPS), ask for a file (HTTP), get HTML, fetch extras, paint. Every login and API rides these same steps.",
+        "A letter: look up the address in a phone book (DNS), lock the envelope (HTTPS), hand it to the post (HTTP), get a reply, then open the photos inside.",
+        "Explaining any click: open Google, load an image, call /api/todos. Same order every time.",
+        "Do not start at HTML. Interviewers wait for DNS and HTTPS first. The browser never talks to the database."
+      );
     }
     if (/\bhttps\b/.test(hay) && /http/.test(hay)) {
-      return {
-        before: "HTTP is just the request language (GET /path). Anyone on the wire can read it unless you wrap it.",
-        why: "We use HTTPS so passwords, cookies, and tokens are not sent as plain text. The certificate also helps prove you reached the real host, not a fake one.",
-        extra: "HTTPS is HTTP riding inside TLS. The padlock is the encrypted pipe plus that certificate check.",
-        watch: "Never send a password on http://. An https:// page that calls http:// is mixed content and the browser blocks it."
-      };
+      return story(
+        "HTTP is a postcard: GET /login with the password written in ink. Anyone on the cafe Wi-Fi could read it and pretend to be you.",
+        "HTTPS wraps that postcard in a locked envelope (TLS). The padlock also checks you reached the real bank, not a fake shop with a similar name.",
+        "A cash van vs an open bicycle basket. Same money, different pipe. The language inside is still HTTP — GET, POST, JSON.",
+        "Every login, cookie, token, and payment page. Redirect http:// to https:// on Nginx.",
+        "Never send a password on http://. An https:// page that calls http:// is mixed content and the browser blocks it."
+      );
     }
     if (/\bcors\b/.test(hay)) {
-      return {
-        before: "Know what an origin is: scheme + host + port. https://app.com and http://app.com are two origins. So are localhost:5173 and localhost:3000.",
-        why: "Browsers add CORS so a random site cannot call your API with the user's cookies as if it were your UI. It protects the user, not your server from Postman.",
-        extra: "Postman and curl are not browsers, so they do not apply CORS. A mobile app talking to an API also does not.",
-        watch: "You cannot fix CORS only in React. The server must allow the UI origin, or you proxy /api so the browser sees one origin."
-      };
+      return story(
+        "Any website could tell the browser: 'call bank.com/api with the cookies you already have.' The bank would think it was the real app. Evil-site.com could empty the account.",
+        "CORS is the bank's note to the browser: only this shop (https://app.com) may use my window. Postman is not a browser, so it skips this rule.",
+        "A school canteen: students from this school may order. A stranger from another school is stopped at the gate — unless the canteen writes their name on the allow list.",
+        "A React app on :5173 talking to an API on :3000. Production UI and API on different domains.",
+        "You cannot fix CORS only in React. The server must allow the UI origin, or Nginx must make /api look same-origin."
+      );
     }
     if (/event loop|microtask|macrotask/.test(hay)) {
-      return {
-        before: "JavaScript on one page runs one thing at a time. setTimeout and fetch do not freeze the page; they finish later.",
-        why: "We learn the event loop so we can predict print order and why a spinner still moves while data loads.",
-        extra: "Remember the print order: sync first, then Promise.then, then setTimeout(0). That one fact proves you understand the loop.",
-        watch: "await does not pause the whole page. It only pauses that async function."
-      };
+      return story(
+        "People thought fetch froze the page, or that setTimeout(0) ran immediately. Print order in interviews looked like magic.",
+        "One cook, one counter. Finish the ticket in hand (sync), then small sticky notes (Promises), then the wall clock (setTimeout). The page can still spin a spinner.",
+        "A chai stall with one person: pour this cup, then the next slip, then the timer for the boiling milk. He does not clone himself.",
+        "Predict console.log order. Keep the UI alive while data loads. Know why await does not freeze the tab.",
+        "await pauses only that async function, not the whole page."
+      );
     }
     if (/\bvar\b[\s\S]*\blet\b|\bconst\b/.test(hay) && /scope|hoist|tdz|temporal/.test(hay)) {
-      return {
-        before: "A variable is a name that holds a value. You need this before objects, functions, and React state.",
-        why: "We use let and const so a name cannot leak outside its block the way var can. That prevents silent bugs.",
-        extra: "Use const by default. Use let when the name must change. Skip var in new code.",
-        watch: "const only locks the name. An object inside const can still change its fields."
-      };
+      return story(
+        "var leaked out of if-blocks and loops. A name you thought was local showed up later with a surprise value.",
+        "let and const stay in their curly-brace room. const also refuses a second assignment to the same name, so you do not overwrite a URL by accident.",
+        "A locker with a name tag. var was a tag you could still read in the hallway. let is a tag that stays inside the room.",
+        "Every new variable in JS and React. const by default, let when the number must change.",
+        "const only locks the name. An object inside const can still change its fields."
+      );
     }
     if (/closure/.test(hay)) {
-      return {
-        before: "Know that an inner function can see names from the function that created it, even after the outer function returned.",
-        why: "We use closures for counters, private passwords, and event handlers that still remember the value from when they were created.",
-        extra: "Each call to the outer function gets its own private variables. Two counters do not share n.",
-        watch: "A loop with var and a click listener is the classic bug: every click sees the last i. Use let."
-      };
+      return story(
+        "A function returned and people thought its variables died. Then a click handler printed the wrong i, or two counters shared one number.",
+        "A closure is a backpack: the inner function still carries the outer names after the outer function has gone home. Each call gets its own backpack.",
+        "A locker key. You leave the gym (outer function returns) but the key still opens locker 7 (the saved n). Two members get two lockers.",
+        "Counters, private passwords, React event handlers that remember the id from map().",
+        "A loop with var and a click listener: every click sees the last i. Use let."
+      );
     }
     if (/\bdom\b/.test(hay) && !/random/.test(hay)) {
-      return {
-        before: "HTML is the page text. The DOM is that page as objects JavaScript can find and change.",
-        why: "We use the DOM to show cards, handle clicks, and update text without reloading the whole page.",
-        extra: "You find nodes with querySelector, change text with textContent, and listen with addEventListener. That is the whole daily job.",
-        watch: "Do not put user text into innerHTML. That is XSS. Use textContent."
-      };
+      return story(
+        "The page was dead text. To change a name you reloaded the whole site, or you edited HTML by hand and hoped.",
+        "The DOM is the page as live objects. JavaScript finds a box, changes the text, and listens for a click — no full reload.",
+        "A notice board. HTML is the paper. The DOM is the board with pins you can move. querySelector finds a pin. textContent writes a new note.",
+        "Cards, todo lists, show/hide, forms. Daily frontend work before React, and still under React.",
+        "Do not put user text into innerHTML. That is XSS. Use textContent."
+      );
     }
     if (/\bdns\b/.test(hay)) {
-      return {
-        before: "People type names (prepplace.dev). Packets travel to numbers (IP addresses). Something must translate.",
-        why: "We use DNS so you can change servers without printing a new IP on every poster. One name, many possible machines over time.",
-        extra: "TTL says how long a resolver may remember an old IP. After you change an A record, some users still hit the old box until TTL dies.",
-        watch: "DNS does not load your HTML. It only answers 'which IP?'. HTTPS and HTTP come after."
-      };
+      return story(
+        "People can remember google.com, not 142.250.x.x. If you printed only the number on a poster, a server move would break every bookmark.",
+        "DNS is the phone book: name in, IP out. You can change the machine behind the name without reprinting the poster.",
+        "A shop sign says 'Ram Tea'. The actual stall may move to the next street. The sign still works if you update the phone book, not if you tattooed the old plot number.",
+        "Every website, email MX records, load-balanced IPs, moving to a new host.",
+        "DNS does not load HTML. It only answers 'which IP?'. HTTPS and HTTP come after. TTL can keep an old number for a while."
+      );
     }
     if (/\bredis\b|cache-aside|in-memory store|ttl key|rediss:\/\//.test(hay)) {
-      return {
-        before: "You already need a real database (Postgres or Mongo) for users, orders, and money. Redis is the extra fast shelf next to it. Learn GET, SET, and EX (seconds to live) first. Install Redis locally or use a free cloud URL. Default port is 6379.",
-        why: "We use Redis so the same hot read does not hit the database a thousand times. Sessions, rate limits, and leaderboards need a shared, fast store that every API server can see. An in-memory Map on one Node process is invisible to the other processes.",
-        extra: "Redis lives in RAM, so it is often under 1 ms. It is a cache, session store, counter, tiny queue, and pub/sub bus — not the only copy of an order. Always set a TTL on cache keys. Prefix keys (prod:user:1) so apps do not clash.",
-        watch: "A FLUSHALL or a restart without persistence can wipe Redis. That should log people out or miss a cache — never delete the only user table. Do not run KEYS * in production; use SCAN."
-      };
+      return story(
+        "Every click asked Postgres the same thing: 'what is Ada's name?' A thousand users meant a thousand disk reads. Sessions lived in one Node process, so the second server did not know Ada was logged in.",
+        "Redis is a shared RAM shelf next to the database. Check the shelf first. If the name is there, skip disk. If not, load Postgres, put a copy on the shelf with a timer, then answer.",
+        "A chai stall: the cook does not grind leaves for every cup. A small pot stays hot on the counter (Redis). The big sack is in the store room (Postgres). When the pot is empty, refill from the sack.",
+        "Cache a profile, hold a login session, count login tries, a cart for a day, a tiny job list, a live scoreboard. Not the only copy of money or users.",
+        "FLUSHALL or a restart can wipe Redis. That should miss a cache or log people out — never delete the only user table. Always set a TTL."
+      );
     }
     if (/mongodb|document store|mongoose|objectid|\.insertone|collection/.test(hay)) {
-      return {
-        before: "If you know a JavaScript object, you already know a document. You do not CREATE TABLE first. Still decide what one document means (one student, one post). Install MongoDB or use Atlas. A collection is the folder of those documents.",
-        why: "We use Mongo when the thing you load is already a nested object and the shape changes often. One post with comments inside can be one document. Node teams like that it looks like JSON.",
-        extra: "A collection is like a table name. A document is one object. Fields can differ from one document to the next. Mongo adds _id if you do not. Query with find({ city: \"Pune\" }), not SELECT. Unique emails still need a unique index.",
-        watch: "Missing a field is not a SQL NULL column — the field is simply not there. Do not treat Mongo as 'no rules': money across two documents still needs a transaction or a better shape. Never pass req.body straight into find()."
-      };
+      return story(
+        "A blog post is already a nested object: title, tags, comments. Splitting that into five SQL tables made every page load a pile of JOINs. Adding a new field meant ALTER TABLE and a migration weekend.",
+        "Mongo stores one JSON-like document per thing. You save the object you already have. Fields can appear later without a schema change. find({ city: 'Pune' }) is the query.",
+        "A student's file folder: one folder per student, papers stuffed inside (marks, photo, address). You pick up the whole folder. You do not run down the hall joining three registers unless you must.",
+        "Posts with comments, product catalogs, events with extra fields, Node apps that think in objects. Not a bank ledger you will report across ten tables.",
+        "Missing a field is just 'not there', not SQL NULL. Unique emails still need a unique index. Never pass req.body straight into find()."
+      );
     }
     if (/create table|primary key|foreign key|postgres|mysql|relational|\bselect\b[\s\S]*\bfrom\b|\bsql\b/.test(hay) && !/nosql/.test(hay)) {
-      return {
-        before: "Think of one spreadsheet per thing: students, courses. Decide the columns and which column is the unique id. Then write CREATE TABLE. You talk to the engine with SQL, not with JavaScript objects. PostgreSQL and MySQL are two engines that speak SQL.",
-        why: "We use SQL when facts must stay consistent: users, orders, money, unique emails, and reports that join tables. Constraints (PRIMARY KEY, UNIQUE, FOREIGN KEY) refuse bad rows even if the app has a bug. Transactions (BEGIN / COMMIT) keep two money updates together.",
-        extra: "CRUD is INSERT, SELECT, UPDATE, DELETE. Always use WHERE on UPDATE and DELETE. Use $1 or ? so user text stays data, not extra SQL. Index the columns you filter and join on. EXPLAIN shows whether a query used an index.",
-        watch: "UPDATE or DELETE without WHERE changes every row. String-gluing SQL is injection. Do not stuff students and courses into one table with repeating columns — use a key and a JOIN."
-      };
+      return story(
+        "Users lived in a JSON file or a spreadsheet on one laptop. Two people took the same email. An order saved with no user. A payment succeeded but stock did not drop.",
+        "SQL is a shared ledger of tables with rules. UNIQUE email, FOREIGN KEY to a real user, BEGIN/COMMIT so two money updates succeed together or not at all.",
+        "A school register: one row per student, one roll number that cannot repeat, one mark sheet that must point at a real student. The clerk cannot invent roll 99 if 99 is not in the book.",
+        "Users, orders, money, marks, anything you will join or report on. PostgreSQL, MySQL, and SQLite all speak this language.",
+        "UPDATE or DELETE without WHERE changes every row. Never glue user text into SQL — use $1 or ?."
+      );
     }
     if (/oltp|olap|acid\b|replica vs shard|cap theorem|what is a database|pick a store/.test(hay)) {
-      return {
-        before: "An app should not keep the only copy of users in a JSON file on one laptop. Decide what you store (rows, documents, keys) and what questions you ask before you pick a brand.",
-        why: "We use a database so many users can read and write at once, survive a crash, search with indexes, and keep rules (unique email, foreign keys). The app sends a query; the engine owns the disk.",
-        extra: "Tables + money + joins → Postgres. Nested JSON you always load together → Mongo. Hot keys and TTL → Redis. Huge append logs → Kafka or a warehouse. Similarity search → a vector store. Most products start with one SQL database and add the others as a need appears.",
-        watch: "A cache is not a database. A replica is a copy (reads / failover). A shard is a slice of the data. Do not run a 20-second report on the checkout primary."
-      };
+      return story(
+        "The only copy of users sat in a file on one laptop. Two tabs overwrote each other. A crash lost the afternoon's signups. You could not search except by opening the file.",
+        "A database is a shared, crash-safe cabinet. Many people read and write at once. Indexes find a row fast. Rules (unique email) live in the cabinet, not only in your code.",
+        "A bank vault vs a shoebox under the bed. The vault has a clerk (the engine), a catalog (indexes), and a rule that two people cannot take the same locker number.",
+        "Any product with users. Start with one SQL database. Add Redis when the same read is too hot. Add Mongo when a document is the natural shape.",
+        "A cache is not a database. A replica is a copy. A shard is a slice. Do not run a 20-second report on the checkout primary."
+      );
     }
     if (/nosql|cassandra|dynamodb|wide-column|graph store|key-value/.test(hay)) {
-      return {
-        before: "NoSQL is not 'no schema' and not 'always faster than SQL'. It is a family: document (Mongo), key-value (Redis, DynamoDB), wide-column (Cassandra), graph (Neo4j). Write your queries first, then pick the family.",
-        why: "We use NoSQL when the access pattern is a known key, a nested document, huge write volume, or a walk of connections. SQL still wins for money, joins, and ad-hoc reports.",
-        extra: "In NoSQL, duplication is often the design. In SQL, duplication is usually a mistake until you denormalize on purpose. Dynamo and Cassandra want the query listed on day one.",
-        watch: "Picking Mongo from a tutorial, then spending a year rebuilding relations, is the usual regret. Missing unique constraints so two accounts share an email is a product bug."
-      };
+      return story(
+        "SQL JOINs got painful at huge write volume, or the thing you stored was already a nested object, or you only ever looked up by one key. People heard 'NoSQL' and thought 'no rules, always faster'.",
+        "NoSQL is a family of cabinets, not one product. Document (Mongo), key-value (Redis, Dynamo), wide-column (Cassandra), graph (Neo4j). You pick the cabinet that matches how you look things up.",
+        "A warehouse with bins labeled by SKU (key-value) vs a library card catalog you can ask any question (SQL). If you only ever grab bin A-12, a bin system is faster. If you ask 'all red shirts sold in Pune', you want tables.",
+        "Known key lookups, nested documents, huge writes, friend graphs. SQL still wins for money, joins, and surprise reports.",
+        "Picking Mongo from a tutorial, then spending a year rebuilding relations, is the usual regret."
+      );
+    }
+    if (/\bjwt\b|json web token/.test(hay)) {
+      return story(
+        "The server kept every login in its own RAM. The second server did not know Ada was logged in. Sticky sessions glued her to one box. Logging out everywhere was a spreadsheet of session ids.",
+        "A JWT is a signed lunch pass: header, payload, signature. Any server with the secret can check the stamp. The server does not look up a session row on every click.",
+        "A cinema ticket. The door person checks the stamp, not a phone call to the box office for every film. If you tear the ticket (change a field), the stamp no longer matches.",
+        "Stateless APIs, mobile + web with the same /me, microservices that all trust one secret or public key.",
+        "A JWT is not encrypted by default — anyone can read the payload. Do not put a password in it. Stealing the token is stealing the login until it expires."
+      );
+    }
+    if (/\bdocker\b|container image|dockerfile/.test(hay)) {
+      return story(
+        "'It works on my laptop' was the bug. Python 3.10 here, 3.12 there. A missing apt package on the server. Two hours to copy the same setup onto a new machine.",
+        "Docker packs the app plus its OS bits into an image. The same box runs on your laptop, CI, and the cloud. A container is one running copy of that box.",
+        "A tiffin dabba. The meal (app) and the box (OS libs) travel together. The office microwave (the host) only needs to know how to heat a dabba, not how you cooked at home.",
+        "Same Node version everywhere, CI tests, one command to run Postgres + Redis + the API, ship to Kubernetes.",
+        "A fat image with secrets baked in is a leak. Do not run the container as root if you can avoid it. Pin versions — latest moves under you."
+      );
     }
     if (/vector|embedding|pgvector|pinecone|\brag\b/.test(hay)) {
-      return {
-        before: "Your users and orders still live in SQL or Mongo. A vector store only holds embeddings (lists of numbers) plus the chunk of text they came from. You need an embedding model first.",
-        why: "We use vectors when search must match meaning ('bike' ≈ 'bicycle'), not only the same letters. RAG finds the right paragraphs, then an LLM writes the answer.",
-        extra: "Always filter by tenant or user so one company cannot retrieve another company's chunks. Keyword search and vector search solve different jobs; hybrid does both.",
-        watch: "A vector DB does not replace Postgres. Do not dump raw user files without an access check on retrieve."
-      };
+      return story(
+        "Keyword search missed 'bicycle' when the user typed 'bike'. A chatbot guessed from memory and invented a policy that was never in the docs.",
+        "A vector store keeps meaning as lists of numbers. Close meanings sit close together. RAG finds the right paragraphs first, then the LLM writes from those paragraphs.",
+        "A librarian who understands synonyms: you ask for 'something to ride to college' and she brings the bicycle aisle, not only books with that exact sentence.",
+        "Chat over your PDFs, similar-product search, recommend 'more like this'. Users and orders still live in SQL or Mongo.",
+        "A vector DB does not replace Postgres. Filter by tenant so one company cannot retrieve another company's chunks."
+      );
     }
-    return {
-      before: "Read the question as a story: what already exists, then what this tool adds. Name the pieces before you jump into code.",
-      why: "We use this because it does one job better than doing that job by hand or in the wrong place. Say that job in one sentence first.",
-      extra: "Say this as a short story in order. One example beats a list of buzzwords. Name the next step before you show syntax.",
-      watch: "If you skip a step, the rest of the story sounds like a guess. Pause after each heading and check the listener followed you."
-    };
+    return story(
+      "Before this tool, the job was done by hand, in the wrong place, or on one machine — and it broke when more people arrived.",
+      "This tool takes that one job and does it in a safer, shared way. Say the pain first, then the tool.",
+      "Map it to a shop: guest (user), desk (this tool), back room (database or app). One sentence each.",
+      "Use it where that job shows up every day. Do not use it as a second copy of money unless it is built for that.",
+      "If you cannot name the problem it fixed, you are only reciting a definition."
+    );
   };
 
   const hasTeachHead = (text, name) => new RegExp("^" + name + "\\b", "im").test(String(text || ""));
@@ -693,15 +827,31 @@
   const injectTeachExtras = (text, tip) => {
     let out = String(text || "").trim();
     if (!out) return "";
-    if (tip.before && !hasTeachHead(out, "Before you use this")) {
-      out = `Before you use this\n${tip.before}\n\n${out}`;
-    }
-    if (tip.why && !hasTeachHead(out, "Why we use it")) {
+    const problem = tip.problem || tip.before;
+    const solves = tip.solves || tip.why;
+    const hasProblem = hasTeachHead(out, "The problem before") || hasTeachHead(out, "Before you use this");
+    const hasSolves = hasTeachHead(out, "What it solves") || hasTeachHead(out, "Why we use it");
+    if (problem && !hasProblem) out = `The problem before\n${problem}\n\n${out}`;
+    if (solves && !hasSolves) {
       out = hasTeachHead(out, "What this is")
-        ? insertAfterSection(out, "What this is", "Why we use it", tip.why)
-        : `Why we use it\n${tip.why}\n\n${out}`;
+        ? insertAfterSection(out, "What this is", "What it solves", solves)
+        : `What it solves\n${solves}\n\n${out}`;
     }
-    if (tip.extra && !hasTeachHead(out, "Also know")) out += `\n\nAlso know\n${tip.extra}`;
+    if (tip.example && !hasTeachHead(out, "Real-life example")) {
+      out = hasTeachHead(out, "What it solves")
+        ? insertAfterSection(out, "What it solves", "Real-life example", tip.example)
+        : hasTeachHead(out, "Why we use it")
+          ? insertAfterSection(out, "Why we use it", "Real-life example", tip.example)
+          : `${out}\n\nReal-life example\n${tip.example}`;
+    }
+    if (tip.uses && !hasTeachHead(out, "Uses")) {
+      out = hasTeachHead(out, "Real-life example")
+        ? insertAfterSection(out, "Real-life example", "Uses", tip.uses)
+        : `${out}\n\nUses\n${tip.uses}`;
+    }
+    if (tip.extra && !hasTeachHead(out, "Also know") && !hasTeachHead(out, "Uses")) {
+      out += `\n\nAlso know\n${tip.extra}`;
+    }
     if (tip.watch && !hasTeachHead(out, "Watch out")) out += `\n\nWatch out\n${tip.watch}`;
     return out;
   };
@@ -732,7 +882,7 @@
     const tip = extraForQuestion(q || "", raw);
     const labeled = formalToTeach(raw);
     if (labeled) return injectTeachExtras(labeled, tip);
-    if (/^What this is\b/im.test(raw) || /^Before you use this\b/im.test(raw) || /^Why we use it\b/im.test(raw) || /^What the code is doing\b/im.test(raw)) {
+    if (/^What this is\b/im.test(raw) || /^Before you use this\b/im.test(raw) || /^Why we use it\b/im.test(raw) || /^What the code is doing\b/im.test(raw) || /^The problem before\b/im.test(raw) || /^What it solves\b/im.test(raw)) {
       return injectTeachExtras(raw, tip);
     }
     const parts = raw.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
@@ -752,9 +902,13 @@
 
   const prettyTeachHead = (h) => {
     const t = String(h || "").replace(/\.$/, "").trim();
-    if (/^before you use this/i.test(t)) return "Before you use this";
-    if (/^why we use it/i.test(t)) return "Why we use it";
-    if (/^when to pick this/i.test(t)) return "When to pick this";
+    if (/^the problem before/i.test(t)) return "The problem before";
+    if (/^before you use this/i.test(t)) return "The problem before";
+    if (/^what it solves/i.test(t)) return "What it solves";
+    if (/^why we use it/i.test(t)) return "What it solves";
+    if (/^real-life example/i.test(t)) return "Real-life example";
+    if (/^uses$/i.test(t)) return "Uses";
+    if (/^when to pick this/i.test(t)) return "Uses";
     if (/^what this is/i.test(t)) return "What this is";
     if (/^what happens/i.test(t)) return "What happens";
     if (/^what the code is doing/i.test(t)) return "What the code is doing";
@@ -1641,7 +1795,7 @@
       </div>
       ${tab === "notes" ? `
         <section class="${data.kind === "design" ? "design-stack" : "note-grid"}">
-          ${notes.map((n) => `<article class="note${data.kind === "design" ? " note-wide" : ""}"><h3>${escapeHtml(n.title)}</h3>${renderVisuals(n)}${/^(What this is|Before you use this|Why we use it|When to pick this)\b/im.test(n.body || "") ? renderTeachText(n.body, n.title) : `<p>${escapeHtml(n.body)}</p>`}</article>`).join("")}
+          ${notes.map((n) => `<article class="note${data.kind === "design" ? " note-wide" : ""}"><h3>${escapeHtml(n.title)}</h3>${renderVisuals(n)}${/^(What this is|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\b/im.test(n.body || "") ? renderTeachText(n.body, n.title) : `<p>${escapeHtml(n.body)}</p>`}</article>`).join("")}
         </section>` : tab === "examples" ? `
         ${data.kind === "dsa" ? langBar(lang) : ""}
         ${data.kind === "practice" && stacks.length ? `<div class="control-board stack-board">${stackBar(stacks, stackF)}</div>` : ""}

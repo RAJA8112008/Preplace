@@ -3,7 +3,7 @@ window.PREP_DATA.git = {
   "notes": [
     {
       "title": "What Git is",
-      "body": "Git is a version control tool. Version control means it stores snapshots of your project as you work. Each snapshot is called a commit. The whole history lives on your computer in a hidden folder named .git. A website like GitHub is only a host that keeps a copy. You can use Git with no website at all. The idea to learn first is the chain of snapshots, not a list of commands."
+      "body": "The problem before\nPeople saved project-final-v3.zip. Two laptops had different files. Nobody could say who changed login.js or how to go back.\n\nWhat this is\nGit is a version control tool: a chain of snapshots (commits) in a hidden .git folder on your computer. GitHub is only a host that keeps a copy. Git works with no website at all.\n\nWhat it solves\nYou can name a change, go back, and see who edited a line. A teammate can clone the same history.\n\nReal-life example\nA photo album of the project. Each photo is a commit. A branch is a sticker on one photo.\n\nUses\nEvery job. Learn the chain first, then the daily commands: status, add, commit, pull, push.\n\nWatch out\nTreating Git as a website. The cloud is optional."
     },
     {
       "title": "Three states",
@@ -46,8 +46,126 @@ window.PREP_DATA.git = {
       "body": "A good commit is small and about one idea. The message is a short command, such as 'Add login validation'. Never put passwords, keys, or huge binaries in a commit. Read your own diff before you push. Future you will search these messages when something breaks."
     },
     {
+      "title": "Daily Git commands",
+      "body": "The problem before\nPeople saved copies as project-final-v3.zip. Two laptops had different files. Nobody could say who changed login.js or how to go back.\n\nWhat this is\nGit is a local photo album of the project. The daily words are status, add, commit, log, diff, pull, push.\n\nWhat it solves\nYou take a named snapshot, send it to GitHub, and pull what the team already saved.\n\nReal-life example\nA class notebook. status is 'which pages are messy'. add is 'put these pages in the envelope'. commit is the photo. push is handing the album to the school shelf (GitHub).\n\nUses\nEvery job. Interviews ask the commands and the story (branch, merge, rebase, PR).\n\nWatch out\ngit add . then commit without reading status — secrets and junk ride along."
+    },
+    {
+      "title": "GitHub is the shelf",
+      "body": "The problem before\nThe album lived on one laptop. The laptop died. A teammate could not review the work. There was no door called 'please merge this'.\n\nWhat this is\nGitHub hosts a copy of the Git album, plus PRs, issues, and Actions. GitLab and Bitbucket do the same job.\n\nWhat it solves\nClone on a new machine. Open a PR so someone stamps your branch before main moves.\n\nReal-life example\nThe school library shelf. Your bag is Git. The shelf is GitHub. A PR is 'please put my chapter into the official book'.\n\nUses\nBackup, team review, CI on every push, Pages/Vercel deploys.\n\nWatch out\nSaying 'I use GitHub' when you cannot name commit, branch, or PR. Git works offline. The site is extra."
+    },
+    {
       "title": "GitHub extras",
       "body": "GitHub adds extras around Git: Actions for tests, CODEOWNERS for review routing, and branch protection on main. Draft PRs, squash merge, tags, and releases are website features. Open source often uses a fork: your copy, then a PR into the original. Git still stores the snapshots. The extras are how teams work together."
+    }
+  ],
+  "examples": [
+    {
+      "title": "First day: init, add, commit",
+      "lang": "txt",
+      "desc": "The problem before\nA folder was just files. There was no history.\n\nWhat this is\ninit makes the hidden .git attic. add fills the envelope. commit takes the photo.\n\nWhat it solves\nYou have snapshot 1 with a message.\n\nReal-life example\nBuy an album, choose pages, click the camera.\n\nUses\nNew projects that are not a clone.\n\nWatch out\ninit inside an existing repo. Nested attics.",
+      "code": "git init\ngit status\ngit add README.md app.js\ngit commit -m \"Add first draft\"\ngit log --oneline"
+    },
+    {
+      "title": "Daily save",
+      "lang": "txt",
+      "desc": "The problem before\nYou edited five files and could not remember what was ready.\n\nWhat this is\nstatus, diff, add the ones you mean, commit one idea.\n\nWhat it solves\nThe next snapshot is a story, not 'update'.\n\nReal-life example\nRead the messy desk, put only the login pages in the envelope.\n\nUses\nEvery working hour.\n\nWatch out\ngit add . with a .env sitting there.",
+      "code": "git status\ngit diff\ngit add src/login.js\ngit commit -m \"Reject empty passwords on login\"\ngit status"
+    },
+    {
+      "title": "Clone and make a branch",
+      "lang": "txt",
+      "desc": "The problem before\nWork happened on main. A teammate could not review a clean slice.\n\nWhat this is\nclone copies the album. switch -c makes a sticker for this job.\n\nWhat it solves\nmain stays clean. Your work has a name.\n\nReal-life example\nPhotocopy the textbook, then a sticky note 'login' on your draft.\n\nUses\nEvery team repo.\n\nWatch out\nCommitting on main when the team forbids it.",
+      "code": "git clone https://github.com/org/app.git\ncd app\ngit switch -c feat/login\n# older Git: git checkout -b feat/login"
+    },
+    {
+      "title": "Push to GitHub and set upstream",
+      "lang": "txt",
+      "desc": "The problem before\nThe branch existed only on your laptop. A PR needs a remote branch.\n\nWhat this is\npush -u origin feat/login sends the sticker and remembers the pair.\n\nWhat it solves\nLater push and pull need no extra words.\n\nReal-life example\nPut your chapter on the school shelf under the same title.\n\nUses\nOpening a PR.\n\nWatch out\npushing to origin/main by habit.",
+      "code": "git remote -v\ngit push -u origin feat/login\n# later, on this branch:\ngit push\ngit pull"
+    },
+    {
+      "title": "Fetch vs pull",
+      "lang": "txt",
+      "desc": "The problem before\nYou wanted to look at the team's new commits without mixing them into your files yet.\n\nWhat this is\nfetch updates postcards (origin/main). pull is fetch plus merge or rebase into your branch.\n\nWhat it solves\nLook first (fetch + log). Combine when you are ready (pull).\n\nReal-life example\nMail arrives in the box (fetch). Filing it into your notebook is pull.\n\nUses\nBefore a PR. After a weekend.\n\nWatch out\npull with a dirty desk that clashes.",
+      "code": "git fetch origin\ngit log --oneline HEAD..origin/main\ngit pull --rebase origin main\n# or: git merge origin/main"
+    },
+    {
+      "title": "See history and a file",
+      "lang": "txt",
+      "desc": "The problem before\nWho changed this line? What did the last commit do?\n\nWhat this is\nlog is the chain. show is one photo. blame is last author per line.\n\nWhat it solves\nYou read the album before you blame a person.\n\nReal-life example\nA museum label on each sentence.\n\nUses\nDebugging, reviews.\n\nWatch out\nblame as a gotcha. The last touch is not always the bug.",
+      "code": "git log --oneline -15\ngit show HEAD\ngit diff main...HEAD\ngit blame src/login.js"
+    },
+    {
+      "title": "Undo uncommitted work",
+      "lang": "txt",
+      "desc": "The problem before\nYou broke a file and wanted last commit's text back.\n\nWhat this is\nrestore puts a file back. restore --staged unstages. The branch sticker does not move.\n\nWhat it solves\nDesk matches the last photo for that file.\n\nReal-life example\nThrow the draft page, keep the printed one.\n\nUses\nLocal oops.\n\nWatch out\nrestore has no recycle bin.",
+      "code": "git restore src/login.js\ngit restore --staged src/login.js\n# old: git checkout -- src/login.js"
+    },
+    {
+      "title": "Undo the last commit (private branch)",
+      "lang": "txt",
+      "desc": "The problem before\nYou committed too soon. The work should stay on the desk.\n\nWhat this is\nreset --soft HEAD~1 moves the sticker back and keeps files staged.\n\nWhat it solves\nYou can edit the envelope and commit again.\n\nReal-life example\nPeel the last photo off a private draft. The pages are still in your hand.\n\nUses\nA branch only you pushed, or not pushed yet.\n\nWatch out\nreset on shared main. Use revert there.",
+      "code": "git reset --soft HEAD~1\n# --mixed (default): keep files, unstage\n# --hard: also wipe the desk — dangerous"
+    },
+    {
+      "title": "Revert on main (safe undo)",
+      "lang": "txt",
+      "desc": "The problem before\nA bad commit is already on origin/main. Teammates pulled it.\n\nWhat this is\nrevert adds a new commit that applies the opposite patch.\n\nWhat it solves\nHistory stays honest. No force-push.\n\nReal-life example\nPrint a correction page. Do not burn the library book.\n\nUses\nShared branches.\n\nWatch out\nreset --hard origin/main after others pulled.",
+      "code": "git revert HEAD\ngit revert abc1234\ngit push"
+    },
+    {
+      "title": "Merge a feature into main",
+      "lang": "txt",
+      "desc": "The problem before\nThe feature is done. main should include it.\n\nWhat this is\nswitch to main, pull, merge the feature, push.\n\nWhat it solves\nA join in the album (or a fast-forward slide).\n\nReal-life example\nStaple your chapter into the official book.\n\nUses\nSmall teams without a PR bot. Same idea as the GitHub merge button.\n\nWatch out\nmerge conflicts — finish them before you push.",
+      "code": "git switch main\ngit pull\ngit merge feat/login\n# fix files if Git paused, then:\ngit add .\ngit commit\ngit push"
+    },
+    {
+      "title": "Rebase a private branch",
+      "lang": "txt",
+      "desc": "The problem before\nmain moved. Your branch is an old side road. The PR diff looks huge.\n\nWhat this is\nrebase copies your commits onto the new main. New hashes. One line.\n\nWhat it solves\nReviewers see only your idea on top of today.\n\nReal-life example\nReprint your chapter after the textbook got a new edition.\n\nUses\nA branch only you use.\n\nWatch out\nrebase a branch others already pulled, then force-push without lease.",
+      "code": "git fetch origin\ngit rebase origin/main\n# if conflict: edit, git add FILE, git rebase --continue\n# git rebase --abort\ngit push --force-with-lease"
+    },
+    {
+      "title": "Stash, switch, pop",
+      "lang": "txt",
+      "desc": "The problem before\nHalf-done files blocked a hotfix checkout.\n\nWhat this is\nstash pockets the desk. switch to hotfix. come back and stash pop.\n\nWhat it solves\nTwo jobs, one attic, no fake commit.\n\nReal-life example\nCoat pocket. Not the album.\n\nUses\nQuick branch hops.\n\nWatch out\nMany stashes. pop the wrong one. Stash does not travel to a new clone.",
+      "code": "git stash push -m \"wip login\"\ngit switch main\ngit switch -c hotfix/crash\n# ...\ngit switch feat/login\ngit stash pop"
+    },
+    {
+      "title": "Conflict markers",
+      "lang": "txt",
+      "desc": "The problem before\nBoth sides changed the same lines. Git paused.\n\nWhat this is\nMarkers show HEAD vs incoming. You write one valid file, add, continue.\n\nWhat it solves\nThe mix is a human sentence, not two drafts.\n\nReal-life example\nTwo people wrote the title. The teacher picks one line.\n\nUses\nmerge and rebase.\n\nWatch out\nCommitting the <<<<<<< markers.",
+      "code": "# <<<<<<< HEAD\n# title = \"Welcome Ada\"\n# =======\n# title = \"Welcome Bob\"\n# >>>>>>> feat/login\n#\n# keep one version, then:\ngit add src/app.js\ngit commit          # if merge\n# git rebase --continue   # if rebase"
+    },
+    {
+      "title": "Open a GitHub PR (gh)",
+      "lang": "txt",
+      "desc": "The problem before\nThe branch is on GitHub but nobody was asked to stamp it.\n\nWhat this is\nA PR is the review form: this branch into main. gh can open it from the terminal.\n\nWhat it solves\nReview, CI, merge button. Git still does the merge.\n\nReal-life example\nPlease put my chapter into the official book.\n\nUses\nEvery company repo.\n\nWatch out\nPRs from a stale fork. Fetch upstream first.",
+      "code": "git push -u origin feat/login\ngh pr create --fill\n# or open the URL GitHub prints\n# GitHub → Pull requests → New"
+    },
+    {
+      "title": ".gitignore and untrack",
+      "lang": "txt",
+      "desc": "The problem before\nnode_modules and .env were in the first commit.\n\nWhat this is\ngitignore hides untracked paths. Already tracked files need rm --cached.\n\nWhat it solves\nThe next photo drops them. Disk still has the file.\n\nReal-life example\nA do-not-photograph list. Old photos still have the mess until you rewrite.\n\nUses\nEvery Node, Python, and env file.\n\nWatch out\ngitignore alone does not untrack.",
+      "code": "echo \".env\" >> .gitignore\necho \"node_modules/\" >> .gitignore\ngit rm --cached .env\ngit add .gitignore\ngit commit -m \"Stop tracking .env\"\n# then rotate the leaked secret"
+    },
+    {
+      "title": "Force-with-lease (not --force)",
+      "lang": "txt",
+      "desc": "The problem before\nYou rebased. A normal push is rejected. --force can erase Sam's new commit.\n\nWhat this is\nforce-with-lease pushes only if origin still matches the postcard you fetched.\n\nWhat it solves\nRewrite your private branch without clobbering Sam.\n\nReal-life example\nReplace your chapter only if nobody slipped a page in while you were gone.\n\nUses\nAfter rebase on a personal feature branch.\n\nWatch out\n--force on main.",
+      "code": "git fetch origin\ngit push --force-with-lease origin feat/login\n# never: git push --force origin main"
+    },
+    {
+      "title": "Cherry-pick a hotfix",
+      "lang": "txt",
+      "desc": "The problem before\nThe crash fix is on main. The release branch also needs that one commit.\n\nWhat this is\ncherry-pick copies one commit's patch as a new commit on this branch.\n\nWhat it solves\nOne idea, two lines, new hash.\n\nReal-life example\nPhotocopy one page into another notebook.\n\nUses\nHotfixes, backports.\n\nWatch out\nPicking a merge commit without -m.",
+      "code": "git switch release/1.2\ngit cherry-pick abc1234\ngit push"
+    },
+    {
+      "title": "Tag a release",
+      "lang": "txt",
+      "desc": "The problem before\nmain moved. Nobody remembered which commit was v1.2.0.\n\nWhat this is\nAn annotated tag is a museum label on one commit. Push tags too.\n\nWhat it solves\nInstallers and GitHub Releases point at a frozen photo.\n\nReal-life example\nA plaque on one textbook edition.\n\nUses\nReleases.\n\nWatch out\nMoving a published tag. Forgetting git push --tags.",
+      "code": "git tag -a v1.2.0 -m \"Spring release\"\ngit push origin v1.2.0\n# git push --tags"
     }
   ],
   "questions": [
@@ -55,6 +173,7 @@ window.PREP_DATA.git = {
       "id": 1,
       "level": "beginner",
       "q": "What is Git?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "Git is a tool that saves snapshots of your project over time.\nA snapshot is called a commit. Git stores the whole chain of commits on your computer. A website is only another copy of that chain.\nIn the code:\nThe album object is Git's history. photos is the list of commits. Each photo has an id, a caption (the message), and the file text at that moment. latest is a pointer at the newest photo. The last comment says the album lives on your computer.\nA common mistake is treating Git as a website. Git works offline. The cloud is optional.",
       "code": "// Git is a photo album, not a \"run these commands\" list\nalbum = {\n  photos: [\n    { id: \"c1\", caption: \"first draft\", files: { \"app.js\": \"hi\" } },\n    { id: \"c2\", caption: \"add hello\",   files: { \"app.js\": \"hello\" } }\n  ],\n  latest: \"c2\"   // a sticky note on the newest photo\n};\n// the album lives on your computer; the cloud is only a copy"
     },
@@ -62,6 +181,7 @@ window.PREP_DATA.git = {
       "id": 2,
       "level": "beginner",
       "q": "Git vs GitHub?",
+      "ask": "Most asked · Amazon · Google · Microsoft · Meta",
       "a": "Git and GitHub are different tools that people mix up because the names sound alike.\nGit runs on your computer and saves snapshots. GitHub is a website that hosts copies, reviews, and issues. GitLab and Bitbucket do the same job as GitHub for Git repos.\nIn the code:\ntools.git is local and saves snapshots. tools.github is on the internet and hosts copies. The comments say Git does not need GitHub, but GitHub needs Git under the hood.\nA common mistake is saying 'I do not have Git, I only use GitHub.' The site is using Git for you.",
       "code": "// two different things with similar names\ntools = {\n  git:    { where: \"your computer\", job: \"save snapshots\" },\n  github: { where: \"the internet\",  job: \"host copies, reviews, issues\" }\n};\n// Git does not need GitHub\n// GitHub needs Git under the hood"
     },
@@ -83,6 +203,7 @@ window.PREP_DATA.git = {
       "id": 5,
       "level": "beginner",
       "q": "git clone?",
+      "ask": "Most asked · Amazon · Google",
       "a": "Clone copies someone else's full repo onto your computer.\nYou get the files and the commit history. The copy usually remembers the original URL as origin.\nIn the code:\nonline_album has a url, photos c1–c3, and latest_branch main. my_copy has the same photos, a desk with files from photo c3, and origin pointing back at the URL.\nA common mistake is thinking clone is a zip of today's files only. You also got the old snapshots.",
       "code": "// clone = photocopy the whole scrapbook\nonline_album = {\n  url: \"https://example.com/team/app\",\n  photos: [\"c1\", \"c2\", \"c3\"],\n  latest_branch: \"main\"\n};\n\nmy_copy = {\n  photos: [\"c1\", \"c2\", \"c3\"],           // same history\n  desk:   { \"app.js\": \"from photo c3\" }, // files you can edit\n  origin: \"https://example.com/team/app\" // sticky note: where it came from\n};"
     },
@@ -97,6 +218,7 @@ window.PREP_DATA.git = {
       "id": 7,
       "level": "beginner",
       "q": "git add?",
+      "ask": "Most asked · Amazon · Microsoft",
       "a": "git add copies a chosen version of a file from the working tree into staging.\nThe file on disk can keep changing after that. Staging holds the version you picked. A commit photographs staging, not every dirty file.\nIn the code:\nYou edited a.js and b.js on the desk. basket starts empty. After you choose a.js, basket has only new A. b.js stays on the desk only, so it is not in the next snapshot.\nA common mistake is adding a whole folder when you only meant one file. Staging is a choice.",
       "code": "// you edited two files on the desk\ndesk   = { \"a.js\": \"new A\", \"b.js\": \"new B\" };\nbasket = {};                              // empty envelope\nalbum  = { last: { \"a.js\": \"old A\", \"b.js\": \"old B\" } };\n\n// you only choose a.js for the next photo\nbasket = { \"a.js\": \"new A\" };\n// b.js is still only on the desk — not in the next snapshot"
     },
@@ -104,6 +226,7 @@ window.PREP_DATA.git = {
       "id": 8,
       "level": "beginner",
       "q": "git commit?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "A commit is one frozen snapshot of staging, plus a message, plus a parent pointer.\nGit gives it an id. History is a chain of these snapshots. The files on disk can change after the click. The commit will not.\nIn the code:\ncommit_c2 has id c2, message Add login title, files with app.js hello, and parent c1. The last comment says the desk can change; photo c2 will not.\nA common mistake is committing with an empty message or committing files you never staged on purpose.",
       "code": "// a commit is a photo + a pointer to the older photo\ncommit_c2 = {\n  id: \"c2\",\n  message: \"Add login title\",     // caption\n  files: { \"app.js\": \"hello\" },   // what was in the basket\n  parent: \"c1\"                    // the photo before this one\n};\n// the desk can change now; photo c2 will not change"
     },
@@ -111,6 +234,7 @@ window.PREP_DATA.git = {
       "id": 9,
       "level": "beginner",
       "q": "git status?",
+      "ask": "Most asked · Amazon · Microsoft",
       "a": "git status is a report of the three places. It does not change anything.\nIt shows which branch you are on, what is staged, what is edited but unstaged, and what Git has never tracked.\nIn the code:\nreport.you_are_on is main. in_basket is app.js, ready for the next photo. on_desk is notes.txt, edited but not staged. unknown is secret.env, untracked. The last line says read the report before the next snapshot.\nA common mistake is ignoring untracked files. That is how secrets sneak into a later add .",
       "code": "// status is a report, not an action\nreport = {\n  you_are_on: \"main\",\n  in_basket:  [\"app.js\"],          // ready for the next photo\n  on_desk:    [\"notes.txt\"],       // edited but not in the envelope\n  unknown:    [\"secret.env\"]       // Git has never tracked this path\n};\n// read the report before you take the next snapshot"
     },
@@ -139,6 +263,7 @@ window.PREP_DATA.git = {
       "id": 13,
       "level": "beginner",
       "q": "What is a branch?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "A branch is a name that points at one commit.\nIt is a sticker on a photo, not a second copy of the project. Adding a branch does not duplicate all files. When you commit on that branch, only that sticker moves.\nIn the code:\nphotos are c1, c2, c3. stickers.main points at c2. stickers.feature points at c3. The comment says adding a sticker does not copy all files.\nA common mistake is thinking a branch is a folder of files. It is a pointer.",
       "code": "// branches are stickers on photos, not extra folders\nphotos = { c1: {}, c2: {}, c3: {} };\n\nstickers = {\n  main:    \"c2\",   // team bookmark\n  feature: \"c3\"    // your experiment bookmark\n};\n// adding a sticker does not copy all files"
     },
@@ -160,6 +285,7 @@ window.PREP_DATA.git = {
       "id": 16,
       "level": "beginner",
       "q": "What is HEAD?",
+      "ask": "Most asked · Amazon · Google",
       "a": "HEAD is the 'you are here' arrow.\nNormally it points at a branch name, and that name points at a commit. Detached HEAD points at a commit id directly, with no branch in between.\nIn the code:\nstickers has main at c5 and feature at c7. HEAD.points_at is feature, so you_are_on_commit is c7. The commented line shows detached HEAD pointing at c3.\nA common mistake is ignoring 'detached HEAD' warnings and committing there. Those commits have no sticker.",
       "code": "// HEAD is the \"you are here\" arrow\nstickers = { main: \"c5\", feature: \"c7\" };\n\n// normal: HEAD -> branch name -> commit\nHEAD = { points_at: \"feature\" };\nyou_are_on_commit = stickers[HEAD.points_at];  // c7\n\n// detached: HEAD -> commit id directly\n// HEAD = { points_at: \"c3\" };"
     },
@@ -181,6 +307,7 @@ window.PREP_DATA.git = {
       "id": 19,
       "level": "beginner",
       "q": "git fetch vs pull vs push?",
+      "ask": "Most asked · Amazon · Google · Microsoft · Meta",
       "a": "fetch, pull, and push are three different mail actions.\nfetch updates your postcards of the remote and does not change your files. pull is fetch plus combining into your local branch. push sends your commits to the remote.\nIn the code:\nlocal_main is c5. mailbox origin/main starts at c5. After FETCH, mailbox origin/main is c8 but local_main stays c5. PULL would combine. PUSH would send local photos online.\nA common mistake is using pull when you only wanted to look. fetch is the look.",
       "code": "// three different mail actions\nlocal_main   = \"c5\";\nmailbox      = { \"origin/main\": \"c5\" };  // last time you checked\n\n// FETCH: mailbox updates, desk stays\nmailbox[\"origin/main\"] = \"c8\";\nlocal_main = \"c5\";                       // you have not filed yet\n\n// PULL: fetch + combine into local_main\n// PUSH: send local photos into the online album"
     },
@@ -202,6 +329,7 @@ window.PREP_DATA.git = {
       "id": 22,
       "level": "beginner",
       "q": "What is .gitignore?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": ".gitignore is a 'do not photograph' list of path patterns.\nMatched untracked files will not show as candidates to add (except with force). Secrets, downloads, and build output belong here.\nIn the code:\nignore_list has node_modules/, .env, dist/, and *.log. desk_files includes app.js, .env, and dist/app.js. tracked_candidates keeps only app.js after filtering.\nA common mistake is adding node_modules after it was already committed. Ignore does not untrack by itself.",
       "code": "// a \"do not photograph\" list (patterns)\nignore_list = [\n  \"node_modules/\",   // downloaded libraries, not your writing\n  \".env\",            // secrets\n  \"dist/\",           // built output\n  \"*.log\"\n];\ndesk_files = [\"app.js\", \".env\", \"dist/app.js\"];\ntracked_candidates = desk_files.filter(f => !matches(ignore_list, f));\n// result: only app.js is a candidate to enter the album"
     },
@@ -216,6 +344,7 @@ window.PREP_DATA.git = {
       "id": 24,
       "level": "beginner",
       "q": "What is a pull request?",
+      "ask": "Most asked · Amazon · Google · Microsoft · Meta",
       "a": "A pull request is a conversation wrapped around copying one branch into another.\nIt lists the commits, reviews, and CI checks. People merge only when the form is accepted. Git still does the actual merge as commits.\nIn the code:\npull_request.from_branch is login, into_branch is main, photos_to_copy are c11 and c12, reviews and checks.tests green. The comment says people click merge when the form is accepted.\nA common mistake is treating a PR as a Git object. It lives on the website.",
       "code": "// a PR is a conversation wrapped around two bookmarks\npull_request = {\n  from_branch: \"login\",\n  into_branch: \"main\",\n  photos_to_copy: [\"c11\", \"c12\"],\n  reviews: [\"looks good\", \"please rename this\"],\n  checks:  { tests: \"green\" }\n};\n// people click merge only when the form is accepted"
     },
@@ -223,6 +352,7 @@ window.PREP_DATA.git = {
       "id": 25,
       "level": "beginner",
       "q": "fork vs branch?",
+      "ask": "Most asked · Amazon · Google",
       "a": "A branch is a sticker in one repo. A fork is a whole extra copy of the repo under another owner.\nOn a team repo you push a branch and open a PR. On open source you often push to your fork, then ask the original to copy your branch.\nIn the code:\nteam_album owner is org. your_fork owner is you, with feature at c12. You push to your_fork, then ask org to copy feature into their main.\nA common mistake is pushing a fork's work to origin when origin is the org and you have no write access.",
       "code": "// same idea, different ownership\nteam_album = {\n  owner: \"org\",\n  stickers: { main: \"c10\", your_pr_branch: null }\n};\nyour_fork = {\n  owner: \"you\",\n  stickers: { main: \"c10\", feature: \"c12\" }\n};\n// you push to your_fork, then ask org to copy feature into their main"
     },
@@ -244,6 +374,7 @@ window.PREP_DATA.git = {
       "id": 28,
       "level": "intermediate",
       "q": "What is a merge conflict?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "A merge conflict means Git paused because both sides changed the same lines.\nIt writes both drafts into the file with marker lines. The file is unfinished until you delete the markers and keep one clear version.\nIn the code:\napp_js shows <<<<<<< HEAD with Welcome Ada, then =======, then Welcome Bob from feature, then >>>>>>>. The comment says delete the markers and keep one clear version.\nA common mistake is committing the file with the markers still inside. The app will break and the conflict is not done.",
       "code": "// Git paused and left both drafts in the file\napp_js = `\ntitle = \"Welcome\"\n<<<<<<< HEAD\ntitle = \"Welcome Ada\"     // your side (the branch you are on)\n=======\ntitle = \"Welcome Bob\"     // their side (incoming)\n>>>>>>> feature\n`;\n// delete the markers and keep one clear version before the next photo"
     },
@@ -258,6 +389,7 @@ window.PREP_DATA.git = {
       "id": 30,
       "level": "intermediate",
       "q": "git merge vs rebase?",
+      "ask": "Most asked · Amazon · Google · Microsoft · Meta · Uber",
       "a": "Merge keeps a join commit with two parents, so you can still see both lines. Rebase copies your commits onto another base so history looks linear.\nCopied commits get new ids. The ideas can be the same. The fingerprints are not.\nIn the code:\nThe MERGE diagram shows c4 on main and c5 on yours meeting at merge photo c6. The REBASE diagram shows c3' and c5' after c4, new photos with new ids.\nA common mistake is rebasing a branch that teammates already pulled. Their commits will not match yours.",
       "code": "// MERGE: keep the join\n//   c1 -- c2 -- c4 (main)\n//           \\\n//            c3 -- c5 (yours) --> merge photo c6 with parents c4 and c5\n\n// REBASE: copy yours after c4\n//   c1 -- c2 -- c4 -- c3' -- c5'\n// c3' is a new photo with a new id, same idea as c3"
     },
@@ -265,6 +397,7 @@ window.PREP_DATA.git = {
       "id": 31,
       "level": "intermediate",
       "q": "When is rebase dangerous?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "Rebase is dangerous when other people already have the old commit ids.\nYou reprint the novel with new fingerprints. Their next pull looks like two different books fighting.\nIn the code:\nyour_laptop has c1, c2', c3' after a rewrite. sams_laptop still has c1, c2, c3. The comment says Sam's next pull looks like a fight. Safe rebase is a private feature only you used.\nA common mistake is rebase then force-push to a shared branch without telling anyone.",
       "code": "// you rewrote photos that Sam already has\nyour_laptop = { photos: [\"c1\", \"c2'\", \"c3'\"] };  // new fingerprints\nsams_laptop = { photos: [\"c1\", \"c2\",  \"c3\"] };   // old fingerprints\n\n// Sam's next pull looks like a fight between two different novels\n// safe rebase: a private feature only you used"
     },
@@ -293,6 +426,7 @@ window.PREP_DATA.git = {
       "id": 35,
       "level": "intermediate",
       "q": "git stash?",
+      "ask": "Most asked · Amazon · Microsoft",
       "a": "git stash parks uncommitted changes in a side pocket so your working tree matches the last commit.\nYou can switch branches, then pop the pocket later. Stash is not a named commit. It lives on this laptop.\nIn the code:\ndesk starts half done. pocket copies that. desk becomes clean like the last photo. Later desk = pocket again. The last comment says if you lose the coat, the pocket is gone.\nA common mistake is stacking many stashes and popping the wrong one, or never committing work that needed a real snapshot.",
       "code": "// stash is a coat pocket, not the album\ndesk  = { \"app.js\": \"half done\" };\npocket = { \"app.js\": \"half done\" };\ndesk  = { \"app.js\": \"clean like last photo\" };  // you can switch bookmarks\n\n// later, empty the pocket onto the desk again\ndesk = pocket;\n// if you lose the coat, the pocket is gone — it was never a named photo"
     },
@@ -307,6 +441,7 @@ window.PREP_DATA.git = {
       "id": 37,
       "level": "intermediate",
       "q": "git reset --soft --mixed --hard?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "reset moves the branch sticker to another commit. The flags choose what happens to staging and files.\n--soft keeps files and staging as they were. --mixed (default) keeps files, clears staging. --hard makes files match the target commit and can delete uncommitted work.\nIn the code:\nstickers.main moves to c9 in all kinds. soft keeps basket and desk like c10. mixed clears basket to c9, desk still c10. hard makes both like c9.\nA common mistake is reset --hard on a shared branch, or when you still needed the desk changes.",
       "code": "// you move the sticker; three strengths of \"how much to wipe\"\nstickers.main = \"c9\";          // was c10 — pointer moves in all kinds\n\nsoft   = { basket: \"like c10\", desk: \"like c10\" }; // history moved, work kept staged\nmixed  = { basket: \"like c9\",  desk: \"like c10\" }; // work still on desk, unstaged\nhard   = { basket: \"like c9\",  desk: \"like c9\"  }; // desk matches old photo — can lose work"
     },
@@ -314,6 +449,7 @@ window.PREP_DATA.git = {
       "id": 38,
       "level": "intermediate",
       "q": "git revert?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "git revert undoes a commit by adding a new commit that applies the opposite patch.\nThe bad commit stays in history. Shared branches stay honest because you did not rewrite ids.\nIn the code:\nalbum is c1, c2_bad, c3. revert_photo c4 has message Revert c2_bad, files opposite_of c2_bad, parent c3. album then includes c4. c2_bad still exists.\nA common mistake is reset on origin/main to hide a bad commit. Teammates still have it.",
       "code": "// undo by adding, not by erasing\nalbum = [\"c1\", \"c2_bad\", \"c3\"];\n\nrevert_photo = {\n  id: \"c4\",\n  message: \"Revert c2_bad\",\n  files: opposite_of(\"c2_bad\"),\n  parent: \"c3\"\n};\nalbum = [\"c1\", \"c2_bad\", \"c3\", \"c4\"];  // c2_bad still exists"
     },
@@ -321,6 +457,7 @@ window.PREP_DATA.git = {
       "id": 39,
       "level": "intermediate",
       "q": "reset vs revert?",
+      "ask": "Most asked · Amazon · Google · Microsoft · Meta",
       "a": "reset rewinds a sticker (private drafts). revert appends an undo commit (shared history).\nSame bug, two policies. On main that others pulled, revert. On a branch only you have, reset can be fine.\nIn the code:\nshared_main after revert is c1, c2_bad, c3, c4_undo. private_feature.tip rewinds to c1 so c2_bad may become unnamed.\nA common mistake is reset --hard origin/main after a public bad commit. Use revert.",
       "code": "// same bug, two policies\nshared_main = [\"c1\", \"c2_bad\", \"c3\"];\n\n// revert (safe on shared): append\nshared_main = [\"c1\", \"c2_bad\", \"c3\", \"c4_undo\"];\n\n// reset (private draft only): rewind sticker\nprivate_feature = [\"c1\", \"c2_bad\"];\nprivate_feature.tip = \"c1\";  // c2_bad may become unnamed"
     },
@@ -349,6 +486,7 @@ window.PREP_DATA.git = {
       "id": 43,
       "level": "intermediate",
       "q": "squash merge on GitHub?",
+      "ask": "Most asked · Amazon · Microsoft · Google",
       "a": "Squash merge on GitHub takes a PR's many commits and adds one summary commit on main.\nThe feature branch's individual commits are not replayed as-is. The tree (final files) of the feature usually becomes that one commit.\nIn the code:\nfeature is c1,c2,c3. main_before is m1,m2. squash_on_main is m3 with message Add login (#42), files of c3, parent m2 only. feature's c1–c3 are not in main's line.\nA common mistake is looking for your three PR commits on main after a squash. You will see one.",
       "code": "// PR had three photos; main receives one summary\nfeature = [\"c1\", \"c2\", \"c3\"];\nmain_before = [\"m1\", \"m2\"];\n\nsquash_on_main = {\n  id: \"m3\",\n  message: \"Add login (#42)\",\n  files: files_of(\"c3\"),      // final tree of the feature\n  parent: \"m2\"                // only one parent\n};\n// feature's c1,c2,c3 are not in main's line"
     },
@@ -377,6 +515,7 @@ window.PREP_DATA.git = {
       "id": 47,
       "level": "intermediate",
       "q": "git cherry-pick?",
+      "ask": "Most asked · Amazon · Google",
       "a": "cherry-pick copies one commit's patch onto another branch as a new commit.\nThe new commit has a new hash and a new parent. The change can be the same idea.\nIn the code:\nhotfix_on_main is c80 Fix crash. release_line is r1, r2. copied r3 has the same patch, parent r2. c80 and r3 are twins with different fingerprints.\nA common mistake is cherry-picking a merge commit without knowing which parent Git will use.",
       "code": "// copy one idea onto another line\nhotfix_on_main = { id: \"c80\", message: \"Fix crash\", patch: \"...\" };\n\nrelease_line = [\"r1\", \"r2\"];\ncopied = { id: \"r3\", message: \"Fix crash\", patch: same_as(\"c80\"), parent: \"r2\" };\nrelease_line = [\"r1\", \"r2\", \"r3\"];\n// c80 and r3 are twins with different fingerprints"
     },
@@ -433,6 +572,7 @@ window.PREP_DATA.git = {
       "id": 55,
       "level": "intermediate",
       "q": "force push?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "A force push moves the remote branch sticker to your story even if the remote had commits you do not have.\nThat can erase someone else's work from that branch name. force-with-lease only proceeds if the remote still matches the postcard you remember.\nIn the code:\norigin_login is c5, maybe including Sam's c6. your_login is c5b after a rebase. force would set origin to c5b even if c6 existed. lease should stop you if Sam added c6.\nA common mistake is --force on main. Use lease, and only on a private branch.",
       "code": "// the online sticker is moved to YOUR story\norigin_login = \"c5\";     // maybe includes Sam's c6\nyour_login   = \"c5b\";    // you rebased; new ids\n\n// force: origin_login becomes c5b even if c6 existed\n// force-with-lease: only if origin_login is still the c5 you remember\n// if Sam already added c6, lease should stop you"
     },
@@ -440,6 +580,7 @@ window.PREP_DATA.git = {
       "id": 56,
       "level": "intermediate",
       "q": "branch protection?",
+      "ask": "Most asked · Amazon · Microsoft · Google",
       "a": "Branch protection is website rules on an official branch, usually main.\nTypical rules: must use a PR, required reviews, required status checks, no force push. Git on your laptop still can create commits. The host refuses the dangerous update.\nIn the code:\nprotection.branch is main, must_use_pr true, one review, tests and lint required, force push false. The album tool can still merge through the PR door.\nA common mistake is trying to push straight to main and blaming Git. The host is blocking you on purpose.",
       "code": "// rules on the official sticker\nprotection = {\n  branch: \"main\",\n  must_use_pr: true,\n  required_reviews: 1,\n  required_checks: [\"tests\", \"lint\"],\n  allow_force_push: false\n};\n// the album tool still can merge through the allowed door (the PR)"
     },
@@ -524,6 +665,7 @@ window.PREP_DATA.git = {
       "id": 68,
       "level": "beginner",
       "q": "What should never be committed?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "Never commit secrets, private keys, install folders you can regenerate, or huge binaries that change every commit.\nSource, README, and .gitignore belong in the album.\nIn the code:\nnever_in_album lists .env, id_rsa, node_modules/, video.mp4. ok_in_album is app.js, README.md, .gitignore.\nA common mistake is committing .env 'just for the team.' Rotate that secret; it is now in history.",
       "code": "// a packing list of things that should stay off the photo\nnever_in_album = [\n  \".env\",              // passwords\n  \"id_rsa\",            // private key\n  \"node_modules/\",     // can be reinstalled\n  \"video.mp4\"          // huge binary versions forever\n];\nok_in_album = [\"app.js\", \"README.md\", \".gitignore\"];"
     },
@@ -531,6 +673,7 @@ window.PREP_DATA.git = {
       "id": 69,
       "level": "intermediate",
       "q": "You committed a secret. Now what?",
+      "ask": "Most asked · Amazon · Google · Microsoft · Meta",
       "a": "If you committed a secret, change the real key at the provider first. Deleting the file in a new commit does not erase it from old snapshots.\nHistory rewrite is a later, team-wide step. Assume the leaked value is public.\nIn the code:\nalbum c4 still has API_KEY=real-secret. c5 removes .env from that photo only. must_do_first is change the real API key. history_rewrite is optional later with everyone re-cloning.\nA common mistake is only deleting .env on main and leaving the key live at the vendor.",
       "code": "// a new photo that deletes .env is NOT a full fix\nalbum = [\n  { id: \"c4\", files: { \".env\": \"API_KEY=real-secret\" } },  // still here\n  { id: \"c5\", files: { \".env\": undefined } }               // gone from THIS photo only\n];\nmust_do_first = \"change the real API key at the provider\";\nhistory_rewrite = \"optional later, with the whole team re-cloning\";"
     },
@@ -622,6 +765,7 @@ window.PREP_DATA.git = {
       "id": 82,
       "level": "beginner",
       "q": "What is GitHub Actions?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
       "a": "GitHub Actions is automation that runs when GitHub events happen, such as a pull request.\nA workflow file is a recipe: get the files from that commit, then run tests. It is CI sitting on the website, not a Git command.\nIn the code:\non pull_request starts the job. checkout gets the files from that photo. npm test is the robot's grading step. The last comment says this is a story of automation.\nA common mistake is putting secrets in the workflow file in plain text. Use encrypted Actions secrets.",
       "code": "# a teaching recipe: what should happen on a new photo\nname: tests\non:\n  pull_request: {}          # when a review form opens\njobs:\n  check:\n    steps:\n      - uses: actions/checkout@v4   # get the files from that photo\n      - run: npm test               # the robot's grading step\n# this is a story of automation, not a list of git commands"
     },
@@ -748,8 +892,99 @@ window.PREP_DATA.git = {
       "id": 100,
       "level": "advanced",
       "q": "How do you explain Git in an interview?",
+      "ask": "Most asked · Amazon · Google · Microsoft · Meta",
       "a": "In an interview, explain Git as a graph of snapshots, not as a command list.\nA commit is a photo with parent arrows. A branch is a sticker. HEAD is you are here. A remote is a nickname for another album. A PR asks to copy a sticker after review. Undo: restore files, reset a sticker, revert with a new photo, reflog as a local camera.\nIn the code:\nmodel.commit is a photo with parent arrows. branch is a sticker. HEAD is you are here. remote is a nickname. pr is please copy my sticker. undo lists restore, reset, revert, reflog.\nA common mistake is reciting git add git commit git push with no model. Interviewers want the graph.",
       "code": "// a one-minute map you can talk through\nmodel = {\n  commit: \"a photo with parent arrows (a graph, not a folder)\",\n  branch: \"a sticker on a photo\",\n  HEAD: \"you are here\",\n  remote: \"a nickname for another album\",\n  pr: \"please copy my sticker into yours after review\",\n  undo: { restore: \"files\", reset: \"sticker\", revert: \"new photo\", reflog: \"local camera\" }\n};"
+    },
+    {
+      "id": 101,
+      "level": "beginner",
+      "q": "What commands do you run every day?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
+      "lang": "txt",
+      "a": "The problem before\nPeople recited twenty commands and could not save work safely.\n\nWhat this is\nstatus, add, commit, pull, push. log and diff when you need the story.\n\nWhat it solves\nYou know what is messy, you photograph one idea, you sync with the shelf.\n\nReal-life example\nDesk check, envelope, camera, mail.\n\nUses\nEvery developer job.\n\nWatch out\npush without pull on a shared branch. add . without status.",
+      "code": "git status\ngit add -p\ngit commit -m \"Reject empty passwords\"\ngit pull --rebase\ngit push"
+    },
+    {
+      "id": 102,
+      "level": "beginner",
+      "q": "How do you put a new project on GitHub?",
+      "ask": "Most asked · Amazon · Microsoft · Google",
+      "lang": "txt",
+      "a": "The problem before\nThe code lived only on a laptop. A recruiter asked for a link.\n\nWhat this is\nCreate an empty GitHub repo. Add origin. Push main. Do not upload a zip if you can push Git.\n\nWhat it solves\nA URL, history, and a place for PRs.\n\nReal-life example\nBuy a shelf slot, then put the album on it.\n\nUses\nPortfolio, team start.\n\nWatch out\nPushing .env. Adding a README with a password.",
+      "code": "git init\ngit add .\ngit commit -m \"Initial commit\"\ngit branch -M main\ngit remote add origin https://github.com/you/app.git\ngit push -u origin main"
+    },
+    {
+      "id": 103,
+      "level": "beginner",
+      "q": "How do you start work on a team repo?",
+      "ask": "Most asked · Amazon · Google · Microsoft · Meta",
+      "lang": "txt",
+      "a": "The problem before\nYou edited main while others pushed. Your PR fought everyone.\n\nWhat this is\nclone, switch to main, pull, new branch named for the job, then code.\n\nWhat it solves\nYour sticker is a small honest gap.\n\nReal-life example\nCopy the textbook, start a new sticky note, do not write in the library copy.\n\nUses\nEvery company onboarding.\n\nWatch out\nWorking on a week-old main.",
+      "code": "git clone https://github.com/org/app.git\ncd app\ngit switch main\ngit pull\ngit switch -c feat/search"
+    },
+    {
+      "id": 104,
+      "level": "intermediate",
+      "q": "How do you update your PR with latest main?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
+      "lang": "txt",
+      "a": "The problem before\nmain moved. GitHub says the branch is out of date. Merge conflicts wait.\n\nWhat this is\nfetch, rebase (or merge) origin/main onto your branch, fix, force-with-lease if you rebased.\n\nWhat it solves\nReviewers see your work on today's book.\n\nReal-life example\nReprint your chapter onto the new edition.\n\nUses\nLong PRs.\n\nWatch out\nplain --force. merge and rebase mixed without a team rule.",
+      "code": "git fetch origin\ngit rebase origin/main\n# fix conflicts, git add, git rebase --continue\ngit push --force-with-lease"
+    },
+    {
+      "id": 105,
+      "level": "beginner",
+      "q": "What is the GitHub PR checklist companies want?",
+      "ask": "Most asked · Amazon · Google · Microsoft · Meta · Adobe",
+      "lang": "txt",
+      "a": "The problem before\nPRs said 'fix' with 40 files and no test. Reviewers bounced them.\n\nWhat this is\nSmall branch, clear title, what/why in the body, screenshots if UI, tests green, no secrets, one idea.\n\nWhat it solves\nSomeone can stamp in minutes. CI is the robot reviewer.\n\nReal-life example\nA chapter with a title, a summary, and no extra homework stuffed in.\n\nUses\nEvery job after the first week.\n\nWatch out\nOne PR that refactors the world and adds a feature.",
+      "code": "# title: Reject empty passwords on login\n# body: Empty passwords skipped hashing.\n# How to test: POST /login with \"\" → 400\n# Checks: unit-tests, lint"
+    },
+    {
+      "id": 106,
+      "level": "intermediate",
+      "q": "How do you recover a deleted branch or lost commit?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
+      "lang": "txt",
+      "a": "The problem before\nYou deleted the branch. The work seemed gone.\n\nWhat this is\nreflog still saw the tip on this laptop. Recreate the sticker on that hash. GitHub PR also lists the sha.\n\nWhat it solves\nThe photo was in the attic. The name was missing.\n\nReal-life example\nThe sticky note fell off. The page number is in your diary.\n\nUses\nLocal disasters.\n\nWatch out\nUncommitted desk files were never in that commit.",
+      "code": "git reflog\ngit switch -c feat/login abc1234\n# or from a closed PR sha on GitHub"
+    },
+    {
+      "id": 107,
+      "level": "beginner",
+      "q": "What GitHub extras do interviews ask besides Git?",
+      "ask": "Most asked · Amazon · Google · Microsoft",
+      "lang": "txt",
+      "a": "The problem before\nCandidates stopped at add/commit/push. Companies use PRs, protection, and Actions every day.\n\nWhat this is\nPR review, branch protection on main, required checks, CODEOWNERS, Actions CI, Issues, draft PRs, squash merge.\n\nWhat it solves\nYou sound like you have worked on a team repo, not only a class folder.\n\nReal-life example\nThe library has rules: no writing in the official book without a stamp and a robot grade.\n\nUses\nSDE intern and new grad loops.\n\nWatch out\nReciting product names. Say what problem each extra fixes.",
+      "code": "# branch protection: PR + 1 review + tests\n# Actions: on pull_request → npm test\n# CODEOWNERS: /src/billing/  @ada"
+    },
+    {
+      "id": 108,
+      "level": "intermediate",
+      "q": "How do you keep a fork up to date?",
+      "ask": "Most asked · Google · Microsoft · Meta",
+      "lang": "txt",
+      "a": "The problem before\nYour PR into the original repo included six months of unrelated commits.\n\nWhat this is\nAdd upstream. fetch. merge or rebase upstream/main into your main. branch from today.\n\nWhat it solves\nThe PR is a small honest gap.\n\nReal-life example\nPhotocopy the latest official book before you write a new chapter.\n\nUses\nOpen source. Some internships.\n\nWatch out\nOpening a PR from a stale fork main.",
+      "code": "git remote add upstream https://github.com/org/app.git\ngit fetch upstream\ngit switch main\ngit merge upstream/main\ngit push origin main"
+    },
+    {
+      "id": 109,
+      "level": "beginner",
+      "q": "How do you set your name and email?",
+      "ask": "Most asked · Microsoft · Amazon",
+      "lang": "txt",
+      "a": "The problem before\nCommits said root@laptop or a personal Gmail on a work repo.\n\nWhat this is\nuser.name and user.email. global is this user. local overrides for one repo.\n\nWhat it solves\nThe stamp on each photo is the right person.\n\nReal-life example\nA name tag on the album.\n\nUses\nFirst-day setup. Work vs personal machines.\n\nWatch out\nCommitting as someone else to 'look like' a teammate.",
+      "code": "git config --global user.name \"Ada Lovelace\"\ngit config --global user.email \"ada@company.com\"\ngit config user.email \"ada@company.com\"   # this repo only\ngit config --list --show-origin"
+    },
+    {
+      "id": 110,
+      "level": "intermediate",
+      "q": "How do you sign in to GitHub from Git? (HTTPS vs SSH)",
+      "ask": "Most asked · Amazon · Google · Microsoft",
+      "lang": "txt",
+      "a": "The problem before\nPassword Git is dead. push asked for a password and failed.\n\nWhat this is\nHTTPS uses a personal access token. SSH uses a key: public half on GitHub, private half on the laptop.\n\nWhat it solves\nThe host knows you. The album is the same either door.\n\nReal-life example\nA badge (token) or a house key (SSH).\n\nUses\nEvery push.\n\nWatch out\nPasting the private key into chat. Committing id_rsa.",
+      "code": "# SSH (usual on a laptop you keep)\nssh-keygen -t ed25519 -C \"ada@company.com\"\n# copy ~/.ssh/id_ed25519.pub → GitHub → SSH keys\ngit remote set-url origin git@github.com:you/app.git\nssh -T git@github.com"
     }
   ]
 };

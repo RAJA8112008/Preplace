@@ -256,7 +256,7 @@ window.PREP_DATA["practice-devops"] = {
       "id": 26,
       "level": "beginner",
       "q": "What is a reverse proxy?",
-      "a": "Nginx (or Caddy, or an ALB) sits in front. Clients hit 443. The proxy terminates TLS and forwards to Node on 3000. The world never talks to Node directly.",
+      "a": "The problem before\nNode sat on the street on port 3000. HTTPS and routing lived in the app. Anyone could knock on the kitchen door.\n\nWhat this is\nNginx (or Caddy, or an ALB) is the front desk. Clients hit 443. The proxy terminates TLS and forwards to Node on 3000.\n\nWhat it solves\nThe world never talks to Node. One public door, hidden app ports, HTTPS in one place.\n\nReal-life example\nA hotel receptionist. You ask for room 12. You do not wander the staff corridors.\n\nUses\nTLS, static files, path routing, load-balance two processes.\n\nWatch out\nLeaving :3000 on 0.0.0.0 in production.",
       "code": "location / { proxy_pass http://127.0.0.1:3000; }",
       "ask": "Most asked · Amazon · Microsoft · Google"
     },

@@ -756,7 +756,7 @@ window.PREP_DATA["practice-web"] = {
       "id": 88,
       "level": "beginner",
       "q": "What is a reverse proxy?",
-      "a": "Sits in front of your servers. Clients hit Nginx or an ALB on 443. It terminates TLS and forwards to Node on 3000. The world never talks to the app process directly.",
+      "a": "The problem before\nThe app sat on the street on port 3000. HTTPS was hard. Two apps could not share one website name.\n\nWhat this is\nA reverse proxy sits in front of your servers. Clients hit Nginx or an ALB on 443. It forwards to Node on 3000.\n\nWhat it solves\nThe world never talks to the app process. You hide ports, add HTTPS, and route /api and / from one domain.\n\nReal-life example\nA hotel receptionist. You ask for room 12. You do not wander the staff corridors.\n\nUses\nTLS, static files, /api to Node, two apps behind one name.\n\nWatch out\nLeaving :3000 public. Forgetting X-Forwarded-For so the app thinks every guest is Nginx.",
       "code": "location / { proxy_pass http://127.0.0.1:3000; }  // reverse proxy",
       "ask": "Most asked · Amazon · Google · Microsoft"
     },
@@ -908,7 +908,7 @@ window.PREP_DATA["practice-web"] = {
       "id": 107,
       "level": "beginner",
       "q": "What is an API?",
-      "a": "A contract so two programs can talk. A web API is usually HTTP + JSON: URLs, methods, bodies, error shapes. The UI calls the API. The API talks to the database. The browser should not hold the DB password.",
+      "a": "The problem before\nThe website talked to the database from the browser. Every screen invented its own way to save a todo. Mobile and web could not share work.\n\nWhat this is\nA contract so two programs can talk. A web API is HTTP + JSON: URLs, methods, bodies, error shapes.\n\nWhat it solves\nThe UI calls the API. The API talks to the database. Phone and web share the same /todos.\n\nReal-life example\nA restaurant. You order 'one dosa' (POST /orders). You do not walk into the kitchen.\n\nUses\nAny app with a UI and a server. Same idea in Express, FastAPI, or Go.\n\nWatch out\nThe browser should not hold the DB password.",
       "code": "const notes = await fetch(\"/api/notes\").then((r) => r.json());  // UI\napp.get(\"/api/notes\", async (req, res) => {\n  res.json(await db.query(\"SELECT id, title FROM notes\"));\n});",
       "ask": "Most asked · Amazon · Google · Microsoft"
     },
@@ -916,7 +916,7 @@ window.PREP_DATA["practice-web"] = {
       "id": 108,
       "level": "beginner",
       "q": "What is REST API?",
-      "a": "A style: URLs name resources (/todos/5). HTTP verbs name actions. GET reads, POST creates, PUT/PATCH update, DELETE removes. Stateless — each request carries a token if needed. JSON is a representation, not REST itself.",
+      "a": "The problem before\nEvery team invented verbs like /getTodos, /saveTodoNow, /doDelete. Mobile and web could not guess the next URL.\n\nWhat this is\nREST is a style: URLs name resources (/todos/5). HTTP verbs name actions. GET reads, POST creates, PUT/PATCH update, DELETE removes.\n\nWhat it solves\nOne shared menu. Stateless — each request carries a token if needed. JSON is a plate, not REST itself.\n\nReal-life example\nA menu with dish numbers. Table 5 is /tables/5. You do not invent /pleaseBringWaterNow as a new language each week.\n\nUses\nCRUD APIs that many clients share. The default interview answer for 'how should our HTTP API look?'.\n\nWatch out\nGET that deletes. Calling any JSON URL 'REST' without resource URLs and verbs.",
       "code": "GET    /todos      // list\nPOST   /todos      // create\nGET    /todos/5    // one\nPATCH  /todos/5    // update\nDELETE /todos/5    // remove",
       "ask": "Most asked · Amazon · Google · Microsoft"
     },

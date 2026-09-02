@@ -737,7 +737,7 @@ window.PREP_DATA["sys-blocks"] = {
       "id": 23,
       "level": "intermediate",
       "q": "What is a reverse proxy?",
-      "a": "Definition. A reverse proxy accepts client connections and forwards them to internal services.\n\nHow it works. It often terminates TLS, applies WAF rules, and routes by path.\n\nOperational risk. Logging bodies at the proxy can store secrets."
+      "a": "The problem before\nEach service sat on the street with its own port. HTTPS, routing, and safety checks were copied into every app.\n\nWhat this is\nA reverse proxy accepts client connections and forwards them to internal services. The client never picks the inner box.\n\nWhat it solves\nOne public door. TLS, WAF rules, and path routing live at the desk. Apps stay inside the building.\n\nReal-life example\nA hotel receptionist. You ask for room 12. You do not wander the staff corridors.\n\nUses\nTLS termination, path routing, hide ports, optional WAF.\n\nWatch out\nLogging bodies at the proxy can store secrets."
     },
     {
       "id": 24,
