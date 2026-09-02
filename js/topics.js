@@ -6,7 +6,10 @@ window.PREP_TOPICS = [
   { id: "nodeexpress", title: "Node.js & Express", category: "Backend", icon: "🟩", blurb: "Runtime, APIs, middleware, auth, and Node internals." },
   { id: "fullstack", title: "Full Stack", category: "Backend", icon: "🧩", blurb: "End-to-end apps, REST, auth, caching, and architecture." },
   { id: "sql", title: "SQL & Databases", category: "Backend", icon: "🗄️", blurb: "Queries, indexes, transactions, and relational design." },
+  { id: "database", title: "Databases", category: "Data stores", icon: "🗃️", blurb: "OLTP vs OLAP, ACID, replicas, shards, and how to pick a store." },
   { id: "mongodb", title: "MongoDB", category: "Backend", icon: "🍃", blurb: "Documents, aggregations, indexes, and schema design." },
+  { id: "nosql", title: "NoSQL", category: "Data stores", icon: "📄", blurb: "Document, key-value, wide-column, and graph — when each wins." },
+  { id: "vectordb", title: "Vector databases", category: "Data stores", icon: "🧭", blurb: "Embeddings, RAG, pgvector, Pinecone, and similarity search." },
   { id: "git", title: "Git & GitHub", category: "Tools", icon: "🌿", blurb: "Commits, branches, PRs, rebase, and collaboration." },
   { id: "linux", title: "Linux", category: "Tools", icon: "🐧", blurb: "Commands, processes, permissions, and shell basics." },
   { id: "docker", title: "Docker", category: "DevOps", icon: "🐳", blurb: "Images, containers, volumes, networks, and Compose." },
@@ -31,7 +34,17 @@ window.PREP_TOPICS = [
   { id: "redis", title: "Redis", category: "Backend", icon: "🔴", blurb: "In-memory cache, sessions, TTL, rate limits, and when not to use Redis." },
   { id: "nginx", title: "Nginx", category: "DevOps", icon: "🟩", blurb: "Reverse proxy, static files, HTTPS, load balancing, and VPS layouts." },
   { id: "hosting", title: "Vercel, Render & Hosting", category: "DevOps", icon: "🚀", blurb: "Vercel, Render, Netlify, Railway — Git to HTTPS, env vars, and split UI/API." },
-  { id: "messaging", title: "Queues & Kafka", category: "Backend", icon: "📬", blurb: "RabbitMQ, Kafka, SQS, workers, retries, and dead-letter queues." }
+  { id: "messaging", title: "Queues & Kafka", category: "Backend", icon: "📬", blurb: "RabbitMQ, Kafka, SQS, workers, retries, and dead-letter queues." },
+  { id: "practice-frontend", title: "Frontend practice", category: "Practice", icon: "🧪", blurb: "Todo, CRUD, fake login, roles, and HTTPS fetch — easy commented code." },
+  { id: "practice-backend", title: "Backend practice", category: "Practice", icon: "🧪", blurb: "REST CRUD, JWT login, admin checks, cookies, and HTTPS behind Nginx." },
+  { id: "practice-mern", title: "MERN practice", category: "Practice", icon: "🧪", blurb: "React + Express + Mongo todo app: signup, JWT, owner delete, CORS, HTTPS." },
+  { id: "practice-fullstack", title: "Full stack practice", category: "Practice", icon: "🧪", blurb: "React + Express + SQL: users, todos, sessions, owner checks, HTTPS cookies." },
+  { id: "practice-devops", title: "DevOps practice", category: "Practice", icon: "🧪", blurb: "Dockerize a todo API, Nginx TLS, health checks, and a CI test job." },
+  { id: "practice-cloud", title: "Cloud practice", category: "Practice", icon: "🧪", blurb: "S3 + HTTPS, Lambda, RDS todos, IAM, Cognito/JWT, and security groups." },
+  { id: "practice-ml", title: "ML practice", category: "Practice", icon: "🧪", blurb: "Train, save, predict API, API key, retrain role, and HTTPS deploy." },
+  { id: "practice-data", title: "Data practice", category: "Practice", icon: "🧪", blurb: "SQL CRUD reports, region auth, pandas export, and HTTPS dashboards." },
+  { id: "practice-datastores", title: "Data stores practice", category: "Practice", icon: "🧪", blurb: "The same todo in SQL, Mongo, Redis sessions, and a tiny vector search." },
+  { id: "practice-sysdesign", title: "System design practice", category: "Practice", icon: "🧪", blurb: "Code the drawing: shortener, rate limit, feed fan-out, HTTPS at the edge." }
 ];
 
 window.PREP_DATA = window.PREP_DATA || {};

@@ -35,11 +35,16 @@
     return "";
   };
 
-  const commentMark = (lang) => (lang === "python" ? "#" : "//");
+  const commentMark = (lang) => {
+    if (lang === "python" || lang === "txt") return "#";
+    if (lang === "sql") return "--";
+    return "//";
+  };
 
   const stripTrailComment = (text, lang) => {
     const t = String(text || "");
-    if (lang === "python") return t.replace(/\s+#.*$/, "").trim();
+    if (lang === "sql") return t.replace(/\s+--.*$/, "").trim();
+    if (lang === "python" || lang === "txt") return t.replace(/\s+#.*$/, "").trim();
     return t.replace(/\s+\/\/.*$/, "").trim();
   };
 
@@ -74,6 +79,7 @@
     if (/\bfast\b\s*=\s*(head|0)\b/.test(s)) return "fast starts at the beginning (moves 2 steps)";
     if (/\b(prev)\b\s*=\s*(null|None|nullptr|NULL)\b/.test(s)) return "prev is the node behind us (starts empty)";
     if (/\b(curr|cur|current)\b\s*=\s*head\b/.test(s)) return "curr walks the list from the head";
+    if (/\w+(->|\.)next\s*=\s*next\b/.test(s)) return "attaching to the next";
     if (/\bnext\b\s*=\s*(curr|cur)(->|\.)next/.test(s)) return "save next node before we break the link";
     if (/(curr|cur)(->|\.)next\s*=\s*prev/.test(s)) return "reverse this link: point to the previous node";
     if (/(curr|cur)(->|\.)prev\s*=\s*next/.test(s)) return "doubly list: old next becomes prev";
@@ -120,43 +126,245 @@
     return "";
   };
 
-  const annotateDsaCode = (code, lang) => {
+  const isStandaloneComment = (t, lang) => {
+    if (!t) return false;
+    if (/^#\s*(include|define|ifndef|ifdef|endif|pragma|undef)\b/.test(t)) return false;
+    if (lang === "sql") return t.startsWith("--");
+    if (lang === "python" || lang === "txt") return t.startsWith("#");
+    return t.startsWith("//");
+  };
+
+  const hasTrailComment = (line, lang) => {
+    if (lang === "sql") return /\s+--\s+\S/.test(line);
+    if (lang === "python" || lang === "txt") return /[^#]\s+#\s+\S/.test(line);
+    return /\s+\/\/\s+\S/.test(line);
+  };
+
+  const explainAppLine = (raw, lang) => {
+    const s = stripTrailComment(raw, lang).replace(/;$/, "");
+    if (!s) return "";
+
+    if (/\bfetch\s*\(\s*["'`]https:\/\//.test(s)) return "ask the server on HTTPS — the safe encrypted path";
+    if (/\bfetch\s*\(\s*["'`]http:\/\//.test(s)) return "plain HTTP — never send a password this way";
+    if (/\bfetch\s*\(/.test(s)) return "ask the server for this URL";
+    if (/\.json\s*\(/.test(s) && /res|response|r\b/.test(s)) return "turn the reply body into data we can use";
+    if (/JSON\.stringify/.test(s) && /localStorage|setItem/.test(s)) return "save the list as text in the browser";
+    if (/JSON\.stringify/.test(s)) return "turn this object into JSON text";
+    if (/JSON\.parse/.test(s) && /localStorage|getItem/.test(s)) return "read the saved list back into objects";
+    if (/JSON\.parse/.test(s)) return "turn JSON text back into an object";
+    if (/localStorage\.setItem/.test(s) && /token/.test(s)) return "remember login in the browser";
+    if (/localStorage\.setItem/.test(s)) return "keep this value after refresh";
+    if (/localStorage\.getItem/.test(s) && /token/.test(s)) return "read the login ticket if we have one";
+    if (/localStorage\.getItem/.test(s)) return "read what we saved last time";
+    if (/localStorage\.removeItem/.test(s)) return "forget the login — this is logout";
+
+    if (/bcrypt\.hash/.test(s)) return "scramble the password — never store the real one";
+    if (/bcrypt\.compare/.test(s)) return "check the typed password against the saved scramble";
+    if (/jwt\.sign/.test(s)) return "make a signed login ticket";
+    if (/jwt\.verify/.test(s)) return "check the ticket is real and not expired";
+    if (/Authorization|Bearer/.test(s)) return "send the login ticket with this request";
+    if (/httpOnly/.test(s) || /sameSite/.test(s) || /secure:\s*true/.test(s)) return "cookie flags: JS cannot read it, HTTPS only";
+    if (/res\.cookie|clearCookie/.test(s)) return "set or clear the session cookie";
+    if (/req\.session/.test(s)) return "server-side login memory for this visitor";
+
+    if (/app\.get\(\s*["'`]\/health/.test(s)) return "cheap URL the host pings to see if we are up";
+    if (/app\.get\(\s*["'`]\/me/.test(s)) return "who is logged in — needs a valid ticket";
+    if (/app\.get\(/.test(s)) return "GET — read data and send JSON back";
+    if (/app\.post\(/.test(s) && /login/.test(s)) return "POST /login — check email and password";
+    if (/app\.post\(/.test(s)) return "POST — create a new row and answer 201";
+    if (/app\.patch\(|app\.put\(/.test(s)) return "PATCH/PUT — change an existing row";
+    if (/app\.delete\(/.test(s)) return "DELETE — remove this row";
+    if (/status\(401\)/.test(s)) return "401 — we do not know who you are";
+    if (/status\(403\)/.test(s)) return "403 — we know you, but you may not do this";
+    if (/status\(404\)/.test(s)) return "404 — that id is not here";
+    if (/status\(400\)/.test(s)) return "400 — the input is missing or wrong";
+    if (/status\(201\)/.test(s)) return "201 — created";
+    if (/status\(204\)/.test(s)) return "204 — deleted, nothing to send back";
+    if (/status\(429\)/.test(s)) return "429 — too many tries, slow down";
+    if (/status\(409\)/.test(s)) return "409 — this email / value is already taken";
+    if (/res\.json\(/.test(s)) return "send this data back as JSON";
+    if (/res\.redirect/.test(s)) return "send the browser to another URL";
+    if (/cors\(/.test(s)) return "allow this UI origin to call the API";
+    if (/proxy/.test(s) || /proxy_pass/.test(s)) return "forward the request to the app behind this door";
+
+    if (/\brole\b/.test(s) && /admin/.test(s) && /!==|!=|===|==/.test(s)) return "authorization — only an admin may continue";
+    if (/user_id|userId/.test(s) && /!==|!=|===/.test(s)) return "authorization — this row must belong to you";
+    if (/trim\(\)/.test(s) && /if \(/.test(s)) return "empty text is not a real task — stop here";
+    if (/\.trim\(\)/.test(s)) return "drop extra spaces around the text";
+
+    if (/\.push\(/.test(s)) return "Create — add this item to the list";
+    if (/\.map\(/.test(s) && /done/.test(s)) return "Update — flip done on the matching id";
+    if (/\.map\(/.test(s)) return "Update — replace the matching item, keep the rest";
+    if (/\.filter\(/.test(s) && /done/.test(s)) return "keep only the tasks that are still open";
+    if (/\.filter\(/.test(s)) return "Delete — drop the matching id, keep the rest";
+    if (/\.forEach\(/.test(s) || /\.find\(/.test(s)) return "Read — walk or find an item in the list";
+
+    if (/useState\(/.test(s)) return "React box that holds this value and redraws the screen";
+    if (/useEffect\(/.test(s)) return "run this after the screen paints — good for loading data";
+    if (/preventDefault/.test(s)) return "stop the form from reloading the page";
+    if (/navigate\(|location\.hash/.test(s) && /login/.test(s)) return "send the user to the login screen";
+    if (/navigate\(/.test(s) || /<Navigate/.test(s)) return "move to this page";
+    if (/setTodos|setText|setErr|setUser|setLoading/.test(s)) return "update the screen with the new value";
+
+    if (/insertOne|INSERT INTO/.test(s)) return "Create — write a new row / document";
+    if (/find\(|findOne|SELECT /.test(s)) return "Read — load matching rows";
+    if (/updateOne|\$set|UPDATE /.test(s)) return "Update — change fields on this row";
+    if (/deleteOne|deleteMany|DELETE FROM/.test(s)) return "Delete — remove matching rows";
+    if (/createIndex|UNIQUE/.test(s)) return "no two people can share this email";
+    if (/ObjectId/.test(s)) return "Mongo id — check it is a real id first";
+    if (/RETURNING/.test(s)) return "give the new row back after the insert";
+    if (/BEGIN|COMMIT/.test(s)) return "all of these writes succeed together, or none do";
+    if (/WHERE/.test(s) && /user_id|userId/.test(s)) return "only this user's rows — never the whole table";
+    if (/CREATE TABLE/.test(s)) return "make the table and name its columns";
+    if (/REFERENCES/.test(s)) return "this id must exist in the other table";
+    if (/GROUP BY/.test(s)) return "one row per group — then sum or count";
+    if (/ORDER BY/.test(s)) return "sort the result";
+
+    if (/redis\.(get|set|del|incr)/.test(s) || /\bredis\b/.test(s) && /SET |GET |DEL |INCR /.test(s)) return "fast memory box — cache, session, or rate limit";
+    if (/joblib\.dump/.test(s)) return "save the trained model to a file";
+    if (/joblib\.load/.test(s)) return "load the saved model so we can predict";
+    if (/\.fit\(/.test(s)) return "train — learn from these X and y rows";
+    if (/\.predict\(/.test(s)) return "guess the label for this new input";
+    if (/train_test_split/.test(s)) return "hold some rows back so we can test fairly";
+
+    if (/^FROM /.test(s)) return "start the image from this known base";
+    if (/^WORKDIR /.test(s)) return "later commands run in this folder";
+    if (/^COPY /.test(s)) return "put these files into the image";
+    if (/^RUN /.test(s)) return "install or build inside the image";
+    if (/^CMD /.test(s)) return "this is the process the container starts";
+    if (/listen 443/.test(s)) return "HTTPS port — TLS ends here";
+    if (/listen 80/.test(s)) return "plain HTTP — usually redirect to 443";
+    if (/ssl_certificate/.test(s)) return "the public certificate for HTTPS";
+    if (/gitignore|\.env/.test(s) && /echo|>>/.test(s)) return "secrets stay out of Git";
+
+    if (/^function |^async function |^const \w+ = (async )?\(/.test(s) || /^def /.test(s)) {
+      const fn = s.match(/(?:function|def)\s+(\w+)/) || s.match(/const\s+(\w+)\s*=/);
+      return fn ? `${fn[1]} — this function does one clear job` : "this function does one clear job";
+    }
+    if (/^if\s*\(/.test(s) || /^if /.test(s)) return "only do the next lines when this is true";
+    if (/^else\b/.test(s)) return "the if above was false, so do this instead";
+    if (/^try\b/.test(s)) return "try the happy path — catch will run if it fails";
+    if (/^catch\b/.test(s)) return "the request failed — undo or show an error";
+    if (/^return\b/.test(s)) return "answer is ready — leave the function";
+    if (/^(const|let|var)\s+/.test(s) && /=/.test(s)) return "name this value so later lines can use it";
+    return "";
+  };
+
+  const annotateAppCode = (code, lang) => {
     if (!code) return "";
     const mark = commentMark(lang);
     const out = [];
-    for (const line of String(code).split("\n")) {
+    for (const line of flattenAboveComments(code, lang).split("\n")) {
       const t = line.trim();
-      if (isNoiseCodeLine(t, lang) || /(?:\/\/|#)\s+\S/.test(t)) {
+      if (!t || t === "{" || t === "}" || t === "};" || t === "});" || t === "},") {
         out.push(line);
         continue;
       }
-      const meaning = explainDsaLine(t, lang);
-      if (meaning) {
-        const indent = (line.match(/^\s*/) || [""])[0];
-        const tagged = `${indent}${mark} ${meaning}`;
-        const prev = out.length ? out[out.length - 1].trim() : "";
-        if (prev !== tagged.trim()) out.push(tagged);
+      if (hasTrailComment(line, lang) || isStandaloneComment(t, lang)) {
+        out.push(line);
+        continue;
       }
+      const meaning = explainAppLine(t, lang);
+      if (meaning) out.push(`${line.replace(/\s+$/, "")}  ${mark} ${meaning}`);
+      else out.push(line);
+    }
+    return out.join("\n");
+  };
+
+  const teachSrc = (src, lang, kind) => (kind === "dsa" ? annotateDsaCode(src, lang) : annotateAppCode(src, lang));
+
+  const flattenAboveComments = (code, lang) => {
+    const mark = commentMark(lang);
+    const lines = String(code).split("\n");
+    const out = [];
+    let pending = [];
+    for (const line of lines) {
+      const t = line.trim();
+      if (isStandaloneComment(t, lang)) {
+        pending.push(t.replace(/^(\/\/|#|--)\s*/, ""));
+        continue;
+      }
+      if (!t) {
+        if (!pending.length) out.push(line);
+        continue;
+      }
+      if (pending.length && t !== "{" && t !== "}" && t !== "};") {
+        const note = pending.filter(Boolean).join(" · ");
+        pending = [];
+        if (!hasTrailComment(line, lang)) {
+          out.push(`${line.replace(/\s+$/, "")}  ${mark} ${note}`);
+          continue;
+        }
+      }
+      pending = [];
       out.push(line);
     }
     return out.join("\n");
   };
 
+  const showCode = (src, lang) =>
+    paintCode(String(flattenAboveComments(src || "", lang)).replace(/\n{2,}/g, "\n").replace(/^\n+|\n+$/g, ""), lang);
+
+  const annotateDsaCode = (code, lang) => {
+    if (!code) return "";
+    const mark = commentMark(lang);
+    const out = [];
+    for (const line of flattenAboveComments(code, lang).split("\n")) {
+      const t = line.trim();
+      if (isNoiseCodeLine(t, lang) || hasTrailComment(line, lang) || isStandaloneComment(t, lang)) {
+        out.push(line);
+        continue;
+      }
+      const meaning = explainDsaLine(t, lang);
+      if (meaning) out.push(`${line.replace(/\s+$/, "")}  ${mark} ${meaning}`);
+      else out.push(line);
+    }
+    return out.join("\n");
+  };
+
+  const paintLang = (ex) => {
+    const l = String(ex?.lang || "").toLowerCase();
+    if (l === "py" || l === "python") return "python";
+    if (l === "cpp" || l === "c++") return "cpp";
+    if (l === "c" || l === "java") return l;
+    if (l === "sql") return "sql";
+    if (l === "txt" || l === "bash" || l === "yml" || l === "yaml") return "txt";
+    return "javascript";
+  };
+
+  const inferLang = (item) => {
+    if (item?.lang) return paintLang(item);
+    const c = String(item?.code || "");
+    if (/^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|WITH)\b/im.test(c)) return "sql";
+    if (/^\s*(from |import |def |print\(|joblib)/m.test(c)) return "python";
+    if (/^\s*(FROM |WORKDIR |COPY |RUN |CMD |services:|on: \[|listen )/m.test(c)) return "txt";
+    return "javascript";
+  };
+
   const paintCode = (src, lang) => {
     if (!src) return "";
-    const isPy = lang === "python";
+    const hashCmt = lang === "python" || lang === "txt";
+    const isSql = lang === "sql";
+    const mark = isSql ? "--" : hashCmt ? "#" : "//";
     return String(src).split("\n").map((line) => {
       const trimmed = line.trim();
-      if (!trimmed) return `<span class="code-line"><span class="code-src"> </span></span>`;
-      if (/^(\/\/|#|\/\*|\*)/.test(trimmed) || trimmed.startsWith("*/")) {
+      if (!trimmed) return "";
+      if (/^#\s*(include|define|ifndef|ifdef|endif|pragma|undef)\b/.test(trimmed)) {
+        return `<span class="code-line"><span class="code-src">${escapeHtml(line)}</span></span>`;
+      }
+      if (/^(\/\/|#|--|\/\*|\*)/.test(trimmed) || trimmed.startsWith("*/")) {
         return `<span class="code-line is-cmt"><span class="code-cmt">${escapeHtml(line)}</span></span>`;
       }
-      const cut = isPy ? line.indexOf(" #") : line.indexOf(" //");
+      let cut = isSql ? line.search(/\s--/) : hashCmt ? line.search(/(^|[^"'])\s#/) : line.search(/\s\/\//);
+      if (!hashCmt && !isSql && cut < 0) cut = line.search(/\/\/[a-zA-Z]/);
       if (cut >= 0) {
-        return `<span class="code-line"><span class="code-src">${escapeHtml(line.slice(0, cut))}</span><span class="code-cmt">${escapeHtml(line.slice(cut))}</span></span>`;
+        const at = line.indexOf(mark, cut);
+        if (at > 0) {
+          return `<span class="code-line has-cmt"><span class="code-src">${escapeHtml(line.slice(0, at).trimEnd())}</span><span class="code-cmt">${escapeHtml(line.slice(at).trim())}</span></span>`;
+        }
       }
       return `<span class="code-line"><span class="code-src">${escapeHtml(line)}</span></span>`;
-    }).join("\n");
+    }).filter(Boolean).join("\n");
   };
 
   const dsaSrc = (block, lang) => annotateDsaCode(pickCode(block, lang) || block?.code || "", lang);
@@ -1036,7 +1244,7 @@
       return;
     }
 
-    const tab = window.topicTab || (data.kind === "dsa" ? "questions" : data.kind === "design" ? "notes" : "examples");
+    const tab = window.topicTab || (data.kind === "dsa" || data.kind === "practice" ? "questions" : data.kind === "design" ? "notes" : "examples");
     const level = window.topicLevel || "all";
     const companyF = window.topicCompany || "all";
     const bagF = window.topicBag || "all";
@@ -1075,15 +1283,15 @@
             const isRaj = s.raj || s.name === "Raj's C++";
             const useLang = isRaj ? "cpp" : lang;
             const raw = isRaj ? (s.codes?.cpp || s.code || "") : (pickCode(s, lang) || s.code || "");
-            const src = data.kind === "dsa" ? annotateDsaCode(raw, useLang) : raw;
+            const src = teachSrc(raw, data.kind === "dsa" ? useLang : inferLang(s) || "javascript", data.kind);
             return `
             <div class="sol-panel ${i === 0 ? "open" : ""}" data-sol-panel="${i}">
-              <p class="sol-meta"><span>Time ${escapeHtml(s.time || "")}</span><span>Space ${escapeHtml(s.space || "")}</span><span>${escapeHtml(isRaj ? "C++ · repo" : langLabel)}</span>${data.kind === "dsa" ? `<span>simple words on each line</span>` : ""}</p>
+              <p class="sol-meta"><span>Time ${escapeHtml(s.time || "")}</span><span>Space ${escapeHtml(s.space || "")}</span><span>${escapeHtml(isRaj ? "C++ · repo" : langLabel)}</span><span>simple words on each line</span></p>
               <p class="teach-body">${escapeHtml(s.why || "")}</p>
               ${src
                 ? `<div class="code-wrap">
                 <button class="copy-btn" type="button" data-sol-copy="${i}">Copy</button>
-                <pre class="dsa-pre"><code>${data.kind === "dsa" ? paintCode(src, useLang) : escapeHtml(src)}</code></pre>
+                <pre class="dsa-pre"><code>${showCode(src, data.kind === "dsa" ? useLang : inferLang(s) || "javascript")}</code></pre>
               </div>`
                 : `<p class="empty">This solution is not in ${escapeHtml(langLabel)} yet. Pick JavaScript or another language.</p>`}
             </div>`;
@@ -1091,7 +1299,8 @@
       }
       const single = data.kind === "dsa" ? dsaSrc(item, lang) : (pickCode(item, lang) || item.code);
       if (!single) return "";
-      return `<p class="answer-label">Code · ${escapeHtml(langLabel)}</p><div class="code-wrap"><pre class="dsa-pre"><code>${data.kind === "dsa" ? paintCode(single, lang) : escapeHtml(single)}</code></pre></div>`;
+      const codeLang = data.kind === "dsa" ? lang : inferLang(item);
+      return `<p class="answer-label">${data.kind === "practice" ? "Easy code" : "Code"} · ${escapeHtml(data.kind === "dsa" ? langLabel : codeLang)}</p><div class="code-wrap"><button class="copy-btn" type="button" data-q-copy>Copy</button><pre class="dsa-pre"><code>${showCode(teachSrc(single, codeLang, data.kind), codeLang)}</code></pre></div>`;
     };
 
     view.innerHTML = `
@@ -1105,9 +1314,9 @@
         <div class="progress"><span style="width:${p.pct}%"></span></div>
       </section>
       <div class="tabs" role="tablist">
-        <button class="tab ${tab === "examples" ? "active" : ""}" data-tab="examples">${data.kind === "design" ? "Workflows" : "Easy code"}</button>
+        <button class="tab ${tab === "examples" ? "active" : ""}" data-tab="examples">${data.kind === "design" ? "Workflows" : data.kind === "practice" ? "Starter code" : "Easy code"}</button>
         <button class="tab ${tab === "notes" ? "active" : ""}" data-tab="notes">Notes</button>
-        <button class="tab ${tab === "questions" ? "active" : ""}" data-tab="questions">${allQuestions.length} questions</button>
+        <button class="tab ${tab === "questions" ? "active" : ""}" data-tab="questions">${allQuestions.length} ${data.kind === "practice" ? "labs" : "questions"}</button>
       </div>
       ${tab === "notes" ? `
         <section class="${data.kind === "design" ? "design-stack" : "note-grid"}">
@@ -1118,7 +1327,9 @@
           ? "Each card is a complete design: architecture diagram, request flow, and the points you should state in an interview."
           : data.kind === "dsa"
             ? "Read the explanation first, then the code. Each line is commented the way Raj writes it on LeetCode. Switch JavaScript, Python, Java, C++, or C."
-            : "Read the explanation first, then the code. DSA topics can switch JavaScript, Python, Java, C++, or C."}</p>
+            : data.kind === "practice"
+              ? "Each snippet is a small complete function. Code is on the left. Easy comments sit on the right of the same line."
+              : "Read the explanation first, then the code. Comments sit on the right in easy words."}</p>
         <section class="example-list">
           ${examples.map((ex, i) => `
             <article class="example">
@@ -1132,10 +1343,10 @@
                 <p class="teach-body">${escapeHtml(ex.desc || "")}</p>
               </div>
               ${pickCode(ex, data.kind === "dsa" ? lang : "javascript") || ex.code ? `
-              <p class="answer-label code-label">${data.kind === "design" ? "Interface sketch" : "Code"}</p>
+              <p class="answer-label code-label">${data.kind === "design" ? "Interface sketch" : data.kind === "practice" ? "Easy code · comments on the right" : "Code · comments on the right"}</p>
               <div class="code-wrap">
                 <button class="copy-btn" type="button" data-ex="${i}">Copy</button>
-                <pre class="${data.kind === "dsa" ? "dsa-pre" : ""}"><code>${data.kind === "dsa" ? paintCode(dsaSrc(ex, lang), lang) : escapeHtml(pickCode(ex, "javascript") || ex.code || "")}</code></pre>
+                <pre class="dsa-pre"><code>${showCode(data.kind === "dsa" ? dsaSrc(ex, lang) : teachSrc(pickCode(ex, "javascript") || ex.code || "", paintLang(ex), data.kind), data.kind === "dsa" ? lang : paintLang(ex))}</code></pre>
               </div>` : ""}
             </article>`).join("") || `<p class="empty">${data.kind === "design" ? "No workflows yet." : "No code examples yet."}</p>`}
         </section>` : `
@@ -1187,7 +1398,7 @@
                 <button class="q-row" type="button">
                   <span class="num">${String(item.id).padStart(2, "0")}</span>
                   <span class="q-main">
-                    <span class="q-title">${escapeHtml(data.kind === "dsa" ? item.q : formalTitle(item.q))}</span>
+                    <span class="q-title">${escapeHtml(data.kind === "dsa" || data.kind === "practice" ? item.q : formalTitle(item.q))}</span>
                     <span class="q-meta">
                       ${(item.ask ? companyList(item.ask) : []).map((c) => `<span class="meta-chip">${escapeHtml(c)}</span>`).join("")}
                       ${data.kind === "dsa" && rajFor(item) ? `<span class="meta-chip src">Raj's C++</span>` : ""}
@@ -1209,13 +1420,13 @@
                     <tr><th>Method</th><th>Time</th><th>Space</th></tr>
                     ${item.solutions.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.time || "")}</td><td>${escapeHtml(s.space || "")}</td></tr>`).join("")}
                   </table>` : ""}
-                <p class="answer-label">${data.kind === "dsa" ? "Explanation" : "Technical note"}</p>
-                ${data.kind === "dsa" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderFormalAnswer(item.a)}
+                <p class="answer-label">${data.kind === "dsa" ? "Explanation" : data.kind === "practice" ? "What to do" : "Technical note"}</p>
+                ${data.kind === "dsa" || data.kind === "practice" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderFormalAnswer(item.a)}
                 ${renderVisuals(item)}
-                ${data.kind !== "dsa" && item.code ? `
+                ${data.kind !== "dsa" && data.kind !== "practice" && item.code ? `
                   <p class="answer-label">Reference configuration</p>
                   <div class="code-wrap">
-                    <pre><code>${escapeHtml(item.code)}</code></pre>
+                    <pre class="dsa-pre"><code>${showCode(teachSrc(item.code, inferLang(item), data.kind), inferLang(item))}</code></pre>
                   </div>` : ""}
                 <div class="q-tools">
                   ${item.solutions ? `<button class="btn btn-primary" type="button" data-reveal>Show solutions</button>` : ""}
@@ -1339,7 +1550,7 @@
       btn.addEventListener("click", async () => {
           const ex = examples[Number(btn.dataset.ex)];
           const raw = pickCode(ex, data.kind === "dsa" ? getLang() : "javascript") || ex?.code || "";
-          const code = data.kind === "dsa" ? annotateDsaCode(raw, getLang()) : raw;
+          const code = teachSrc(raw, data.kind === "dsa" ? getLang() : paintLang(ex), data.kind);
           await copyText(code, btn);
       });
     });
@@ -1361,8 +1572,16 @@
           const sol = sols?.[Number(btn.dataset.solCopy)];
           const useLang = sol?.raj ? "cpp" : getLang();
           const raw = sol?.raj ? (sol.codes?.cpp || sol.code || "") : (pickCode(sol, useLang) || sol?.code || "");
-          const code = data.kind === "dsa" ? annotateDsaCode(raw, useLang) : raw;
+          const code = teachSrc(raw, useLang, data.kind);
           await copyText(code, btn);
+        });
+      });
+      itemEl.querySelectorAll("[data-q-copy]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const qid = Number(itemEl.dataset.qid);
+          const item = allQuestions.find((q) => q.id === qid);
+          const raw = pickCode(item, getLang()) || item?.code || "";
+          await copyText(teachSrc(raw, inferLang(item), data.kind), btn);
         });
       });
     });

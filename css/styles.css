@@ -926,23 +926,23 @@ body[data-page="contact"] .search-wrap {
 
 .code-wrap {
   position: relative;
-  margin: 0 12px 8px;
+  margin: 0 12px 10px;
 }
 
 .code-wrap pre {
   margin: 0;
-  padding: 8px 12px;
+  padding: 12px 68px 12px 14px;
   overflow-x: auto;
-  background: #1b1915;
+  background: #161410;
   color: #f6efe3;
   border-radius: 10px;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.8rem;
-  line-height: 1.32;
+  font-size: 0.81rem;
+  line-height: 1.45;
 }
 
 [data-theme="light"] .code-wrap pre {
-  background: #241f1a;
+  background: #1a1713;
 }
 
 .dsa-pre code {
@@ -951,35 +951,55 @@ body[data-page="contact"] .search-wrap {
 
 .dsa-pre .code-line {
   display: block;
-  min-height: 0;
-  line-height: 1.28;
+  line-height: 1.45;
+  padding: 1px 0;
+}
+
+.dsa-pre .code-line.has-cmt {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(140px, 0.8fr);
+  column-gap: 16px;
+  align-items: start;
+}
+
+.dsa-pre .code-line.is-cmt {
+  display: block;
 }
 
 .dsa-pre .code-src {
-  color: #fff6e8;
-  font-weight: 560;
+  color: #fffdf6;
+  font-weight: 600;
+  min-width: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .dsa-pre .code-cmt {
-  color: #7a7164;
+  color: #7eb06a;
   font-weight: 400;
   font-style: italic;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding-left: 12px;
+  border-left: 1px solid rgba(126, 176, 106, 0.28);
 }
 
 .dsa-pre .code-line.is-cmt .code-cmt {
-  font-size: 0.92em;
+  padding-left: 0;
+  border-left: 0;
 }
 
-[data-theme="dark"] .dsa-pre .code-cmt {
-  color: #8a8072;
-}
-
+[data-theme="dark"] .dsa-pre .code-src,
 [data-theme="light"] .dsa-pre .code-src {
-  color: #fff8ee;
+  color: #fffef8;
 }
 
-[data-theme="light"] .dsa-pre .code-cmt {
-  color: #8d8578;
+[data-theme="dark"] .dsa-pre .code-cmt,
+[data-theme="light"] .dsa-pre .code-cmt,
+[data-theme="dark"] .dsa-pre .code-line.is-cmt .code-cmt,
+[data-theme="light"] .dsa-pre .code-line.is-cmt .code-cmt {
+  color: #7eb06a;
 }
 
 .copy-btn {
