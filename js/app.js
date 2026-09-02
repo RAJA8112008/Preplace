@@ -373,10 +373,16 @@
                 <span>
                   ${escapeHtml(item.q)}
                   ${item.ask ? `<small class="ask">${escapeHtml(item.ask)}</small>` : ""}
+                  ${item.links && item.links.length ? `<small class="ask-links">${item.links.map((l) => escapeHtml(l.name)).join(" · ")}</small>` : ""}
                 </span>
                 <span class="level">${item.level}</span>
               </button>
               <div class="answer-wrap">
+                ${item.links && item.links.length ? `
+                  <p class="answer-label">Solve on</p>
+                  <p class="plink-row">
+                    ${item.links.map((l) => `<a class="plink" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.name)} ↗</a>`).join("")}
+                  </p>` : ""}
                 <p class="answer-label">Explanation</p>
                 <p class="answer">${escapeHtml(item.a)}</p>
                 ${renderSolutions(item)}

@@ -1086,6 +1086,7 @@ printf("%d\\n", search([4, 5, 6, 7, 0, 1, 2], 0)); // 4`
       level: "beginner",
       q: "Two Sum",
       ask: "Google · Amazon · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/two-sum/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/key-pair5616/1"}],
       a: "Return the indexes of two numbers that add up to target. Each index is used at most once.\n\nExample: nums = [2, 7, 11, 15], target = 9. Indexes 0 and 1 work because 2 + 7 = 9.\n\nTrying every pair is correct and slow. Sorting with original indexes lets two pointers meet in the middle. A map of value -> index finds the partner while you walk once.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -1346,6 +1347,7 @@ int twoSum(int* nums, int n, int target, int* ans) {
       level: "beginner",
       q: "Best Time to Buy and Sell Stock",
       ask: "Amazon · Google · Microsoft · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/best-time-to-buy-and-sell-stock/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/best-time-to-buy-and-sell-stock/1"}],
       a: "You may buy on one day and sell on a later day. Return the largest profit. If every sell would lose money, return 0.\n\nExample: prices = [7, 1, 5, 3, 6, 4]. Buy at 1, sell at 6, profit 5.\n\nThe slow way tries every buy/sell pair. A prefix of the lowest price so far turns that into two linear passes. The last version keeps only the running minimum, so no extra array.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -1608,6 +1610,7 @@ int maxProfit(int* prices, int n) {
       level: "beginner",
       q: "Contains Duplicate",
       ask: "Amazon · Google · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/contains-duplicate/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/find-duplicates-in-on-time-and-constant-extra-space/"}],
       a: "Return true if any value appears at least twice, otherwise false.\n\nExample: [1, 2, 3, 1] is true. [1, 2, 3, 4] is false.\n\nNested loops compare every pair. Sorting puts equals next to each other. A Set tells you in one pass whether a value was already seen.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -1809,6 +1812,7 @@ int containsDuplicate(int* nums, int n) {
       level: "intermediate",
       q: "Product of Array Except Self",
       ask: "Amazon · Meta · Apple · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/product-of-array-except-self/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/product-array-puzzle170547/1"}],
       a: "Build a new list answer where answer[i] is the product of every number except nums[i]. Do not use division.\n\nExample: [1, 2, 3, 4] -> [24, 12, 8, 6].\n\nThe slow way multiplies the rest for each index. Left products and right products turn that into two extra arrays. The last version writes left products into the output, then multiplies a running right product on the way back.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -2074,6 +2078,7 @@ void productExceptSelf(int* nums, int n, int* out) {
       level: "beginner",
       q: "Maximum Subarray (Kadane)",
       ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/maximum-subarray/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/kadanes-algorithm-1587115620/1"}],
       a: "Return the largest sum of any contiguous subarray. The subarray must be non-empty.\n\nExample: [-2, 1, -3, 4, -1, 2, 1, -5, 4] -> 6 from [4, -1, 2, 1].\n\nAll subarrays can be summed with an inner running total. A DP array stores the best sum ending at each index. Kadane keeps only the previous ending-sum, so the extra array goes away.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -2311,6 +2316,7 @@ int maxSubArray(int* nums, int n) {
       level: "intermediate",
       q: "Maximum Product Subarray",
       ask: "Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/maximum-product-subarray/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/maximum-product-subarray3604/1"}],
       a: "Return the largest product of any contiguous subarray. Zeros reset a product. Negatives can flip min and max.\n\nExample: [2, 3, -2, 4] -> 6 from [2, 3]. Example: [-2, 3, -4] -> 24 from the whole list.\n\nAll subarray products work but are slow. Two DP arrays keep min and max ending at i. The last version keeps only those two running values.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -2602,6 +2608,7 @@ int maxProduct(int* nums, int n) {
       level: "intermediate",
       q: "Merge Intervals",
       ask: "Google · Meta · Amazon · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/merge-intervals/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/overlapping-intervals--170633/1"}],
       a: "Given intervals [start, end], merge every overlapping pair. Touching ends merge too: [1, 2] and [2, 3] become [1, 3].\n\nExample: [[1, 3], [2, 6], [8, 10], [15, 18]] -> [[1, 6], [8, 10], [15, 18]].\n\nYou can keep scanning the list and glue overlaps until nothing changes. Sorting by start makes overlaps neighbors, then one walk finishes the job. The last version does that walk into a result list after an in-place sort of a copy.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3012,6 +3019,7 @@ int mergeIntervals(int intervals[][2], int n, int out[][2]) {
       level: "intermediate",
       q: "Insert Interval",
       ask: "Google · Amazon · Meta · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/insert-interval/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/insert-interval-1666733333/1"}],
       a: "intervals is already sorted and non-overlapping. Insert newInterval and merge if it overlaps anyone. Return the new sorted list.\n\nExample: intervals = [[1, 3], [6, 9]], newInterval = [2, 5] -> [[1, 5], [6, 9]].\n\nAppending then running a full merge works. Splitting into “before”, “overlap”, and “after” is clearer. The last version is one pass: copy the left non-overlapping pieces, merge the middle, then copy the rest.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3430,6 +3438,7 @@ int insertInterval(int intervals[][2], int n, int ns, int ne, int out[][2]) {
       level: "intermediate",
       q: "3Sum",
       ask: "Amazon · Meta · Google · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/3sum/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/triplet-sum-in-array-1587115621/1"}],
       a: "Find all unique triplets that add to 0. Order inside a triplet does not matter. Duplicate triplets must not appear twice.\n\nExample: [-1, 0, 1, 2, -1, -4] -> [[-1, -1, 2], [-1, 0, 1]].\n\nThree nested loops plus a uniqueness set work. Two loops plus binary search drop one n. Sort, lock the first number, then two pointers on the rest is the usual O(n²) finish.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3959,6 +3968,7 @@ int threeSum(int* nums, int n, int out[][3]) {
       level: "intermediate",
       q: "Container With Most Water",
       ask: "Amazon · Google · Meta · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/container-with-most-water/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/container-with-most-water0535/1"}],
       a: "Bars stand at indexes 0..n-1. The water between i and j is min(height[i], height[j]) * (j - i). Return the largest area.\n\nExample: [1, 8, 6, 2, 5, 4, 8, 3, 7] -> 49, between the 8 at index 1 and the 7 at index 8.\n\nAll pairs work. Two pointers start at the ends: the short bar cannot beat a wider pair, so you move that side. A small extra skip jumps over bars that are no taller than the current limiting height.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4228,6 +4238,7 @@ int maxArea(int* height, int n) {
       level: "advanced",
       q: "Trapping Rain Water",
       ask: "Amazon · Google · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/trapping-rain-water/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/trapping-rain-water-1587115621/1"}],
       a: "Each index is a bar. Water sits on top of a bar up to the lower of the tallest bar on its left and on its right. Return total units of water.\n\nExample: [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1] -> 6.\n\nFor each index you can scan left and right for the two maxes. Precomputing those max arrays is linear. Two pointers keep a running leftMax and rightMax and add water from the smaller side, using constant extra memory.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4550,6 +4561,7 @@ int trap(int* height, int n) {
       level: "beginner",
       q: "Rotate Array",
       ask: "Amazon · Microsoft · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/rotate-array/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/rotate-array-by-n-elements-1587115621/1"}],
       a: "Rotate nums to the right by k steps. k can be larger than n; use k % n.\n\nExample: [1, 2, 3, 4, 5, 6, 7], k = 3 -> [5, 6, 7, 1, 2, 3, 4].\n\nRotating by one, k times, is easy and slow. An extra array placed at (i + k) % n is linear. Three reverses (whole list, then each half) do it in place.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4834,6 +4846,7 @@ void rotate(int* nums, int n, int k) {
       level: "intermediate",
       q: "Set Matrix Zeroes",
       ask: "Amazon · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/set-matrix-zeroes/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/boolean-matrix-problem-1587115620/1"}],
       a: "If a cell is 0, set its whole row and whole column to 0. Do this using the original zeros, not the zeros you just wrote.\n\nExample: [[1, 1, 1], [1, 0, 1], [1, 1, 1]] becomes [[1, 0, 1], [0, 0, 0], [1, 0, 1]].\n\nA full copy of the matrix is the safe slow extra-memory version. Row and column boolean arrays are the usual O(m+n) extra. The first row and first column can store those flags, with two booleans for whether those lines started with a zero.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -5239,6 +5252,7 @@ void setZeroes(int** matrix, int rows, int cols) {
       level: "intermediate",
       q: "Spiral Matrix",
       ask: "Amazon · Microsoft · Google · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/spiral-matrix/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/spirally-traversing-a-matrix-1587115621/1"}],
       a: "Walk the matrix in spiral order: right, down, left, up, and repeat. Return the values in that order.\n\nExample: [[1, 2, 3], [4, 5, 6], [7, 8, 9]] -> [1, 2, 3, 6, 9, 8, 7, 4, 5].\n\nA visited grid plus four direction vectors is the straightforward walk. Shrinking top/bottom/left/right bounds needs no visited flags. One loop with a direction index can turn at the edge of the remaining box.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -5757,6 +5771,7 @@ int spiralOrder(int** matrix, int rows, int cols, int* out) {
       level: "intermediate",
       q: "Next Permutation",
       ask: "Google · Meta · Amazon · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/next-permutation/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/next-permutation5226/1"}],
       a: "Rearrange nums into the next larger permutation in lexicographic order. If it is already the last permutation, wrap to the smallest (sorted ascending). Modify the array in place.\n\nExample: [1, 2, 3] -> [1, 3, 2]. Example: [3, 2, 1] -> [1, 2, 3].\n\nGenerating every permutation, sorting them, and picking the next is complete and huge. Finding the pivot then sorting the suffix is better. Finding the pivot, swapping with the next larger suffix value, and reversing the suffix is linear.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6305,6 +6320,7 @@ void nextPermutation(int* nums, int n) {
       level: "intermediate",
       q: "Sort Colors (Dutch flag)",
       ask: "Amazon · Microsoft · Meta · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/sort-colors/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/sort-an-array-of-0s-1s-and-2s4231/1"}],
       a: "nums contains only 0, 1, and 2. Sort it in place so the 0s come first, then 1s, then 2s.\n\nExample: [2, 0, 2, 1, 1, 0] -> [0, 0, 1, 1, 2, 2].\n\nA normal sort works and hides the structure. Counting 0/1/2 then overwriting is two passes. The Dutch-flag three pointers finish in one pass.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6592,6 +6608,7 @@ void sortColors(int* nums, int n) {
       level: "intermediate",
       q: "Find the Duplicate Number",
       ask: "Amazon · Microsoft · Google",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/find-the-duplicate-number/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/find-duplicates-in-an-array/1"}],
       a: "nums has n + 1 integers, each between 1 and n. Exactly one number is repeated (it may appear more than twice). Return that number. Do not change the input in the interview-strict version.\n\nExample: [1, 3, 4, 2, 2] -> 2.\n\nNested search finds a value that appears twice. A sorted copy makes duplicates neighbors. Treating indexes as a linked list (value as next pointer) and using Floyd’s cycle meeting point finds the duplicate in linear time and constant extra space.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6828,6 +6845,7 @@ if (!(slow != fast)) break;
       level: "intermediate",
       q: "Subarray Sum Equals K",
       ask: "Meta · Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/subarray-sum-equals-k/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/subarray-range-with-given-sum0128/1"}],
       a: "Count how many contiguous subarrays sum to k. Numbers may be negative, so a simple “shrink when too big” window is not enough.\n\nExample: nums = [1, 1, 1], k = 2 -> 2 subarrays.\n\nAll subarrays can be summed in O(n²). A prefix array plus a map of earlier prefixes is two passes. Combining them into one pass is the usual interview code: if prefix - k was seen c times, add c.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7120,6 +7138,7 @@ int subarraySum(int* nums, int n, int k) {
       level: "intermediate",
       q: "Longest Consecutive Sequence",
       ask: "Google · Amazon · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/longest-consecutive-sequence/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/longest-consecutive-subsequence-1587115621/1"}],
       a: "Return the length of the longest run of consecutive integers. Order in the array does not matter. Numbers may repeat.\n\nExample: [100, 4, 200, 1, 3, 2] -> 4 because 1,2,3,4.\n\nFrom each value you can walk upward until the chain breaks. Sorting unique values makes the chain a neighbor scan. A Set lets you start a chain only at numbers that have no predecessor, so each number is visited a constant number of times.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7446,6 +7465,7 @@ int longestConsecutive(int* nums, int n) {
       level: "advanced",
       q: "First Missing Positive",
       ask: "Amazon · Microsoft · Google · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/first-missing-positive/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/smallest-positive-missing-number-1587115621/1"}],
       a: "Return the smallest missing positive integer (1, 2, 3, …). The list may contain negatives, zeros, and values larger than n.\n\nExample: [3, 4, -1, 1] -> 2. Example: [1, 2, 0] -> 3.\n\nSorting then scanning for 1, 2, 3, … works. A Set of positives makes the scan O(n). The in-place version puts each value v in 1..n at index v-1, then the first index whose value is not i+1 is the answer.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7708,6 +7728,7 @@ int firstMissingPositive(int* nums, int n) {
       level: "intermediate",
       q: "Jump Game",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/jump-game/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/jump-game/1"}],
       a: "Each nums[i] is the max jump length from index i. Return true if you can reach the last index.\n\nExample: [2, 3, 1, 1, 4] is true. Example: [3, 2, 1, 0, 4] is false because you land on 0 and cannot pass.\n\nTrying every jump recursively is exponential. A boolean DP array records whether each index is reachable. The greedy farthest-reach walk is one pass: if an index is beyond farthest, you fail; if farthest covers the end, you succeed.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7957,6 +7978,7 @@ int canJump(int* nums, int n) {
       level: "intermediate",
       q: "Search in Rotated Sorted Array",
       ask: "Amazon · Google · Microsoft · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/search-in-rotated-sorted-array/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/search-in-a-rotated-array4618/1"}],
       a: "nums was sorted ascending, then rotated. Values are unique. Return the index of target, or -1.\n\nExample: [4, 5, 6, 7, 0, 1, 2], target 0 -> 4.\n\nA linear scan always works. Finding the pivot (the smallest value) then binary-searching the correct sorted half is two binary searches. One binary search that asks “which half is sorted?” and whether target sits there is the usual finish.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -8276,6 +8298,7 @@ int search(int* nums, int n, int target) {
       level: "beginner",
       q: "Majority Element",
       ask: "Amazon · Microsoft · Google · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/majority-element/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/majority-element-1587115620/1"}],
       a: "The majority element appears more than n/2 times. You may assume it always exists.\n\nExample: [3, 2, 3] -> 3. Example: [2, 2, 1, 1, 1, 2, 2] -> 2.\n\nCount each value with a nested scan. A map counts in one pass. Boyer–Moore keeps a candidate and a vote: the majority survives because it appears more than everyone else combined.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -8514,6 +8537,7 @@ int majorityElement(int* nums, int n) {
       level: "beginner",
       q: "Move Zeroes",
       ask: "Meta · Amazon · Apple · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/move-zeroes/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/move-all-zeroes-to-end-of-array0751/1"}],
       a: "Move all zeros to the end. Keep the relative order of the non-zero numbers. Modify the list in place.\n\nExample: [0, 1, 0, 3, 12] -> [1, 3, 12, 0, 0].\n\nBubbling each zero right is quadratic. Building a new list of non-zeros then padding zeros is linear with extra memory. A write pointer copies non-zeros forward, then fills the tail with zeros.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -8774,6 +8798,7 @@ void moveZeroes(int* nums, int n) {
       level: "beginner",
       q: "Missing Number",
       ask: "Amazon · Microsoft · Google · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/missing-number/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/missing-number-in-array1416/1"}],
       a: "nums holds n distinct numbers from the range 0..n, except one missing value. Return the missing number.\n\nExample: [3, 0, 1] -> 2.\n\nFor each candidate 0..n you can scan the array. Sorting then looking for a gap is faster. Gauss’s sum (or XOR of indexes and values) is one pass and constant extra memory.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {

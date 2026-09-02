@@ -1073,6 +1073,7 @@ int main(void) {
       level: "beginner",
       q: "Climbing Stairs",
       ask: "Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/climbing-stairs/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/count-ways-to-reach-the-nth-stair-1587115620/1"}],
       a: "You start on stair 0. From any stair you may climb 1 step or 2 steps. Return how many distinct ordered paths reach stair n.\n\nTiny example: n = 3. The paths are 1+1+1, 1+2, and 2+1. Answer 3. (2+1 and 1+2 are different orders, so both count.)\n\nThe last move is a 1 from n-1 or a 2 from n-2, so ways(n) = ways(n-1) + ways(n-2), with ways(1) = 1 and ways(2) = 2. That is Fibonacci shifted by one.\n\nOpen the Brute, Optimal, and More optimal tabs for the raw recursion tree, a memo notebook, and two rolling numbers.",
       solutions: [
         {
@@ -1263,6 +1264,7 @@ int climbStairs(int n) {
       level: "beginner",
       q: "House Robber",
       ask: "Amazon · Google · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/house-robber/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/stickler-theif-1587115621/1"}],
       a: "Houses sit in a line. nums[i] is the money in house i. You may not rob two adjacent houses. Return the maximum total.\n\nTiny example: [1, 2, 3, 1]. Taking 1 and 3 (indexes 0 and 2) gives 4. Taking 2 and 1 (indexes 1 and 3) gives 3. Answer 4.\n\nAt index i the choice is take nums[i] and jump to i+2, or skip and go to i+1. The answer is the max of those two.\n\nOpen the Brute, Optimal, and More optimal tabs for recursion, a 1D table, and two running totals.",
       solutions: [
         {
@@ -1470,6 +1472,7 @@ int rob(int *nums, int n) {
       level: "intermediate",
       q: "House Robber II",
       ask: "Google · Amazon · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/house-robber-ii/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/house-robber-ii/"}],
       a: "Houses sit on a circle: the first and last houses are adjacent, so you cannot rob both. Return the maximum total.\n\nTiny example: [2, 3, 2]. If you take the first 2 you cannot take the last 2, so the best is 3. Answer 3.\n\nThe circle splits into two linear streets: rob houses [0 .. n-2] or rob houses [1 .. n-1]. Take the max of those two linear answers. A single house is the one extra base case.\n\nOpen the Brute, Optimal, and More optimal tabs for two exponential lines, two DP arrays, and two rolling passes.",
       solutions: [
         {
@@ -1763,6 +1766,7 @@ int rob(int *nums, int n) {
       level: "intermediate",
       q: "Coin Change",
       ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/coin-change/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/number-of-coins1824/1"}],
       a: "You have coin values in coins. Each coin may be used any number of times. Return the fewest coins that sum to amount, or -1 if it is impossible.\n\nTiny example: coins = [1, 3, 4], amount = 6. 4+1+1 is three coins, 3+3 is two. Answer 2.\n\nThis is unbounded knapsack for minimum count. A state is remaining amount (or current sum). The transition is: try each coin and add 1.\n\nOpen the Brute, Optimal, and More optimal tabs for raw recursion, a memo on remaining, and a 1D bottom-up row.",
       solutions: [
         {
@@ -2074,6 +2078,7 @@ int coinChange(int *coins, int n, int amount) {
       level: "intermediate",
       q: "Longest Increasing Subsequence",
       ask: "Google · Amazon · Microsoft · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/longest-increasing-subsequence/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/longest-increasing-subsequence-1587115620/1"}],
       a: "A subsequence keeps order but may skip indexes. Strictly increasing means each chosen number is larger than the last. Return the length of the longest increasing subsequence.\n\nTiny example: [10, 9, 2, 5, 3, 7, 101, 18]. One LIS is 2, 5, 7, 101 (length 4). 2, 3, 7, 18 is another length 4.\n\nThe O(n^2) state is “LIS ending at i.” You extend any earlier j with nums[j] < nums[i]. The O(n log n) idea keeps the smallest tail for every length and binary-searches the first tail that is not smaller than the new number.\n\nOpen the Brute, Optimal, and More optimal tabs for take/skip recursion, the n^2 table, and the tails binary search.",
       solutions: [
         {
@@ -2365,6 +2370,7 @@ int lengthOfLIS(int *nums, int n) {
       level: "intermediate",
       q: "Longest Common Subsequence",
       ask: "Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/longest-common-subsequence/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/longest-common-subsequence-1587115620/1"}],
       a: "Given two strings, return the length of the longest subsequence that appears in both. Order stays; you may skip letters in either string.\n\nTiny example: text1 = \"abcde\", text2 = \"ace\". The letters a, c, e appear in both in that order. Answer 3.\n\nIf the current letters match, you take 1 + LCS of the rest. If they differ, you drop a letter from the first string or from the second and take the max. Empty prefix has LCS 0.\n\nOpen the Brute, Optimal, and More optimal tabs for recursion, the (m+1) by (n+1) table, and a rolling row.",
       solutions: [
         {
@@ -2640,6 +2646,7 @@ int longestCommonSubsequence(const char *text1, const char *text2) {
       level: "intermediate",
       q: "Word Break",
       ask: "Amazon · Google · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/word-break/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/word-break-2/1"}],
       a: "You are given a string s and a list of words. Return true if s can be split into a sequence of those words. Words may be reused. Order in the dictionary does not matter.\n\nTiny example: s = \"applepenapple\", wordDict = [\"apple\", \"pen\"]. apple + pen + apple works. Answer true. \"catsandog\" with [\"cats\",\"dog\",\"sand\",\"and\",\"cat\"] cannot finish. Answer false.\n\nA state is the start index i. If any dictionary word matches s starting at i and the rest also breaks, i is good. The boolean row can[i] means s[0..i) can be segmented.\n\nOpen the Brute, Optimal, and More optimal tabs for prefix recursion, memo on the start index, and the boolean DP row.",
       solutions: [
         {
@@ -2956,6 +2963,7 @@ int wordBreak(const char *s, char **wordDict, int m) {
       level: "beginner",
       q: "Unique Paths",
       ask: "Google · Amazon · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/unique-paths/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/number-of-unique-paths5339/1"}],
       a: "A robot starts at the top-left of an m by n grid. It may move only right or down. Return how many paths reach the bottom-right.\n\nTiny example: m = 3, n = 2. Paths: down-down-right, down-right-down, right-down-down. Answer 3.\n\nA cell is reached from above or from the left, so ways[r][c] = ways[r-1][c] + ways[r][c-1]. The first row and first column are 1.\n\nOpen the Brute, Optimal, and More optimal tabs for recursion on (r, c), the 2D grid, and one rolling row.",
       solutions: [
         {
@@ -3173,6 +3181,7 @@ int uniquePaths(int m, int n) {
       level: "intermediate",
       q: "Unique Paths II",
       ask: "Amazon · Google · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/unique-paths-ii/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/unique-paths-in-a-grid-with-obstacles/"}],
       a: "Same grid as Unique Paths, but some cells hold a 1 (a stone). You cannot walk on a stone. Return the number of paths from top-left to bottom-right. If the start is a stone, the answer is 0.\n\nTiny example: [[0,0,0],[0,1,0],[0,0,0]]. The middle cell is blocked. Two paths remain. Answer 2.\n\nA stone zeros that cell. Other cells still add from above and left. The 1D row overwrites a blocked column with 0 so later cells in that row cannot pick a fake left path.\n\nOpen the Brute, Optimal, and More optimal tabs for recursion that rejects stones, a 2D ways grid, and the 1D row.",
       solutions: [
         {
@@ -3462,6 +3471,7 @@ int uniquePathsWithObstacles(int **grid, int rows, int cols) {
       level: "intermediate",
       q: "Jump Game II",
       ask: "Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/jump-game-ii/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/minimum-number-of-jumps-1587115620/1"}],
       a: "nums[i] is the farthest jump length from index i. You start at 0. You are promised the last index is reachable. Return the minimum number of jumps to reach the last index.\n\nTiny example: [2, 3, 1, 1, 4]. From 0 you can go to 1 or 2. From 1 you can reach the end in one more jump. Answer 2 (0 -> 1 -> 4).\n\nDP: best[i] is min jumps to i. From i you update i+1 .. i+nums[i]. The linear pass treats the array as BFS layers: the current window is one jump, farthest is the next window’s end.\n\nOpen the Brute, Optimal, and More optimal tabs for min-over-jumps recursion, the O(n^2) table, and the O(n) greedy windows.",
       solutions: [
         {
@@ -3712,6 +3722,7 @@ int jump(int *nums, int n) {
       level: "intermediate",
       q: "Partition Equal Subset Sum",
       ask: "Amazon · Google · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/partition-equal-subset-sum/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/subset-sum-problem2014/1"}],
       a: "Return true if you can split nums into two subsets with equal sum. Each number is used at most once.\n\nTiny example: [1, 5, 11, 5]. Total 22, so each subset needs 11. {11} and {1, 5, 5} work. Answer true. [1, 2, 3, 5] totals 11 (odd). Answer false.\n\nIf the total is odd, return false. Otherwise this is 0/1 subset sum with need = total/2. Take or skip each number.\n\nOpen the Brute, Optimal, and More optimal tabs for include/skip recursion, the 2D boolean table, and one backwards boolean row.",
       solutions: [
         {
@@ -4013,6 +4024,7 @@ int canPartition(int *nums, int n) {
       level: "intermediate",
       q: "0/1 Knapsack",
       ask: "Amazon · Google · Microsoft",
+      links: [{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/0-1-knapsack-problem0945/1"},{"name":"GFG Article","url":"https://www.geeksforgeeks.org/0-1-knapsack-problem-dp-10/"}],
       a: "Each item has values[i] and weights[i]. Take each item at most once. Capacity is the bag limit. Return the maximum total value that still fits.\n\nTiny example: values = [6, 10, 12], weights = [1, 2, 3], capacity = 5. Items 1 and 2 (10+12) weigh 5. Answer 22.\n\nState (i, w) is best value from the first i items with leftover capacity w. Skip copies the previous row. Take adds this value if the weight fits.\n\nOpen the Brute, Optimal, and More optimal tabs for take/skip recursion, the 2D table, and the backwards 1D row.",
       solutions: [
         {
@@ -4265,6 +4277,7 @@ int knapsack(int *values, int *weights, int n, int capacity) {
       level: "advanced",
       q: "Edit Distance",
       ask: "Google · Amazon · Microsoft · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/edit-distance/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/edit-distance3702/1"}],
       a: "Return the fewest operations to turn word1 into word2. Allowed operations: insert one letter, delete one letter, replace one letter. Each costs 1.\n\nTiny example: word1 = \"horse\", word2 = \"ros\". horse -> rorse (replace h), rorse -> rose (delete r), rose -> ros (delete e). Answer 3.\n\nIf the current letters match, cost is the diagonal (no op). If they differ, cost is 1 + min(insert, delete, replace). Empty prefixes cost the leftover length (all inserts or all deletes).\n\nOpen the Brute, Optimal, and More optimal tabs for 3-way recursion, the full Levenshtein table, and two rolling rows.",
       solutions: [
         {
@@ -4580,6 +4593,7 @@ int minDistance(const char *word1, const char *word2) {
       level: "intermediate",
       q: "Decode Ways",
       ask: "Amazon · Google · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/decode-ways/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/total-decoding-messages1235/1"}],
       a: "A mapping 1 -> A, 2 -> B, …, 26 -> Z is given. s is a digit string. Return how many ways to decode it into letters. Leading zeros are invalid. \"06\" is 0 ways. \"10\" is 1 way (J). \"226\" is 3 ways (BBF, VF, BZ).\n\nAt index i, if s[i] is 1..9 you may take one digit. If s[i..i+1] is 10..26 you may take two. A 0 can only finish a two-digit code 10 or 20.\n\nOpen the Brute, Optimal, and More optimal tabs for recursion from index i, a memo on i, and two rolling way-counts.",
       solutions: [
         {
@@ -4885,6 +4899,7 @@ int numDecodings(const char *s) {
       level: "beginner",
       q: "Best Time to Buy and Sell Stock II",
       ask: "Amazon · Google · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/stock-buy-sell/"}],
       a: "prices[i] is the price on day i. You may buy and sell as many times as you like, but you hold at most one share. You cannot buy and sell on a timeline that overlaps. Return the maximum profit.\n\nTiny example: [7, 1, 5, 3, 6, 4]. Buy at 1, sell at 5 (profit 4), buy at 3, sell at 6 (profit 3). Answer 7.\n\nDP state is (day, holding or not). Greedy is the same as summing every uphill day-to-day gain: any climb can be taken as a 1-day trade, and that matches the best multi-day hold.\n\nOpen the Brute, Optimal, and More optimal tabs for buy/skip recursion, cash/hold arrays, and the uphill sum.",
       solutions: [
         {
@@ -5130,6 +5145,7 @@ int maxProfit(int *prices, int n) {
       level: "advanced",
       q: "Best Time to Buy and Sell Stock with Cooldown",
       ask: "Google · Amazon · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/buy-and-sell-stocks-with-cooldown/"}],
       a: "Same as Stock II (many buys and sells, one share at a time), plus a cooldown: after you sell, you must skip the next day before buying again.\n\nTiny example: [1, 2, 3, 0, 2]. Buy 1, sell 2, cooldown on 3, buy 0, sell 2. Profit 3.\n\nThree states: hold (you have a share), sold (you sold today), rest (you are free to buy, and you did not sell today). You may buy only from rest. Tomorrow’s rest may come from today’s rest or today’s sold.\n\nOpen the Brute, Optimal, and More optimal tabs for recursion with a cooldown flag, three DP arrays, and three rolling numbers.",
       solutions: [
         {
@@ -5446,6 +5462,7 @@ int maxProfit(int *prices, int n) {
       level: "intermediate",
       q: "Target Sum",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/target-sum/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/target-sum/"}],
       a: "You have a list of non-negative integers. Place a + or a - in front of each number. Return how many ways the signed sum equals target.\n\nTiny example: nums = [1, 1, 1, 1, 1], target = 3. Five ways pick which one number is the minus. Answer 5.\n\nLet P be the subset with plus and N the subset with minus. P + N = total and P - N = target, so P = (total + target) / 2. The count becomes 0/1 knapsack ways to make that subset sum. If total+target is odd or |target| > total, the answer is 0.\n\nOpen the Brute, Optimal, and More optimal tabs for +/- recursion, memo on (index, running sum), and the subset-sum ways row.",
       solutions: [
         {
@@ -5717,6 +5734,7 @@ int findTargetSumWays(int *nums, int n, int target) {
       level: "intermediate",
       q: "Combination Sum",
       ask: "Amazon · Google · Apple · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/combination-sum/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/combination-sum-1587115620/1"}],
       a: "candidates holds distinct positive integers. You may reuse a number as often as you like. Return how many combinations (order does not matter) add to target. Listing the actual bags is the same backtrack with a path array; interviews that ask for the list want that brute tree. The DP counts the bags.\n\nTiny example: candidates = [1, 2, 3], target = 4. Combinations: [1,1,1,1], [1,1,2], [2,2], [1,3]. Answer 4. (If order counted, [1,3] and [3,1] would both score; that is Combination Sum IV, and you would loop the sum outer.)\n\nBrute walks from a start index so [1,2] and [2,1] are the same bag. Memo caches (start, remain). The 1D row loops coins in the outer loop so each combination is counted once.\n\nOpen the Brute, Optimal, and More optimal tabs for unlimited-reuse backtracking, memoized counts, and the unbounded knapsack ways row.",
       solutions: [
         {

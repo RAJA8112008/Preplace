@@ -1027,6 +1027,7 @@ int hasDirectedCycle(int** g, int* deg, int n) {
       level: "intermediate",
       q: "Number of Islands",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/number-of-islands/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/find-the-number-of-islands/1"}],
       a: "Count groups of land in a grid. '1' is land, '0' is water. Two land cells are the same island if they touch up, down, left, or right (not diagonal).\n\nExample: [[1,1,0],[1,0,0],[0,0,1]] has two islands: the three 1s in the top-left, and the lone 1 at the bottom-right.\n\nYou walk each land cell and mark the whole blob so you do not count it again. Open Brute, Optimal, and More optimal for extra visited copies, in-place DFS, and Union-Find.",
       solutions: [
         {
@@ -1552,6 +1553,7 @@ int numIslands(char** grid, int rows, int cols) {
       level: "intermediate",
       q: "Clone Graph",
       ask: "Meta · Google · Amazon",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/clone-graph/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/clone-graph/1"}],
       a: "You get one node of a connected undirected graph. Each node has a val and a neighbors array. Return a deep copy: new objects, same shape, no shared references.\n\nExample: 1 connected to 2 and 3, 2 connected to 1 and 3. The clone has new nodes 1, 2, 3 with the same links.\n\nA map from old node to new node is the whole trick, so you do not clone the same node twice. Brute copies extra maps; Optimal uses DFS; More optimal uses BFS.",
       solutions: [
         {
@@ -1948,6 +1950,7 @@ struct Node* cloneGraph(struct Node* node) {
       level: "intermediate",
       q: "Course Schedule",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/course-schedule/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/prerequisite-tasks/1"}],
       a: "There are numCourses labeled 0 to n-1. prerequisites[i] = [a, b] means you must take b before a. Return true if you can finish all courses.\n\nExample: 2 courses, [[1,0]] is true (take 0 then 1). [[1,0],[0,1]] is false (a 2-cycle).\n\nThis is 'does this directed graph have a cycle?' Brute DFS from every node with a fresh path copy. Optimal is 3-color DFS. More optimal is Kahn's indegree queue.",
       solutions: [
         {
@@ -2329,6 +2332,7 @@ int canFinish(int numCourses, int** prerequisites, int e) {
       level: "intermediate",
       q: "Course Schedule II",
       ask: "Amazon · Google · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/course-schedule-ii/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/course-schedule/1"}],
       a: "Same setup as Course Schedule, but return one valid order of courses. If a cycle makes it impossible, return [].\n\nExample: numCourses = 4, prereqs [[1,0],[2,0],[3,1],[3,2]] can return [0,1,2,3] or [0,2,1,3].\n\nAny topo order is accepted. Brute tries every permutation. Optimal DFS pushes a course after its neighbors. More optimal is Kahn's queue, which builds the order as it peels.",
       solutions: [
         {
@@ -2783,6 +2787,7 @@ int* findOrder(int numCourses, int** prerequisites, int e, int* returnSize) {
       level: "intermediate",
       q: "Pacific Atlantic Water Flow",
       ask: "Google · Amazon · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/pacific-atlantic-water-flow/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/pacific-atlantic-water-flow/"}],
       a: "A heights grid. Rain at a cell can flow to a neighbor that is equal or lower. The Pacific touches the top and left borders. The Atlantic touches the bottom and right. Return every cell that can reach both oceans.\n\nExample: a peak in the middle can flow down to both shores; a low pit in the center may reach neither.\n\nWalking from every cell to the ocean is the slow way. Walking inland from both shores and intersecting the two reachable sets is the right way.",
       solutions: [
         {
@@ -3366,6 +3371,7 @@ int** pacificAtlantic(int** heights, int rows, int cols, int* returnSize, int** 
       level: "intermediate",
       q: "Graph Valid Tree",
       ask: "Google · Amazon · Meta · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/graph-valid-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/graph-valid-tree/"},{"name":"LintCode","url":"https://www.lintcode.com/problem/178/"}],
       a: "n nodes labeled 0 to n-1, and a list of undirected edges. Return true if these edges form a single tree: connected, and no cycle.\n\nExample: n = 5, edges [[0,1],[0,2],[0,3],[1,4]] is a tree. Add [1,2] and you get a cycle, so false.\n\nA tree on n nodes has exactly n-1 edges and is connected. Brute DFS with extra path copies. Optimal BFS connected-plus-n-1. More optimal Union-Find: a union that is already in the same set is a cycle.",
       solutions: [
         {
@@ -3733,6 +3739,7 @@ int validTree(int n, int** edges, int e) {
       level: "intermediate",
       q: "Number of Connected Components in an Undirected Graph",
       ask: "Amazon · Google · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/number-of-provinces/1"}],
       a: "n nodes, undirected edges. Return how many connected pieces the graph has.\n\nExample: n = 5, edges [[0,1],[1,2],[3,4]] has two components: {0,1,2} and {3,4}.\n\nBrute restarts DFS with extra visited copies. Optimal is one visited array and a DFS/BFS per unvisited node. More optimal is Union-Find: start at n, subtract one for each merge.",
       solutions: [
         {
@@ -4096,6 +4103,7 @@ int countComponents(int n, int** edges, int e) {
       level: "advanced",
       q: "Word Ladder",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/word-ladder/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/word-ladder/1"}],
       a: "beginWord, endWord, and a wordList of the same length. A step changes exactly one letter to another real word in the list. Return the length of the shortest transformation sequence, or 0 if none exists. Length counts the words, so beginWord -> hot -> dot -> dog -> cog is 5.\n\nExample: begin hit, end cog, list [hot,dot,dog,lot,log,cog] answers 5.\n\nThis is unweighted shortest path on a huge implicit graph. Brute DFS explores every ladder. Optimal BFS. More optimal searches from both ends.",
       solutions: [
         {
@@ -4612,6 +4620,7 @@ int ladderLength(char* beginWord, char* endWord, char** wordList, int n) {
       level: "intermediate",
       q: "Rotting Oranges",
       ask: "Amazon · Google · Microsoft · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/rotting-oranges/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/rotten-oranges/1"}],
       a: "A grid: 0 empty, 1 fresh orange, 2 rotten. Every minute, every rotten orange infects its 4-direction neighbors. Return minutes until no fresh orange remains, or -1 if some orange never rots.\n\nExample: [[2,1,1],[1,1,0],[0,1,1]] takes 4 minutes.\n\nBrute rescan the whole grid each minute. Optimal is multi-source BFS from every initial 2. More optimal stores the minute on the grid so you do not keep a separate time field.",
       solutions: [
         {
@@ -5133,6 +5142,7 @@ int orangesRotting(int** grid, int rows, int cols) {
       level: "intermediate",
       q: "01 Matrix",
       ask: "Google · Amazon · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/01-matrix/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/distance-of-nearest-cell-having-1-1587115620/1"}],
       a: "A matrix of 0s and 1s. For every cell, return its distance to the nearest 0. Distance is 4-direction steps.\n\nExample: [[0,0,0],[0,1,0],[1,1,1]] becomes [[0,0,0],[0,1,0],[1,2,1]].\n\nBrute runs BFS from every 1. Optimal puts every 0 in one queue (multi-source BFS). More optimal is a two-pass DP: top-left then bottom-right.",
       solutions: [
         {
@@ -5571,6 +5581,7 @@ int** updateMatrix(int** mat, int rows, int cols, int* returnSize, int** returnC
       level: "advanced",
       q: "Alien Dictionary",
       ask: "Google · Amazon · Meta · Airbnb",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/alien-dictionary/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/alien-dictionary/1"}],
       a: "A list of words sorted in an alien alphabet. Derive a valid order of unique letters. If the order is invalid (cycle, or a longer word listed before its prefix), return \"\". Any valid topo order is accepted.\n\nExample: [wrt, wrf, er, ett, rftt] can return wertf.\n\nCompare neighbor words to build directed edges (earlier letter -> later letter). Then topo sort. Brute permutes letters. Optimal DFS. More optimal is Kahn.",
       solutions: [
         {
@@ -6217,6 +6228,7 @@ char* alienOrder(char** words, int nw) {
       level: "intermediate",
       q: "Network Delay Time",
       ask: "Google · Amazon · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/network-delay-time/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/network-delay-time/"}],
       a: "A directed weighted graph: times[i] = [u, v, w] means a signal takes w to go from u to v. Send from node k. Return how long until every node gets the signal, or -1 if some node is unreachable.\n\nExample: times [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2 answers 2.\n\nBrute DFS all paths with extra visiting copies. Optimal Dijkstra with a linear scan for the next closest node. More optimal Dijkstra with a min-heap.",
       solutions: [
         {
@@ -6751,6 +6763,7 @@ int networkDelayTime(int** times, int e, int n, int k) {
       level: "advanced",
       q: "Cheapest Flights Within K Stops",
       ask: "Amazon · Google · Bloomberg · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/cheapest-flights-within-k-stops/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/cheapest-flights-within-k-stops/"}],
       a: "n cities, flights [from, to, price], src, dst, and K. Return the cheapest price from src to dst with at most K stops (so at most K+1 flights). -1 if impossible.\n\nExample: n = 4, flights [[0,1,100],[1,2,100],[2,0,100],[1,3,600],[2,3,200]], src 0, dst 3, K 1 answers 700 (0->1->3). With K = 2 you can take 0->1->2->3 for 400.\n\nStops cap the path. Brute DFS. Optimal Bellman-Ford for K+1 rounds. More optimal is a min-heap Dijkstra that tracks remaining stops.",
       solutions: [
         {
@@ -7238,6 +7251,7 @@ int findCheapestPrice(int n, int** flights, int e, int src, int dst, int k) {
       level: "intermediate",
       q: "Accounts Merge",
       ask: "Meta · Google · Amazon · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/accounts-merge/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/accounts-merge/"}],
       a: "accounts[i] is [name, email1, email2, ...]. Two accounts belong to the same person if they share any email. Merge those accounts: one name, sorted unique emails. Different people may share a name.\n\nExample: John with a@x and b@x, John with b@x and c@x merge into one John with a, b, c.\n\nEmails are graph nodes. Brute DFS with extra visited copies. Optimal DFS/BFS grouping. More optimal Union-Find on emails.",
       solutions: [
         {
@@ -7823,6 +7837,7 @@ void accountsMerge_uf(void) { /* union first email of each account with the rest
       level: "intermediate",
       q: "Surrounded Regions",
       ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/surrounded-regions/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/replace-os-with-xs/1"}],
       a: "A board of 'X' and 'O'. Flip every 'O' that cannot reach the border into 'X'. An 'O' on the border, and anything connected to it, stays 'O'.\n\nExample: a ring of X around a middle O becomes all X. An O on the edge keeps its whole blob.\n\nBrute: for every O, DFS with a visited copy to see if the blob hits the border. Optimal: mark all border-connected O, then flip the rest. More optimal: Union-Find with a dummy 'border' node.",
       solutions: [
         {
@@ -8336,6 +8351,7 @@ void solve(char** board, int rows, int cols) {
       level: "beginner",
       q: "Flood Fill",
       ask: "Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/flood-fill/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/flood-fill-algorithm1856/1"}],
       a: "An image grid of color numbers, a start cell (sr, sc), and a new color. Recolor the start cell and every 4-direction neighbor that had the same old color. Return the image.\n\nExample: image [[1,1,1],[1,1,0],[1,0,1]], start (1,1), color 2 paints the connected 1s into 2s. The 1 at (2,2) stays 1 because it does not touch the blob through 4-direction edges.\n\nThis is islands on colors. If the start is already the new color, return as-is so you do not loop.",
       solutions: [
         {
@@ -8679,6 +8695,7 @@ int** floodFill(int** image, int rows, int cols, int sr, int sc, int color) {
       level: "intermediate",
       q: "Shortest Path in Binary Matrix",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/shortest-path-in-binary-matrix/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/shortest-path-in-a-binary-maze/"}],
       a: "An n x n grid of 0 (open) and 1 (blocked). Walk 8 directions. Return the length of the shortest path from (0,0) to (n-1,n-1), counting cells on the path. Return -1 if you cannot reach the end. Start and end must be 0.\n\nExample: [[0,1],[1,0]] answers 2 (diagonal step).\n\nUnweighted shortest path: BFS. DFS-all-paths is the brute. Bidirectional BFS is the upgrade on large open grids.",
       solutions: [
         {
@@ -9194,6 +9211,7 @@ int shortestPathBinaryMatrix(int** grid, int n) {
       level: "intermediate",
       q: "Detect Cycle in a Directed Graph",
       ask: "Amazon · Google · Microsoft · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/course-schedule/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/detect-cycle-in-a-directed-graph/1"}],
       a: "A directed graph with n nodes and a list of edges [u, v] meaning u -> v. Return true if any cycle exists.\n\nExample: 3 nodes, edges [[0,1],[1,2],[2,0]] is a cycle. Drop [2,0] and it is a DAG, so false.\n\nBrute DFS from every node with a fresh on-path copy. Optimal 3-color DFS. More optimal Kahn: if you cannot peel all nodes, a cycle remains.",
       solutions: [
         {

@@ -1280,6 +1280,7 @@ int count(struct Node* node) {
       level: "beginner",
       q: "Binary Tree Inorder Traversal",
       ask: "Amazon · Microsoft · Google · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/binary-tree-inorder-traversal/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/inorder-traversal/1"}],
       a: "Return the inorder list of node values: left subtree, then the node, then the right subtree.\n\nTree 1 with left 2 and right 3 yields [2, 1, 3]. An empty tree yields [].\n\nRecursion is the definition. An explicit stack simulates the same walk. Morris traversal threads a temporary link from the predecessor so you need no stack.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -1828,6 +1829,7 @@ int* inorderTraversal(struct Node* root) {
       level: "beginner",
       q: "Binary Tree Level Order Traversal",
       ask: "Amazon · Microsoft · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/binary-tree-level-order-traversal/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/level-order-traversal/1"}],
       a: "Return values grouped by depth, left to right in each row.\n\nTree 3 with left 9 and right 20 (20 has 15 and 7) yields [[3],[9,20],[15,7]]. Empty tree yields [].\n\nDFS can drop values into buckets by depth. BFS with a queue is the natural level walk. Recording queue.length at the start of each round avoids storing depth on every node.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -2385,6 +2387,7 @@ int** levelOrder(struct Node* root) {
       level: "beginner",
       q: "Maximum Depth of Binary Tree",
       ask: "Amazon · Google · Apple · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/maximum-depth-of-binary-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/height-of-binary-tree/1"}],
       a: "Depth is the number of nodes on the longest root-to-leaf path. Return that number. Empty tree is 0.\n\nA root with two leaves has depth 2. A stick of three nodes has depth 3.\n\nBFS counts how many levels you drain. Recursion is 1 + max(left, right). Iterative DFS stores depth next to each node on a stack.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -2853,6 +2856,7 @@ int maxDepth(struct Node* root) {
       level: "beginner",
       q: "Invert Binary Tree",
       ask: "Amazon · Google · Apple · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/invert-binary-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/mirror-tree/1"}],
       a: "Swap left and right children at every node. Return the root of the mirrored tree.\n\nA tree with 2 left of 4 and 7 right of 4 becomes 7 left and 2 right, and the same swap happens deeper.\n\nCollect all nodes then swap each. Recursion swaps then inverts children. BFS/DFS iterative swap is the stack/queue twin.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3376,6 +3380,7 @@ struct Node* invertTree(struct Node* root) {
       level: "beginner",
       q: "Same Tree",
       ask: "Amazon · Apple · Adobe · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/same-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/determine-if-two-trees-are-identical/1"}],
       a: "Return true if two trees have the same shape and the same values at every corresponding node.\n\nTwo copies of 1 with left 2 and right 3 are the same. If one has a missing child the other has, they differ.\n\nSerialize both and compare strings. Recursion compares val and both subtrees. Iterative two stacks (or a queue of pairs) does the same walk.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3888,6 +3893,7 @@ bool isSameTree(struct Node* p, struct Node* q) {
       level: "beginner",
       q: "Symmetric Tree",
       ask: "Amazon · Microsoft · Google · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/symmetric-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/symmetric-tree/1"}],
       a: "Return true if the tree is a mirror of itself around the center.\n\n[1,2,2,3,4,4,3] is symmetric. [1,2,2,null,3,null,3] is not, because the inner 3s do not face each other.\n\nDump left and right halves into arrays with a mirrored walk. Recursion checks whether two subtrees are mirrors. A queue of pairs (left, right) does the same iteratively.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4485,6 +4491,7 @@ bool isSymmetric(struct Node* root) {
       level: "intermediate",
       q: "Lowest Common Ancestor of a BST",
       ask: "Amazon · Microsoft · Google · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/lowest-common-ancestor-in-a-bst/1"}],
       a: "p and q are nodes in a BST. Return their lowest common ancestor: the deepest node that has both in its subtree. A node can be an ancestor of itself.\n\nIn BST 6 with left 2 and right 8, LCA of 2 and 8 is 6. LCA of 2 and 4 is 2.\n\nRecord paths from root to each target, last shared node. Recursion: if both values are less, go left; both greater, go right; else this node. Iteration is the same walk without a stack.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4971,6 +4978,7 @@ struct Node* lowestCommonAncestor(struct Node* root, struct Node* p, struct Node
       level: "intermediate",
       q: "Lowest Common Ancestor of a Binary Tree",
       ask: "Amazon · Meta · Microsoft · Google",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/lowest-common-ancestor-in-a-binary-tree/1"}],
       a: "Same LCA idea, but the tree is not a BST. You cannot compare values to choose a side. p and q exist in the tree. A node may be the ancestor of itself.\n\nOn a general tree, LCA of two leaves is the fork where their paths split.\n\nStore parent pointers or full paths, then walk ancestors. Recursion: if left and right both find a target, root is LCA. Iterative: parent map plus a set of p's ancestors.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -5555,6 +5563,7 @@ struct Node* lowestCommonAncestor(struct Node* root, struct Node* p, struct Node
       level: "intermediate",
       q: "Validate Binary Search Tree",
       ask: "Amazon · Microsoft · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/validate-binary-search-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/check-for-bst/1"}],
       a: "Return true if the tree is a valid BST: every node in the left subtree is strictly less, every node in the right subtree is strictly greater.\n\n[2,1,3] is valid. [5,1,4,null,null,3,6] is not, because 3 sits in the right subtree of 5.\n\nInorder into an array and check increasing. Recursion with (min, max) bounds. Iterative inorder tracking the previous value.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6074,6 +6083,7 @@ bool isValidBST(struct Node* root) {
       level: "intermediate",
       q: "Diameter of Binary Tree",
       ask: "Amazon · Google · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/diameter-of-binary-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/diameter-of-binary-tree/1"}],
       a: "Diameter is the number of edges on the longest path between any two nodes. The path may not pass through the root.\n\nA node with left height 2 and right height 1 has a path of 3 edges through that node. Take the max over all nodes.\n\nBrute recomputes height at every node, O(n²). One DFS returns height and updates diameter. Iterative postorder with a height map avoids recursion.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6693,6 +6703,7 @@ int diameterOfBinaryTree(struct Node* root) {
       level: "beginner",
       q: "Path Sum",
       ask: "Amazon · Microsoft · Apple · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/path-sum/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/root-to-leaf-path-sum/1"}],
       a: "Return true if some root-to-leaf path sums to targetSum.\n\nTree 5-4-11-2 with target 22 is true because 5+4+11+2 = 22. A node with one child is not a leaf.\n\nCollect every path sum. Recursion subtracts node.val and checks 0 at a leaf. Iterative stack stores (node, remaining).\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7197,6 +7208,7 @@ bool hasPathSum(struct Node* root, int targetSum) {
       level: "intermediate",
       q: "Flatten Binary Tree to Linked List",
       ask: "Amazon · Microsoft · Meta · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/flatten-binary-tree-to-linked-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/flatten-binary-tree-to-linked-list/1"}],
       a: "Flatten the tree into a right-skewed list in preorder. Every left pointer becomes null. Use the same TreeNode objects.\n\n1 with left 2 (3,4) and right 5 (6) becomes 1-2-3-4-5-6 all on the right.\n\nPreorder into an array then relink. Recursion flattens children and stitches. Morris-style: predecessor of the right subtree is the rightmost node of the left, then rotate.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7696,6 +7708,7 @@ void flatten(struct Node* root) {
       level: "advanced",
       q: "Serialize and Deserialize Binary Tree",
       ask: "Amazon · Google · Microsoft · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/serialize-and-deserialize-binary-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/serialize-and-deserialize-a-binary-tree/1"}],
       a: "Write functions that turn a tree into a string and back. Null children must be recorded so the shape is unique.\n\nA codec that round-trips 1 with left 2 and right 3 (3 has 4 and 5) must rebuild that exact tree.\n\nJSON of nested objects is a brute that relies on the engine. Preorder with N markers is the usual DFS codec. BFS with a queue matches how some judges print trees.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -8406,6 +8419,7 @@ struct Node* deserialize(char* data) {
       level: "intermediate",
       q: "Construct Binary Tree from Preorder and Inorder",
       ask: "Amazon · Microsoft · Google · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/construct-tree-1/1"}],
       a: "Preorder lists root then left then right. Inorder lists left then root then right. Build the unique tree. Values are unique.\n\npreorder [3,9,20,15,7] and inorder [9,3,15,20,7] rebuild the usual 3 / 9 / 20 tree.\n\nEach time search inorder linearly for the root (O(n²)). Map inorder value to index and recurse with bounds. Consume preorder with a pointer and inorder with a stop value, O(n) and no index map lookups.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -8914,6 +8928,7 @@ struct Node* buildTree(int* preorder, int preordern, int* inorder, int inordern)
       level: "intermediate",
       q: "Kth Smallest Element in a BST",
       ask: "Amazon · Google · Uber · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/kth-smallest-element-in-a-bst/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/find-k-th-smallest-element-in-bst/1"}],
       a: "Return the kth smallest value in a BST (1-based). Inorder of a BST is sorted, so the kth visit is the answer.\n\nBST 3 with left 1 (right child 2) and right 4, k = 1 yields 1.\n\nDump inorder to an array and index k-1. Recursion counts visits and stops early. Iterative inorder with a stack pops k times.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -9422,6 +9437,7 @@ int kthSmallest(struct Node* root, int k) {
       level: "intermediate",
       q: "Binary Tree Right Side View",
       ask: "Amazon · Microsoft · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/binary-tree-right-side-view/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/right-view-of-binary-tree/1"}],
       a: "Return the values you see standing on the right side, top to bottom: the last node of each level.\n\n[1,2,3,null,5,null,4] yields [1,3,4]. A left child that sticks out below can appear if the right is missing.\n\nLevel-order, take the last of each row. DFS right-first: first time you reach a depth, record it. BFS that writes queue[n-1] is the compact iterative form.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -9990,6 +10006,7 @@ int* rightSideView(struct Node* root) {
       level: "beginner",
       q: "Balanced Binary Tree",
       ask: "Amazon · Microsoft · Adobe · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/balanced-binary-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/check-for-balanced-tree-1587115620/1"}],
       a: "A tree is balanced if at every node |height(left) - height(right)| <= 1, and both subtrees are balanced. Return true or false.\n\nA complete small tree is balanced. A stick of four nodes is not.\n\nCalling height separately at every node is O(n²). A DFS that returns height or -1 on failure is O(n). Iterative postorder with a height map is the stack version.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -10561,6 +10578,7 @@ bool isBalanced(struct Node* root) {
       level: "intermediate",
       q: "Subtree of Another Tree",
       ask: "Amazon · Microsoft · Meta · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/subtree-of-another-tree/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/check-if-subtree/1"}],
       a: "Return true if subRoot is the same tree as some subtree of root (shape and values).\n\nroot [3,4,5,1,2] and subRoot [4,1,2] is true. An extra child on that subtree makes it false.\n\nCollect every node and run isSameTree. DFS: isSame at this node or recurse sides. Serialize both with unique wrappers and test whether the sub string appears.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -11090,6 +11108,7 @@ bool isSubtree(struct Node* root, struct Node* subRoot) {
       level: "advanced",
       q: "Binary Tree Maximum Path Sum",
       ask: "Amazon · Microsoft · Google · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/binary-tree-maximum-path-sum/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/maximum-path-sum-from-any-node/1"}],
       a: "A path is any node-to-node walk with no node repeated. Return the maximum sum of node values on such a path. Nodes may be negative, so a single node can win.\n\n[1,2,3] yields 6 (2+1+3). A node can use both children in the answer, but the value returned to the parent can continue only one side (or none).\n\nBrute recomputes downward gain at every node. One DFS returns gain and updates a best through-node sum. Returning {gain, best} avoids a shared mutable box.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -11653,6 +11672,7 @@ int maxPathSum(struct Node* root) {
       level: "intermediate",
       q: "Count Complete Tree Nodes",
       ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/count-complete-tree-nodes/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/count-complete-tree-nodes/"}],
       a: "Count nodes in a complete binary tree: every level full except possibly the last, which is filled left to right. Naive O(n) is accepted; the trick is O(log² n).\n\nA perfect tree of height h has 2^h - 1 nodes. If left height equals right height, the subtree is perfect. Otherwise add 1 and recurse both sides.\n\nVisit everyone. Recurse with the perfect-tree shortcut. Binary search which nodes exist on the last level.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {

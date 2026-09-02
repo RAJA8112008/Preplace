@@ -959,6 +959,7 @@ int* topKHeap(int* nums, int n, int k, int* returnSize) {
       level: "beginner",
       q: "Min Stack",
       ask: "Amazon · Google · Bloomberg · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/min-stack/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/get-min-at-pop/1"}],
       a: "Design a stack that supports push, pop, top, and getMin in O(1) time. getMin returns the smallest value still in the stack.\n\nExample: push 3, push 5, getMin is 3, push 2, getMin is 2, pop, getMin is 3 again.\n\nBrute scans on every getMin. Optimal keeps a second stack of mins. More optimal stores [value, minSoFar] pairs on one stack.",
       solutions: [
         {
@@ -1234,6 +1235,7 @@ int ms_getMin(MinStack* s) { return s->mn[s->n - 1]; }`
       level: "intermediate",
       q: "Daily Temperatures",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/daily-temperatures/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/daily-temperatures/"}],
       a: "temperatures[i] is the degree that day. For each day, return how many days you wait until a warmer day. 0 if none exists.\n\nExample: [73,74,75,71,69,72,76,73] answers [1,1,4,2,1,1,0,0].\n\nBrute looks right from each day. Optimal is a decreasing monotonic stack of indices. More optimal walks right to left and jumps using answers already filled.",
       solutions: [
         {
@@ -1508,6 +1510,7 @@ int* dailyTemperatures(int* temperatures, int n, int* returnSize) {
       level: "beginner",
       q: "Next Greater Element I",
       ask: "Amazon · Google · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/next-greater-element-i/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/next-larger-element-1587115620/1"}],
       a: "nums1 is a subset of nums2. For each value in nums1, find that value in nums2 and return the first greater number to its right in nums2. -1 if none.\n\nExample: nums1 = [4,1,2], nums2 = [1,3,4,2] answers [-1,3,-1].\n\nBrute finds then scans right. Optimal is a hash of indices plus a scan. More optimal builds a next-greater map with a monotonic stack on nums2, then maps nums1 in O(1) each.",
       solutions: [
         {
@@ -1808,6 +1811,7 @@ int* nextGreaterElement(int* nums1, int n1, int* nums2, int n2, int* returnSize)
       level: "beginner",
       q: "Evaluate Reverse Polish Notation",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/evaluate-reverse-polish-notation/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/evaluation-of-postfix-expression1735/1"}],
       a: "tokens is a Reverse Polish list: numbers and + - * /. An operator uses the two previous values. Return the integer result. Division truncates toward zero.\n\nExample: [2,1,+,3,*] is (2+1)*3 = 9. [4,13,5,/,+] is 4+(13/5) = 6.\n\nBrute repeatedly finds the first operator and splices. Optimal is a stack: push numbers, on an operator pop two, push the result.",
       solutions: [
         {
@@ -2175,6 +2179,7 @@ int evalRPN(char** tokens, int n) {
       level: "advanced",
       q: "Largest Rectangle in Histogram",
       ask: "Amazon · Google · Microsoft · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/largest-rectangle-in-histogram/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/maximum-rectangular-area-in-a-histogram-1587115623/1"}],
       a: "heights[i] is the height of bar i, width 1. Return the largest rectangle you can form using consecutive bars.\n\nExample: [2,1,5,6,2,3] answers 10 (the 5 and 6 bars, height 5, width 2).\n\nFor each bar, you need the nearest shorter bar on the left and on the right. That width times this height is a candidate. Brute expands. Optimal two monotonic passes. More optimal one pass with a 0 sentinel.",
       solutions: [
         {
@@ -2509,6 +2514,7 @@ int largestRectangleArea(int* heights, int n) {
       level: "advanced",
       q: "Sliding Window Maximum",
       ask: "Amazon · Google · Uber · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/sliding-window-maximum/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/maximum-of-all-subarrays-of-size-k3101/1"}],
       a: "nums and a window size k. Return the maximum of every contiguous window of length k.\n\nExample: [1,3,-1,-3,5,3,6,7], k = 3 answers [3,3,5,5,6,7].\n\nBrute maxes each window. Optimal is a size-k heap with lazy deletes. More optimal is a decreasing deque of indices: O(n).",
       solutions: [
         {
@@ -2902,6 +2908,7 @@ int* maxSlidingWindow(int* nums, int n, int k, int* returnSize) {
       level: "beginner",
       q: "Implement Queue using Stacks",
       ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/implement-queue-using-stacks/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/queue-using-two-stacks/1"}],
       a: "Build a queue (FIFO) using only stacks (LIFO). Support push, pop, peek, empty.\n\nExample: push 1, push 2, peek is 1, pop is 1, empty is false.\n\nBrute moves every item to a temp stack and back on each pop. Optimal uses an in-stack and an out-stack and pours only when out is empty (amortized O(1)). More optimal is the same pour, with peek reusing out-stack so you do not pour twice.",
       solutions: [
         {
@@ -3239,6 +3246,7 @@ int q_empty(MyQueue* q) { return !q->ni && !q->no; }`
       level: "beginner",
       q: "Implement Stack using Queues",
       ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/implement-stack-using-queues/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/stack-using-two-queues/1"}],
       a: "Build a stack (LIFO) using only queues (FIFO). Support push, pop, top, empty.\n\nExample: push 1, push 2, top is 2, pop is 2.\n\nBrute uses two queues and dumps n-1 items to the other queue on pop. Optimal uses one queue and rotates on push so the front is always the top. More optimal rotates on pop instead, so push stays O(1).",
       solutions: [
         {
@@ -3510,6 +3518,7 @@ int s_empty(MyStack* s) { return s_len(s) == 0; }`
       level: "intermediate",
       q: "Kth Largest Element in an Array",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/kth-largest-element-in-an-array/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/kth-largest-element-in-an-array/1"}],
       a: "Return the k-th largest value in nums (1-based: k = 1 is the maximum). The array is unsorted. You may not need a full sort.\n\nExample: [3,2,1,5,6,4], k = 2 answers 5.\n\nBrute repeatedly strips the max. Optimal sorts. More optimal keeps a min-heap of size k (or quickselect for expected O(n)).",
       solutions: [
         {
@@ -3822,6 +3831,7 @@ int findKthLargest(int* nums, int n, int k) {
       level: "intermediate",
       q: "Top K Frequent Elements",
       ask: "Amazon · Google · Meta · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/top-k-frequent-elements/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/top-k-frequent-elements-in-array/1"}],
       a: "Return the k numbers that appear most often in nums. Any order is fine.\n\nExample: [1,1,1,2,2,3], k = 2 answers [1,2].\n\nCount first. Brute then strips the current max count k times. Optimal sorts the unique numbers by count. More optimal is a bucket list indexed by count (O(n)), or a heap of size k.",
       solutions: [
         {
@@ -4124,6 +4134,7 @@ int* topKFrequent(int* nums, int n, int k, int* returnSize) {
       level: "advanced",
       q: "Merge k Sorted Lists",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/merge-k-sorted-lists/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/merge-k-sorted-linked-lists/1"}],
       a: "lists is an array of k sorted linked lists. Merge them into one sorted list and return the head.\n\nExample: [1->4->5, 1->3->4, 2->6] becomes 1->1->2->3->4->4->5->6.\n\nBrute dumps every value, sorts, rebuilds. Optimal is a min-heap of the k current heads. More optimal is divide-and-conquer merge (like merge sort), no heap.",
       solutions: [
         {
@@ -4601,6 +4612,7 @@ struct ListNode* mergeKLists(struct ListNode** lists, int k) {
       level: "advanced",
       q: "Find Median from Data Stream",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/find-median-from-data-stream/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/find-median-in-a-stream-1587115620/1"}],
       a: "MedianFinder: addNum inserts a number. findMedian returns the median of all numbers so far. Even count: average of the two middle values.\n\nExample: add 1, add 2, median 1.5, add 3, median 2.\n\nBrute stores and sorts every query. Optimal inserts into a sorted array. More optimal is two heaps: max-heap lower half, min-heap upper half.",
       solutions: [
         {
@@ -5023,6 +5035,7 @@ double mf_findMedian(MedianFinder* m) {
       level: "intermediate",
       q: "Task Scheduler",
       ask: "Amazon · Google · Uber · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/task-scheduler/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/task-scheduler/"}],
       a: "tasks is a list of CPU tasks (letters). The same letter needs n idle slots between runs. Return the least time units to finish every task. One task or one idle per unit.\n\nExample: tasks [A,A,A,B,B,B], n = 2 answers 8: A B idle A B idle A B.\n\nBrute backtracks every choice. Optimal simulates with a max-heap plus a cooldown queue. More optimal is the formula (maxFreq-1)*(n+1) + howManyHaveMaxFreq, then max with tasks.length.",
       solutions: [
         {
@@ -5535,6 +5548,7 @@ public:
       level: "intermediate",
       q: "Car Fleet",
       ask: "Google · Amazon · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/car-fleet/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/car-fleet/"}],
       a: "Cars on a line drive toward target. position[i] and speed[i] describe car i. A faster car that catches a slower car ahead becomes one fleet (they cannot pass). Return how many fleets arrive.\n\nExample: target 12, position [10,8,0,5,3], speed [2,4,1,1,3] answers 3.\n\nTime to target is (target - pos) / speed. Brute nested checks. Optimal sorts by position and uses a stack of times. More optimal is a reverse scan tracking the current slowest fleet time.",
       solutions: [
         {
@@ -5850,6 +5864,7 @@ int carFleet(int target, int* position, int n, int* speed) {
       level: "intermediate",
       q: "Decode String",
       ask: "Amazon · Google · Meta · Bloomberg",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/decode-string/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/decode-the-string-1587115620/1"}],
       a: "s encodes nested repeats: k[encoded]. Digits before [ are the repeat count. Return the decoded string. Counts fit in an int. Letters are lowercase.\n\nExample: 3[a2[c]] becomes accaccacc. 2[abc]3[cd]ef becomes abcabccdcdcdef.\n\nBrute recurses and copies leftover slices. Optimal one stack of [prefix, count] frames. More optimal two stacks (counts and strings) if that is easier to say out loud.",
       solutions: [
         {

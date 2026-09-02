@@ -1260,6 +1260,7 @@ struct Node* link(struct Node* a, struct Node* b) {
       level: "beginner",
       q: "Reverse Linked List",
       ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/reverse-linked-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/reverse-a-linked-list/1"}],
       a: "You get the head of a singly linked list. Return the head of the same nodes with every next pointer flipped.\n\n1 -> 2 -> 3 -> null becomes 3 -> 2 -> 1 -> null. An empty list stays empty. A single node stays itself.\n\nThe brute path copies values, reverses the array, and builds a new list. Recursion reverses the suffix then hangs the current node on its old next. The iterative walk uses prev, cur, and next and needs only a handful of pointers.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -1684,6 +1685,7 @@ struct Node* reverseList(struct Node* head) {
       level: "beginner",
       q: "Linked List Cycle",
       ask: "Amazon · Microsoft · Apple · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/linked-list-cycle/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/detect-loop-in-linked-list/1"}],
       a: "Return true if the list has a cycle, false if a walk hits null.\n\nIf pos is 1 on 3 -> 2 -> 0 -> -4, the tail points at 2 and a walk never ends. If every next is forward, you eventually reach null.\n\nBrute stores every node you have seen and scans the list of seen nodes. A Set makes the same idea O(1) per lookup. Floyd moves slow by one and fast by two; a meeting means a loop.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -2109,6 +2111,7 @@ bool hasCycle(struct Node* head) {
       level: "intermediate",
       q: "Linked List Cycle II",
       ask: "Amazon · Microsoft · Google · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/linked-list-cycle-ii/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/find-the-first-node-of-loop-in-linked-list--170685/1"}],
       a: "If the list has a cycle, return the node where the cycle begins. If not, return null.\n\nOn 3 -> 2 -> 0 -> -4 with the tail linked to 2, the start is the node holding 2. Identity matters: you return that node object, not a copy.\n\nA Set records the first repeat. After Floyd finds a meeting point you can collect the cycle into a set and walk from head. The tight version resets one pointer to head and walks both one step; they meet at the entrance.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -2641,6 +2644,7 @@ struct Node* detectCycle(struct Node* head) {
       level: "beginner",
       q: "Merge Two Sorted Lists",
       ask: "Amazon · Microsoft · Apple · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/merge-two-sorted-lists/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/merge-two-sorted-linked-lists/1"}],
       a: "You get two lists sorted in non-decreasing order. Merge them into one sorted list by splicing the existing nodes.\n\n1 -> 2 -> 4 and 1 -> 3 -> 4 become 1 -> 1 -> 2 -> 3 -> 4 -> 4. Either input may be null.\n\nDumping all values, sorting, and rebuilding works but allocates. Recursion always takes the smaller head and merges the rest. The iterative dummy picks the smaller node in a loop.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3128,6 +3132,7 @@ struct Node* mergeTwoLists(struct Node* list1, struct Node* list2) {
       level: "intermediate",
       q: "Remove Nth Node From End of List",
       ask: "Amazon · Google · Microsoft · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/remove-nth-node-from-end-of-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/remove-nth-node-from-end-of-the-list/1"}],
       a: "Delete the nth node counting from the tail. Return the new head.\n\nOn 1 -> 2 -> 3 -> 4 -> 5 with n = 2, drop 4 and return 1 -> 2 -> 3 -> 5. n can delete the original head.\n\nCopy nodes to an array and splice. Or count length, then walk length-n. The one-pass trick: dummy, send fast n+1 steps, walk both, then slow.next = slow.next.next.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3604,6 +3609,7 @@ struct Node* removeNthFromEnd(struct Node* head, int n) {
       level: "beginner",
       q: "Palindrome Linked List",
       ask: "Amazon · Microsoft · Apple · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/palindrome-linked-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/check-if-linked-list-is-pallindrome/1"}],
       a: "Return true if the list reads the same forward and backward.\n\n1 -> 2 -> 2 -> 1 is a palindrome. 1 -> 2 is not. Values compare; you may reverse half of the list in place if you restore or the caller allows mutation.\n\nCopy values to an array and two-pointer check. Recursion compares the front on the way back. The linear extra-space-free way: find mid, reverse the second half, compare, optionally restore.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4167,6 +4173,7 @@ bool isPalindrome(struct Node* head) {
       level: "beginner",
       q: "Middle of the Linked List",
       ask: "Amazon · Google · Apple · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/middle-of-the-linked-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/finding-middle-element-in-a-linked-list/1"}],
       a: "Return the middle node. If there are two middles, return the second one.\n\nOn 1 -> 2 -> 3 -> 4 -> 5 the middle is 3. On 1 -> 2 -> 3 -> 4 -> 5 -> 6 the middle is 4.\n\nStore nodes in an array and pick index floor(length/2). Recursion can move slow and fast down the chain. Iterative slow/fast is the usual one-pass answer.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4540,6 +4547,7 @@ struct Node* middleNode(struct Node* head) {
       level: "intermediate",
       q: "Intersection of Two Linked Lists",
       ask: "Amazon · Microsoft · Apple · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/intersection-of-two-linked-lists/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/intersection-point-in-y-shapped-linked-lists/1"}],
       a: "Lists A and B may share a suffix (same node objects from some point). Return the first common node, or null if they never join.\n\nA: 4 -> 1 -> 8 -> 4 -> 5 and B: 5 -> 6 -> 1 -> 8 -> 4 -> 5 intersect at the node 8. Compare references, not values.\n\nNested walks check every pair. A Set of A's nodes then a walk of B is linear extra space. Two pointers that swap lists after the end equalize remaining length and meet at the join.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4975,6 +4983,7 @@ struct Node* getIntersectionNode(struct Node* headA, struct Node* headB) {
       level: "intermediate",
       q: "Add Two Numbers",
       ask: "Amazon · Microsoft · Google · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/add-two-numbers/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/add-two-numbers-represented-by-linked-lists/1"}],
       a: "Two lists store digits of two numbers in reverse order, one digit per node. Return their sum as a list in the same format. A leftover carry can create an extra node.\n\n2 -> 4 -> 3 plus 5 -> 6 -> 4 is 342 + 465 = 807, so 7 -> 0 -> 8.\n\nBigInt from the digits works until you remember interviews want digit-by-digit carry. Recursion adds a pair plus carry. Iteration with a dummy is the usual write-up.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -5496,6 +5505,7 @@ struct Node* addTwoNumbers(struct Node* l1, struct Node* l2) {
       level: "advanced",
       q: "Reverse Nodes in k-Group",
       ask: "Amazon · Microsoft · Google · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/reverse-nodes-in-k-group/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/reverse-a-linked-list-in-groups-of-given-size/1"}],
       a: "Reverse nodes in groups of k. If the last chunk has fewer than k nodes, leave it as is. Reverse the nodes themselves, not only the values.\n\n1 -> 2 -> 3 -> 4 -> 5 with k = 2 becomes 2 -> 1 -> 4 -> 3 -> 5. With k = 3 it becomes 3 -> 2 -> 1 -> 4 -> 5.\n\nArray reverse of each full window is the brute. Recursion reverses the first k then attaches reverseKGroup of the rest. Iteration walks group by group with a dummy.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6165,6 +6175,7 @@ struct Node* reverseKGroup(struct Node* head, int k) {
       level: "intermediate",
       q: "Copy List with Random Pointer",
       ask: "Amazon · Microsoft · Meta · Google",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/copy-list-with-random-pointer/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/clone-a-linked-list-with-next-and-random-pointer/1"}],
       a: "Each node has val, next, and random (any node or null). Return a deep copy: new nodes, same layout of next and random.\n\nA copy's random must point at the copied target, not the original. An empty list copies to null.\n\nA Map from old node to new node, filled in one or two walks, is the clean extra-space answer. The weave method inserts each copy after its original, assigns random via original.random.next, then unweaves.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6739,6 +6750,7 @@ struct Node* copyRandomList(struct Node* head) {
       level: "intermediate",
       q: "Sort List",
       ask: "Amazon · Meta · Microsoft · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/sort-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/sort-a-linked-list/1"}],
       a: "Sort a linked list in O(n log n) time. Prefer constant extra space if you can.\n\n4 -> 2 -> 1 -> 3 becomes 1 -> 2 -> 3 -> 4. Values may be negative.\n\nCollect, sort the array, rewrite vals. Top-down merge sort splits at the middle with slow/fast. Bottom-up merge sort iterates run lengths 1, 2, 4, ... and uses O(1) extra pointers.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7528,6 +7540,7 @@ struct Node* sortList(struct Node* head) {
       level: "beginner",
       q: "Remove Duplicates from Sorted List",
       ask: "Amazon · Apple · Adobe · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/remove-duplicates-from-sorted-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/remove-duplicate-element-from-sorted-linked-list/1"}],
       a: "The list is sorted. Delete extra nodes so each number appears once. Keep the first copy of each value.\n\n1 -> 1 -> 2 -> 3 -> 3 becomes 1 -> 2 -> 3. An already-unique list does not change.\n\nCollect unique values into an array and rebuild. Recursion skips a next that matches head.val. Iteration: while cur.next exists and equals cur.val, jump cur.next.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7954,6 +7967,7 @@ struct Node* deleteDuplicates(struct Node* head) {
       level: "intermediate",
       q: "Swap Nodes in Pairs",
       ask: "Amazon · Microsoft · Uber · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/swap-nodes-in-pairs/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/pairwise-swap-elements-of-a-linked-list-by-swapping-data/1"}],
       a: "Swap every two adjacent nodes. Swap the nodes, not only their values. If a last node has no pair, leave it.\n\n1 -> 2 -> 3 -> 4 becomes 2 -> 1 -> 4 -> 3. 1 -> 2 -> 3 becomes 2 -> 1 -> 3.\n\nArray of nodes, swap indexes 0-1, 2-3, relink. Recursion swaps the first pair then attaches swapPairs of the rest. Iteration uses a dummy and rewires two nodes at a time.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -8427,6 +8441,7 @@ struct Node* swapPairs(struct Node* head) {
       level: "intermediate",
       q: "Rotate List",
       ask: "Amazon · Microsoft · Adobe · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/rotate-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/rotate-a-linked-list/1"}],
       a: "Rotate the list to the right by k places. k may be larger than the length, so use k modulo n.\n\n1 -> 2 -> 3 -> 4 -> 5 and k = 2 becomes 4 -> 5 -> 1 -> 2 -> 3. k = 0 leaves the list unchanged.\n\nArray rotate then rebuild. Recursion is a weak fit; two-pass length plus cut is cleaner. Best: make a ring, walk n - k % n steps from the old head, break the ring.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -9026,6 +9041,7 @@ struct Node* rotateRight(struct Node* head, int k) {
       level: "intermediate",
       q: "Flatten a Multilevel Doubly Linked List",
       ask: "Amazon · Microsoft · Meta · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/flattening-a-linked-list/1"}],
       a: "Each node has prev, next, and child. Child is the head of another doubly list. Flatten so you get a single-level list in preorder: node, then its child list, then its old next. All child pointers become null. prev/next stay consistent.\n\n1-2-3 with 3's child 7-8 becomes 1-2-3-7-8 with no children.\n\nDFS into an array then relink. Recursion flattens a child and splices it. Iteration finds the child's tail and splices without a call stack.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -9660,6 +9676,7 @@ struct Node* flatten(struct Node* head) {
       level: "intermediate",
       q: "Odd Even Linked List",
       ask: "Amazon · Microsoft · Adobe · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/odd-even-linked-list/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/odd-even-linked-list/"}],
       a: "Group all odd-indexed nodes, then all even-indexed nodes. Index starts at 1 for the head. Relative order inside each group stays the same. Do it in O(1) extra space.\n\n1 -> 2 -> 3 -> 4 -> 5 becomes 1 -> 3 -> 5 -> 2 -> 4.\n\nTwo arrays of nodes, then concat. Recursion can rewire odd/even. Iteration keeps odd and even tails and stitches evenHead at the end of odds.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -10202,6 +10219,7 @@ struct Node* oddEvenList(struct Node* head) {
       level: "advanced",
       q: "LRU Cache",
       ask: "Google · Amazon · Microsoft · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/lru-cache/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/lru-cache-page-replacement/1"}],
       a: "Implement LRUCache(capacity), get(key), and put(key, value). get returns the value or -1. Both get and put count as use, so that key becomes most recently used. When capacity is full, put evicts the least recently used key. Target O(1) for get and put.\n\ncapacity 2: put(1,1), put(2,2), get(1) is 1, put(3,3) drops key 2, get(2) is -1.\n\nAn array you scan and move is O(n). A JavaScript Map is insertion-ordered: delete plus set moves a key to the newest end. The interview structure is a hashmap of key to node plus a doubly linked list of recency.\n\nUse the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {

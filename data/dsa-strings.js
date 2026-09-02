@@ -1143,6 +1143,7 @@ printf("%d\\n", longestPalindromeLength("abccccdd")); // 7`
       level: "beginner",
       q: "Valid Anagram",
       ask: "Amazon · Google · Meta · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/valid-anagram/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/anagram-1587115620/1"}],
       a: "Return true if t is an anagram of s: same letters with the same counts, order does not matter.\n\nExample: s = \"anagram\", t = \"nagaram\" is true. s = \"rat\", t = \"car\" is false.\n\nYou can delete matching letters one by one. Sorting both strings and comparing is cleaner. One 26-slot count array increments for s and decrements for t.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -1375,6 +1376,7 @@ int isAnagram(char* s, char* t) {
       level: "beginner",
       q: "Valid Palindrome",
       ask: "Meta · Amazon · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/valid-palindrome/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/palindrome-string0817/1"}],
       a: "A phrase is a palindrome if, after keeping only letters and digits and ignoring case, it reads the same forward and backward.\n\nExample: \"A man, a plan, a canal: Panama\" is true. \"race a car\" is false.\n\nBuilding a cleaned string and reversing it is easy. Cleaning into an array and two-pointer checking avoids reverse. The last version never builds a cleaned copy: it skips junk in place.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -1656,6 +1658,7 @@ int isPalindrome(char* s) {
       level: "intermediate",
       q: "Longest Substring Without Repeating Characters",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/longest-substring-without-repeating-characters/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/longest-distinct-characters-in-string5848/1"}],
       a: "Return the length of the longest substring that contains no repeated character.\n\nExample: \"abcabcbb\" -> 3 (\"abc\"). Example: \"bbbbb\" -> 1.\n\nChecking every substring is cubic if you rescan for uniqueness. Starting at each left and growing with a Set is quadratic. A sliding window plus last-seen index is linear.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -1972,6 +1975,7 @@ int lengthOfLongestSubstring(char* s) {
       level: "intermediate",
       q: "Longest Palindromic Substring",
       ask: "Amazon · Microsoft · Google · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/longest-palindromic-substring/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/longest-palindrome-in-a-string3411/1"}],
       a: "Return any longest palindromic substring. A palindrome reads the same forward and backward.\n\nExample: \"babad\" -> \"bab\" or \"aba\". Example: \"cbbd\" -> \"bb\".\n\nAll substrings plus a palindrome check is O(n³). Expand around 2n-1 centers is O(n²). Manacher’s algorithm fills a palindrome radius array in O(n).\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -2416,6 +2420,7 @@ void longestPalindrome(char* s, char* out) {
       level: "intermediate",
       q: "Group Anagrams",
       ask: "Amazon · Google · Uber · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/group-anagrams/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/print-anagrams-together/1"}],
       a: "Group words that are anagrams of each other. Order of groups and order inside a group do not matter.\n\nExample: [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"] -> [[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]].\n\nComparing every pair by sorted letters is quadratic. Sorting each word as a map key is n times k log k. A count signature of 26 numbers as the key is n times k.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -2725,6 +2730,7 @@ int groupAnagrams(char strs[][64], int n) {
       level: "beginner",
       q: "Valid Parentheses",
       ask: "Amazon · Google · Meta · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/valid-parentheses/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/parenthesis-checker2744/1"}],
       a: "s contains only ()[]{}. Return true if every closer matches the most recent unmatched opener and the whole string is used up.\n\nExample: \"()[]{}\" is true. \"([)]\" is false. \"{\" is false.\n\nRepeatedly deleting \"()\" \"[]\" \"{}\" works and is slow. A stack of openers is the linear solution. A map from closer to opener is the same algorithm written without a chain of ifs.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3000,6 +3006,7 @@ int isValid(char* s) {
       level: "beginner",
       q: "Longest Common Prefix",
       ask: "Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/longest-common-prefix/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/longest-common-prefix-in-an-array5129/1"}],
       a: "Return the longest prefix shared by every string in strs. If there is none, return \"\".\n\nExample: [\"flower\",\"flow\",\"flight\"] -> \"fl\". Example: [\"dog\",\"racecar\",\"car\"] -> \"\".\n\nShrinking a running prefix against each next word is simple. Sorting then comparing only the first and last words also works. Vertical scan stops at the first column that disagrees.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3229,6 +3236,7 @@ void longestCommonPrefix(char strs[][64], int n, char* out) {
       level: "beginner",
       q: "Reverse Words in a String",
       ask: "Amazon · Microsoft · Apple · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/reverse-words-in-a-string/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/reverse-words-in-a-given-string5459/1"}],
       a: "Reverse the order of words. Collapse any extra spaces so words are separated by a single space, with no leading or trailing space.\n\nExample: \"  hello   world  \" -> \"world hello\".\n\nsplit on spaces, drop empties, reverse, join. Doing that with a manual scan is the same idea without leaning on filter. Reverse the whole character array, then reverse each word, then trim spaces.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3564,6 +3572,7 @@ void reverseWords(char* s, char* out) {
       level: "intermediate",
       q: "String to Integer (atoi)",
       ask: "Amazon · Microsoft · Google · Meta",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/string-to-integer-atoi/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/implement-atoi/1"}],
       a: "Parse s as a 32-bit signed integer: skip leading spaces, read an optional sign, read digits, clamp to [-2^31, 2^31 - 1]. Junk after the number is ignored. If no digits, return 0.\n\nExample: \"   -42\" -> -42. Example: \"4193 with words\" -> 4193. Example: \"91283472332\" -> 2147483647.\n\nCollecting digits into a string then Number() still needs a clamp. Multiplying a running total by 10 is the usual loop. Checking overflow before you multiply keeps you inside 32-bit limits.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -3989,6 +3998,7 @@ int myAtoi(char* s) {
       level: "beginner",
       q: "Find the Index of the First Occurrence in a String",
       ask: "Amazon · Google · Microsoft · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/implement-strstr/1"}],
       a: "Return the first index where needle appears in haystack, or -1 if it never appears. This is strStr / indexOf.\n\nExample: haystack = \"sadbutsad\", needle = \"sad\" -> 0. Example: \"leetcode\", \"leeto\" -> -1.\n\nTrying needle at every start is O((n-m)*m). The same nested loops with an early break is the usual brute you then optimize. KMP builds a prefix table and searches in O(n+m).\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4388,6 +4398,7 @@ int strStr(char* haystack, char* needle) {
       level: "advanced",
       q: "Minimum Window Substring",
       ask: "Meta · Amazon · Google · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/minimum-window-substring/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/smallest-window-in-a-string-containing-all-the-characters-of-another-string-1587115621/1"}],
       a: "Return the shortest substring of s that covers every character in t (including duplicates). If none exists, return \"\".\n\nExample: s = \"ADOBECODEBANC\", t = \"ABC\" -> \"BANC\".\n\nChecking every window for coverage is cubic/quadratic. Expanding from each left with a need map is still quadratic. Two pointers with a formed counter find every valid window as right grows and left shrinks, in linear time.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -4876,6 +4887,7 @@ void minWindow(char* s, char* t, char* out) {
       level: "intermediate",
       q: "Longest Repeating Character Replacement",
       ask: "Google · Amazon · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/longest-repeating-character-replacement/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/longest-repeating-character-replacement/"}],
       a: "You may replace at most k characters. Return the length of the longest substring that can become all one letter after those replacements.\n\nExample: s = \"AABABBA\", k = 1 -> 4 (replace the middle B in \"AABA\" or similar).\n\nTrying every window and counting the mode is quadratic. A sliding window that recounts the max frequency each step is O(n*26). You can keep a running maxCount; it never needs to decrease for this length-maximizing problem.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -5243,6 +5255,7 @@ int characterReplacement(char* s, int k) {
       level: "beginner",
       q: "Valid Palindrome II",
       ask: "Meta · Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/valid-palindrome-ii/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/remove-character-string-make-palindrome/"}],
       a: "Return true if s can be a palindrome after deleting at most one character.\n\nExample: \"aba\" is true (already a palindrome). Example: \"abca\" is true (delete b or c). Example: \"abc\" is false.\n\nTrying every deletion is O(n²). On the first mismatch, build two candidate strings (skip left vs skip right). Checking those ranges with two pointers and no extra strings is linear and O(1) extra memory.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -5642,6 +5655,7 @@ int validPalindrome(char* s) {
       level: "intermediate",
       q: "Encode and Decode Strings",
       ask: "Meta · Google · Amazon · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/encode-and-decode-strings/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/encode-and-decode-strings/"},{"name":"LintCode","url":"https://www.lintcode.com/problem/659/"}],
       a: "Design encode(strs) -> one string, and decode(that string) -> the original list. Words may contain any characters, including the delimiter you might want to use.\n\nExample: [\"hello\",\"world\"] must round-trip. Example: [\"\",\"#\",\"a#b\"] must also round-trip.\n\nJSON.stringify works as a blunt encoder. Escaping a delimiter also works if you are careful. Length-prefix (len#word) is the usual interview design: decode reads digits, then a slice of that length.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -5973,6 +5987,7 @@ int decode(char* s, char out[][128]) {
       level: "intermediate",
       q: "Word Break",
       ask: "Amazon · Google · Meta · Apple",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/word-break/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/word-break-2/1"}],
       a: "Return true if s can be split into a sequence of dictionary words. Words may be reused. Order in wordDict does not matter.\n\nExample: s = \"leetcode\", wordDict = [\"leet\",\"code\"] is true. Example: \"catsandog\" with [\"cats\",\"dog\",\"sand\",\"and\",\"cat\"] is false.\n\nTrying every split recursively is exponential. A boolean DP array ok[i] means s[0..i) can be broken. Combining DP with a Set and a max word length avoids scanning impossible slices.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6287,6 +6302,7 @@ int wordBreak(char* s, char wordDict[][64], int wn) {
       level: "intermediate",
       q: "Palindromic Substrings",
       ask: "Meta · Amazon · Google · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/palindromic-substrings/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/count-palindrome-sub-strings-of-a-string/"}],
       a: "Count how many palindromic substrings s has. Single letters count. Different indexes count as different even if the text matches.\n\nExample: \"abc\" -> 3. Example: \"aaa\" -> 6.\n\nCheck every substring. A boolean DP table pal[i][j] fills by length. Expanding around centers counts without the n² table.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6616,6 +6632,7 @@ int countSubstrings(char* s) {
       level: "beginner",
       q: "Roman to Integer",
       ask: "Amazon · Google · Microsoft · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/roman-to-integer/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/roman-number-to-integer3201/1"}],
       a: "Convert a Roman numeral to an integer. Subtractive pairs: IV=4, IX=9, XL=40, XC=90, CD=400, CM=900. Otherwise add each letter’s value.\n\nExample: \"MCMXCIV\" -> 1994 (M + CM + XC + IV).\n\nReplacing subtractive pairs first, then summing, works. Looking one character ahead in a loop is cleaner. A single rule: if the current value is less than the next, subtract it, otherwise add it.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -6904,6 +6921,7 @@ int romanToInt(char* s) {
       level: "intermediate",
       q: "Integer to Roman",
       ask: "Amazon · Google · Microsoft · Adobe",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/integer-to-roman/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/convert-to-roman-no-1587115621/1"}],
       a: "Convert an integer 1..3999 to Roman numerals using the standard symbols, including subtractive forms IV, IX, XL, XC, CD, CM.\n\nExample: 1994 -> \"MCMXCIV\".\n\nNested while loops per symbol work. A parallel list of values and glyphs from 1000 down to 1 is the usual greedy table. The compact table already includes 900, 400, 90, 40, 9, 4 so you never special-case those.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7194,6 +7212,7 @@ void intToRoman(int num, char* out) {
       level: "intermediate",
       q: "Permutation in String",
       ask: "Microsoft · Amazon · Google · Uber",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/permutation-in-string/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/permutation-in-string/"}],
       a: "Return true if s2 contains a permutation of s1 as a substring: some window of length s1.length with the same letter counts.\n\nExample: s1 = \"ab\", s2 = \"eidbaooo\" is true (\"ba\"). Example: s1 = \"ab\", s2 = \"eidboaoo\" is false.\n\nGenerating all permutations of s1 is factorial. Sliding a window of width m and comparing 26 counts each step is O(n*26). A matches counter updates in O(1) per step.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
@@ -7685,6 +7704,7 @@ int checkInclusion(char* s1, char* s2) {
       level: "beginner",
       q: "Longest Palindrome",
       ask: "Amazon · Google · Adobe · Microsoft",
+      links: [{"name":"LeetCode","url":"https://leetcode.com/problems/longest-palindrome/"},{"name":"GFG","url":"https://www.geeksforgeeks.org/problems/longest-palindrome-in-a-string3411/1"}],
       a: "Given a string of letters, return the length of the longest palindrome you can build by rearranging (and using letters from) s. You do not have to use every character.\n\nExample: \"abccccdd\" -> 7, for example \"dccaccd\".\n\nYou could try arrangements, which is hopeless. A count map plus “use all even parts, at most one odd center” is the idea. A fixed-size array of 128 (or 52) slots drops the hash map.\n\nOpen the Brute, Optimal, and More optimal tabs for the three codes.",
       solutions: [
         {
