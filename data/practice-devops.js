@@ -3,6 +3,10 @@ window.PREP_DATA["practice-devops"] = {
   "kind": "practice",
   "notes": [
     {
+      "title": "Most asked",
+      "body": "After the hands-on labs, open questions tagged Most asked. Those are the interview questions Amazon, Google, Meta, and Microsoft repeat. Same easy comments on the right of the code."
+    },
+    {
       "title": "How to use this lab",
       "body": "Ship the todo API: Docker, Nginx HTTPS, a pipeline. Comments sit on the right."
     },
@@ -191,6 +195,86 @@ window.PREP_DATA["practice-devops"] = {
       "q": "Practice: expose only 443",
       "a": "Do not publish 3000 to the world.",
       "code": "ports: [\"127.0.0.1:3000:3000\"]"
+    },
+    {
+      "id": 19,
+      "level": "beginner",
+      "q": "CI vs CD?",
+      "a": "CI (continuous integration) runs tests on every push. CD (continuous delivery/deploy) ships a passing build to a host. CI without CD still helps. CD without tests is just a fast way to break production.",
+      "code": "on: [push]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci && npm test",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 20,
+      "level": "beginner",
+      "q": "Container vs virtual machine?",
+      "a": "A VM virtualizes hardware and runs a full OS. A container shares the host kernel and packages the app + libs. Containers start faster and pack denser. You still need an OS underneath (the host or a VM).",
+      "code": "FROM node:22-alpine  # image\n# docker run  →  container (one process, usually)",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 21,
+      "level": "beginner",
+      "q": "Image vs container?",
+      "a": "An image is the recipe (layers, read-only). A container is a running instance of that image. You build an image, you run a container. Many containers can share one image.",
+      "code": "docker build -t api:1 .\ndocker run -p 3000:3000 api:1",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 22,
+      "level": "intermediate",
+      "q": "Blue-green vs rolling deploy?",
+      "a": "Blue-green: two full environments, switch traffic at once, easy rollback. Rolling: replace instances a few at a time, needs less hardware, rollback is slower. Both need a health check.",
+      "code": "# wait until curl -f https://host/health\n# then point Nginx at the new box",
+      "ask": "Most asked · Amazon · Google · Netflix"
+    },
+    {
+      "id": 23,
+      "level": "beginner",
+      "q": "Why a health check?",
+      "a": "A cheap URL that says the process can serve traffic. Load balancers and orchestrators stop sending work to a box that fails /health. It should check the app, not only 'Node is up' if the DB is required.",
+      "code": "app.get(\"/health\", async function (req, res) {\n  await db.query(\"SELECT 1\");\n  res.json({ ok: true });\n});",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 24,
+      "level": "intermediate",
+      "q": "How do you handle secrets in CI?",
+      "a": "GitHub Actions secrets / a vault. Inject as env at runtime. Never echo them. Never bake .env into a public image. Rotate if they leaked.",
+      "code": "env:\n  DATABASE_URL: ${{ secrets.DATABASE_URL }}",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 25,
+      "level": "intermediate",
+      "q": "What is Infrastructure as Code?",
+      "a": "The server layout lives in Git (Terraform, Bicep, CloudFormation) so you can review and repeat it. Clicking in a console does not scale and cannot be reviewed.",
+      "code": "# terraform apply  — the VPC is in Git, not only in the console",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 26,
+      "level": "beginner",
+      "q": "What is a reverse proxy?",
+      "a": "Nginx (or Caddy, or an ALB) sits in front. Clients hit 443. The proxy terminates TLS and forwards to Node on 3000. The world never talks to Node directly.",
+      "code": "location / { proxy_pass http://127.0.0.1:3000; }",
+      "ask": "Most asked · Amazon · Microsoft · Google"
+    },
+    {
+      "id": 27,
+      "level": "beginner",
+      "q": "Why pin image and action versions?",
+      "a": "node:latest and @v1 that floats can change under you. Pin node:22-alpine and a SHA or major version you tested. Reproducible builds are a feature.",
+      "code": "FROM node:22-alpine\n# uses: actions/checkout@v4",
+      "ask": "Most asked · Amazon · Google"
+    },
+    {
+      "id": 28,
+      "level": "intermediate",
+      "q": "Logs, metrics, traces — what is each?",
+      "a": "Logs are event lines (login failed). Metrics are numbers over time (p95 latency). Traces follow one request across services. You want a request id on all three.",
+      "code": "console.log({ reqId, userId, event: \"login_ok\" });",
+      "ask": "Most asked · Amazon · Google · Microsoft"
     }
   ]
 };

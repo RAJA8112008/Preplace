@@ -920,7 +920,7 @@ if (!res.ok) {
     {
       lang: "sql",
       title: "1. Make a table",
-      desc: "What this is\nCREATE TABLE defines columns and their types.\nA table is named rows, not a spreadsheet file.\nPRIMARY KEY uniquely identifies each row.\n\nWhat the code is doing\nstudents is the table name.\nid is SERIAL PRIMARY KEY, so new rows get 1, 2, 3 automatically.\nname is TEXT and NOT NULL, so a row cannot skip it.\nmarks is INTEGER and may be empty unless you add NOT NULL.\n\nWatch out\nSERIAL is the auto number; you usually omit it in INSERT.\nTEXT and INTEGER are different types; storing marks as text breaks comparisons.",
+      desc: "Before you use this\nDecide what one row is — here, one student. Pick columns and types on paper. You need a SQL engine (Postgres, MySQL, or SQLite). This statement creates the empty table; it does not add Ada yet.\n\nWhat this is\nCREATE TABLE defines columns and their types.\nA table is named rows, not a spreadsheet file.\nPRIMARY KEY uniquely identifies each row.\n\nWhy we use it\nWithout a table, there is nowhere safe to INSERT. The PRIMARY KEY stops two students from sharing the same id. NOT NULL on name stops an empty person. Those rules live in the database even if your Node code has a bug.\n\nWhat the code is doing\nstudents is the table name.\nid is SERIAL PRIMARY KEY, so new rows get 1, 2, 3 automatically.\nname is TEXT and NOT NULL, so a row cannot skip it.\nmarks is INTEGER and may be empty unless you add NOT NULL.\n\nWatch out\nSERIAL is the auto number; you usually omit it in INSERT.\nTEXT and INTEGER are different types; storing marks as text breaks comparisons.",
       code: `CREATE TABLE students (
   id    SERIAL PRIMARY KEY,  -- auto number 1, 2, 3...
   name  TEXT NOT NULL,       -- must have a name
@@ -930,7 +930,7 @@ if (!res.ok) {
     {
       lang: "sql",
       title: "2. Add rows",
-      desc: "What this is\nINSERT adds new rows.\nYou list the columns, then VALUES with one tuple per row.\nColumns you omit use defaults, such as SERIAL id.\n\nWhat the code is doing\nINSERT INTO students names the table.\n(name, marks) is the column list, not including id.\nVALUES has two rows: Ada 90 and Grace 85.\nEach pair becomes one stored row.\n\nWatch out\nThe number of values in a tuple must match the column list.\nQuotes around Ada are text; 90 without quotes is a number.",
+      desc: "Before you use this\nThe students table already exists from CREATE TABLE. INSERT does not make the table. It only adds people.\n\nWhat this is\nINSERT adds new rows.\nYou list the columns, then VALUES with one tuple per row.\nColumns you omit use defaults, such as SERIAL id.\n\nWhy we use it\nThis is how a signup or 'add student' button becomes a lasting row. Without INSERT, the table stays empty.\n\nWhat the code is doing\nINSERT INTO students names the table.\n(name, marks) is the column list, not including id.\nVALUES has two rows: Ada 90 and Grace 85.\nEach pair becomes one stored row.\n\nWatch out\nThe number of values in a tuple must match the column list.\nQuotes around Ada are text; 90 without quotes is a number.",
       code: `INSERT INTO students (name, marks)
 VALUES
   ('Ada', 90),
@@ -939,7 +939,7 @@ VALUES
     {
       lang: "sql",
       title: "3. Read rows",
-      desc: "What this is\nSELECT reads rows.\n* means every column.\nWHERE filters which rows come back.\n\nWhat the code is doing\nThe first query returns all columns for all students.\nThe second returns only name and marks.\nThe third returns name for rows where marks is at least 80.\nAda 90 would match that filter; a 70 would not.\n\nWatch out\nWHERE is not ORDER BY; it does not sort, it filters.\n= and >= are different tests; pick the one you mean.",
+      desc: "Before you use this\nRows are already in the table. SELECT never changes data. You only ask questions.\n\nWhat this is\nSELECT reads rows.\n* means every column.\nWHERE filters which rows come back.\n\nWhy we use it\nEvery list page, login lookup, and report is a SELECT. We filter with WHERE so we do not ship the whole table to the browser.\n\nWhat the code is doing\nThe first query returns all columns for all students.\nThe second returns only name and marks.\nThe third returns name for rows where marks is at least 80.\nAda 90 would match that filter; a 70 would not.\n\nWatch out\nWHERE is not ORDER BY; it does not sort, it filters.\n= and >= are different tests; pick the one you mean.",
       code: `-- all students
 SELECT * FROM students;
 
@@ -953,7 +953,7 @@ WHERE marks >= 80;`
     {
       lang: "sql",
       title: "4. Change a row",
-      desc: "What this is\nUPDATE changes existing rows.\nSET names the new values.\nWHERE names which rows to change.\n\nWhat the code is doing\nThe table is students.\nSET marks = 95 writes the new score.\nWHERE name = 'Ada' limits the change to Ada's row.\nOther students keep their marks.\n\nWatch out\nWithout WHERE, every row in the table gets marks 95.\nThe string Ada needs quotes; an unquoted Ada would look like a column name.",
+      desc: "Before you use this\nAda's row already exists. You are changing a score, not adding a new person (that would be INSERT).\n\nWhat this is\nUPDATE changes existing rows.\nSET names the new values.\nWHERE names which rows to change.\n\nWhy we use it\nEdit profile, change marks, mark a todo done — all UPDATE. The row id stays. Only the fields you SET change.\n\nWhat the code is doing\nThe table is students.\nSET marks = 95 writes the new score.\nWHERE name = 'Ada' limits the change to Ada's row.\nOther students keep their marks.\n\nWatch out\nWithout WHERE, every row in the table gets marks 95.\nThe string Ada needs quotes; an unquoted Ada would look like a column name.",
       code: `UPDATE students
 SET marks = 95
 WHERE name = 'Ada';`
@@ -961,7 +961,7 @@ WHERE name = 'Ada';`
     {
       lang: "sql",
       title: "5. Delete a row",
-      desc: "What this is\nDELETE removes rows that match WHERE.\nThe table structure stays; only those rows go.\nThere is no undo unless you have backups or a transaction you roll back.\n\nWhat the code is doing\nDELETE FROM students names the table.\nWHERE name = 'Grace' picks Grace's row.\nThat row is removed.\nAda and others remain.\n\nWatch out\nWithout WHERE, DELETE removes every row in the table.\nDELETE is not DROP TABLE; DROP would remove the table itself.",
+      desc: "Before you use this\nGrace's row exists. DELETE removes data. The table (columns, types) stays. DROP TABLE would remove the table itself — different command.\n\nWhat this is\nDELETE removes rows that match WHERE.\nThere is no undo unless you have backups or a transaction you roll back.\n\nWhy we use it\nWe use DELETE when a row should be gone (account closed, todo removed). Prefer a WHERE on id, not on a name that two people could share.\n\nWhat the code is doing\nDELETE FROM students names the table.\nWHERE name = 'Grace' picks Grace's row.\nThat row is removed.\nAda and others remain.\n\nWatch out\nWithout WHERE, DELETE removes every row in the table.\nDELETE is not DROP TABLE; DROP would remove the table itself.",
       code: `DELETE FROM students
 WHERE name = 'Grace';`
     },
@@ -977,7 +977,7 @@ LIMIT 3;              -- only top 3`
     {
       lang: "sql",
       title: "7. Two tables and a JOIN",
-      desc: "What this is\nJOIN combines rows from two tables that share a key.\nON says which columns must match.\nEach result row can contain columns from both tables.\n\nWhat the code is doing\nmarks is a second table with student_id, subject, and score.\nThe SELECT lists students.name plus marks.subject and marks.score.\nFROM students JOIN marks starts the combination.\nON marks.student_id = students.id pairs a mark row with its student.\n\nWatch out\nIf student_id does not match any id, an inner JOIN drops that marks row.\nSelecting * after a join duplicates id-like columns and is harder to read.",
+      desc: "Before you use this\nYou already have two tables: students (one person) and marks (one score). They share a key: marks.student_id must match students.id. That is why we created a primary key earlier.\n\nWhat this is\nJOIN combines rows from two tables that share a key.\nON says which columns must match.\nEach result row can contain columns from both tables.\n\nWhy we use it\nWe do not copy the student name onto every marks row. We store the name once, then JOIN when we need a report. That is the whole point of a relational database — facts live in one place, queries stitch them.\n\nWhat the code is doing\nmarks is a second table with student_id, subject, and score.\nThe SELECT lists students.name plus marks.subject and marks.score.\nFROM students JOIN marks starts the combination.\nON marks.student_id = students.id pairs a mark row with its student.\n\nWatch out\nIf student_id does not match any id, an inner JOIN drops that marks row.\nSelecting * after a join duplicates id-like columns and is harder to read.",
       code: `CREATE TABLE marks (
   student_id INTEGER,
   subject    TEXT,
@@ -1007,7 +1007,7 @@ WHERE marks IS NULL;`
     {
       lang: "js",
       title: "10. Safe query from Node",
-      desc: "What this is\nA parameterized query keeps user values out of the SQL text.\n$1 is a placeholder for the first bound value.\nThe driver sends the SQL and the values separately.\n\nWhat the code is doing\ndb.query runs the SELECT.\nWHERE id = $1 is the placeholder, not string addition.\n[id] is the array of values; id fills $1.\nThe commented line concatenates id into the string, which is the dangerous pattern.\n\nWatch out\nNever build SQL with + or template strings from user input.\n$1 is specific to this driver style; other libraries use ? or named keys.",
+      desc: "Before you use this\nThe id comes from the URL or the request. It is user input. You already know SELECT. Now you must keep that id out of the SQL text.\n\nWhat this is\nA parameterized query keeps user values out of the SQL text.\n$1 is a placeholder for the first bound value.\nThe driver sends the SQL and the values separately.\n\nWhy we use it\nIf you glue id into the string, a hostile value can add extra SQL and dump the table. That is injection — still one of the worst web bugs. Parameters are why we can safely take input from the browser.\n\nWhat the code is doing\ndb.query runs the SELECT.\nWHERE id = $1 is the placeholder, not string addition.\n[id] is the array of values; id fills $1.\nThe commented line concatenates id into the string, which is the dangerous pattern.\n\nWatch out\nNever build SQL with + or template strings from user input.\n$1 is specific to this driver style; other libraries use ? or named keys.",
       code: `// good
 const result = await db.query(
   "SELECT * FROM students WHERE id = $1",
@@ -1023,18 +1023,22 @@ const result = await db.query(
     {
       lang: "js",
       title: "1. A document is a box of fields",
-      desc: "What this is\nMongoDB stores documents, which are objects with fields.\nA document is not a spreadsheet row with a fixed cell for every column.\nOne student object is one document you can save.\n\nWhat the code is doing\nstudent has name Ada, marks 90, and city Pune.\nThose keys are the fields that will be stored.\nThe comment says this object is what Mongo saves.\nThere is no CREATE TABLE in this snippet because the shape lives on the document.\n\nWatch out\nTwo documents in one collection can have different fields.\nThat flexibility is not a second SQL schema; missing fields are just absent.",
+      desc: "Before you use this\nIf you know a JavaScript object, you already know a document. You do not write CREATE TABLE. Still decide what one document means (one student). You need a running MongoDB or Atlas URL, and a collection name — here, students.\n\nWhat this is\nMongoDB stores documents, not spreadsheet rows. A document is one object with fields (name, marks, city). The object you save is the shape.\n\nWhy we use it\nWe use Mongo when the thing you load is already an object and the shape can change. Ada has marks. Raj does not. Both are valid. A SQL table would force a marks column on everyone, even if you store NULL.\n\nWhat the code is doing\nstudent is one JavaScript object: Ada, 90, Pune. insertOne writes that object into the students collection. Mongo adds an _id if you do not send one. A second student can skip marks — that field is simply missing, not a SQL NULL column.\n\nAlso know\nA collection is the group of documents (like a table name). Think: one student = one document. The whole class = one collection. You query with find({ city: \"Pune\" }), not SELECT * FROM.\n\nWatch out\nTwo documents in the same collection can have different fields. That is allowed. Your read code must handle a missing field. Do not assume every student has marks.",
       code: `const student = {
-  name: "Ada",
-  marks: 90,
-  city: "Pune"
+  name: "Ada",   // field
+  marks: 90,     // field
+  city: "Pune"   // field
 };
-// this object is what Mongo saves`
+
+await db.collection("students").insertOne(student);  // save the document
+
+const other = { name: "Raj", city: "Delhi" };  // no marks — still valid
+await db.collection("students").insertOne(other);`
     },
     {
       lang: "js",
       title: "2. Connect from Node",
-      desc: "What this is\nmongoose.connect opens a connection to a MongoDB database.\nThe URL includes host, port, and database name.\nYou wait for connect before you query.\n\nWhat the code is doing\nrequire loads mongoose.\nstart is async so it can await connect.\nThe URL points at 127.0.0.1 port 27017 and database school.\nAfter it succeeds, the log prints Connected.\nstart() at the bottom kicks it off.\n\nWatch out\nThe database name is the last path segment, school, not the hostname.\nIf Mongo is not running, await connect throws instead of printing Connected.",
+      desc: "Before you use this\nMongoDB must be running (local or Atlas). You do not CREATE TABLE. You still pick a database name — here, school. Default port is 27017.\n\nWhat this is\nmongoose.connect opens a connection to a MongoDB database.\nThe URL includes host, port, and database name.\nYou wait for connect before you query.\n\nWhy we use it\nEvery insert and find needs one shared connection, not a new one per request. The URL is how Node finds the engine, the same idea as a Postgres DATABASE_URL.\n\nWhat the code is doing\nrequire loads mongoose.\nstart is async so it can await connect.\nThe URL points at 127.0.0.1 port 27017 and database school.\nAfter it succeeds, the log prints Connected.\nstart() at the bottom kicks it off.\n\nWatch out\nThe database name is the last path segment, school, not the hostname.\nIf Mongo is not running, await connect throws instead of printing Connected.",
       code: `const mongoose = require("mongoose");
 
 async function start() {

@@ -3,6 +3,10 @@ window.PREP_DATA["database"] = {
   "kind": "design",
   "notes": [
     {
+      "title": "Before you pick a store",
+      "body": "Before you use this\nDo not keep the only copy of users in a JSON file on one laptop. Decide what one record is (a user, an order) and what questions you will ask (login by email, orders for this user). Then pick an engine. You will talk to it from Node or Python with a driver — the browser never holds the database password.\n\nWhy we use it\nMany people click at once. A crash must not lose a paid order. An email must stay unique. Search must not scan a million rows by hand. The database owns the disk, the locks, the indexes, and the backup. The app only sends a query and gets rows or documents back.\n\nWhen to pick this\nEvery product that remembers users needs a database. Start with one SQL database. Add Redis when a hot read hurts. Add Mongo when a nested document is the natural shape. Add a vector store only when search must match meaning."
+    },
+    {
       "title": "What a database is",
       "layers": [
         [
@@ -93,14 +97,14 @@ window.PREP_DATA["database"] = {
     },
     {
       "title": "How to pick a store",
-      "body": "Tables + money + joins → Postgres or MySQL. Flexible documents + Node team → MongoDB. Hot keys, TTL, sessions → Redis. Huge append logs → Kafka or a warehouse. Similarity search on embeddings → a vector store or pgvector. Graph walks ('friends of friends') → Neo4j or a graph product. Most products start with one SQL database and add the others as a need appears."
+      "body": "Before you use this\nWrite three queries you must support on day one. If they are login, orders-for-user, and a weekly sum, you want SQL. If they are 'get this nested post' and 'add a comment field next week', Mongo is in the mix. If they are 'same session on every server' or '100 logins per minute', you will add Redis.\n\nWhy we use it\nPicking one store for every job is how teams get hurt. SQL is the default for truth. Redis is for speed and shared counters. Mongo is for documents. Vectors are for meaning. Kafka is for events. Name the job, then the engine.\n\nWhen to pick this\nTables + money + joins → Postgres or MySQL. Flexible documents + Node team → MongoDB. Hot keys, TTL, sessions → Redis. Huge append logs → Kafka or a warehouse. Similarity search on embeddings → a vector store or pgvector. Graph walks ('friends of friends') → Neo4j. Most products start with one SQL database and add the others as a need appears."
     }
   ],
   "examples": [
     {
       "title": "One row is one fact",
       "lang": "sql",
-      "desc": "Definition. A table holds rows of the same kind.\n\nHow it works. students has id and name. Each INSERT is one person.\n\nOperational risk. Two people with no primary key look identical.",
+      "desc": "Before you use this\nDecide what one row means — here, one student. Pick a unique id. You need a SQL engine before INSERT.\n\nWhat this is\nA table holds rows of the same kind.\n\nWhy we use it\nThe app should not keep the only copy of people in a file. The table is the shared, typed list. PRIMARY KEY stops two identical mystery rows.\n\nWhat the code is doing\nstudents has id and name. Each INSERT is one person. SERIAL makes the next id.\n\nWatch out\nTwo people with no primary key look identical.",
       "code": "-- one table, one kind of row\nCREATE TABLE students (\n  id   SERIAL PRIMARY KEY,  -- unique person\n  name TEXT NOT NULL        -- cannot be empty\n);\n\nINSERT INTO students (name) VALUES ('Ada');  -- add one row"
     },
     {
@@ -112,7 +116,7 @@ window.PREP_DATA["database"] = {
         "credit",
         "COMMIT or ROLLBACK"
       ],
-      "desc": "Definition. Two money updates must live or die together.\n\nHow it works. BEGIN, both UPDATEs, COMMIT. Any error → ROLLBACK.\n\nOperational risk. Two statements without a transaction: one can succeed and the other fail.",
+      "desc": "Before you use this\nYou already have an accounts table with balances. Two rows must change as one story: send 50 and receive 50.\n\nWhat this is\nA transaction is a bundle of SQL that should succeed together. That is Atomicity in ACID.\n\nWhy we use it\nWe use BEGIN / COMMIT so money cannot vanish on one side. If the second UPDATE fails, ROLLBACK undoes the first. A cache cannot promise this.\n\nWhat the code is doing\nBEGIN, debit account 1, credit account 2, COMMIT. Any error → ROLLBACK.\n\nWatch out\nTwo statements without a transaction: one can succeed and the other fail.",
       "code": "BEGIN;  -- start the bundle\nUPDATE accounts SET bal = bal - 50 WHERE id = 1;  -- send\nUPDATE accounts SET bal = bal + 50 WHERE id = 2;  -- receive\nCOMMIT;  -- both saved, or neither"
     },
     {
@@ -158,7 +162,7 @@ window.PREP_DATA["database"] = {
         "Shape",
         "Engine"
       ],
-      "desc": "Say the access pattern, then the engine. Interviews want this sentence, not a brand list.",
+      "desc": "Before you use this\nWrite the queries first: login by email, orders for this user, session for 30 minutes, search by meaning. Then pick a store. Do not pick a brand from a tweet.\n\nWhat this is\nA one-paragraph pick: access pattern → engine.\n\nWhy we use it\nDifferent jobs need different stores. One SQL database starts most products. Redis, Mongo, and vectors are add-ons when a need appears.\n\nWhat the code is doing\nThe list maps a need to an engine. Say this sentence in an interview.\n\nWatch out\nFive databases on day one is slower than one Postgres you understand.",
       "code": "users + orders + money     -> Postgres\nblog posts, flexible JSON  -> MongoDB\nsessions, rate limits      -> Redis\nchat embeddings / RAG      -> pgvector or Pinecone"
     }
   ],
@@ -167,7 +171,7 @@ window.PREP_DATA["database"] = {
       "id": 1,
       "level": "beginner",
       "q": "What is a database?",
-      "a": "Definition. Software that stores shared data with rules, so many users can read and write safely.\n\nHow it works. The app sends queries. The engine writes disk, indexes, and locks.\n\nOperational risk. Keeping the only copy in a JSON file on one server."
+      "a": "Before you use this\nDo not keep the only copy of users in a JSON file on one laptop. Decide what one record is and what you will ask (login by email). The browser never holds the database password.\n\nWhat this is\nSoftware that stores shared data with rules, so many users can read and write safely.\n\nWhy we use it\nMany people click at once. A crash must not lose a paid order. An email must stay unique. Search must not scan a million rows by hand. The engine owns disk, locks, indexes, and backups.\n\nWhat happens\nThe app sends a query. SQL engines return rows. Mongo returns documents. You pick from the shape of the data and the questions you ask.\n\nWatch out\nKeeping the only copy in a JSON file on one server. A cache (Redis) is not this."
     },
     {
       "id": 2,

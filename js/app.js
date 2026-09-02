@@ -5,6 +5,7 @@
   const storageKey = "prepplace-progress-v1";
   const themeKey = "prepplace-theme";
   const langKey = "prepplace-code-lang";
+  const stackKey = "prepplace-practice-stack";
   const starKey = "prepplace-stars-v1";
   const noteKey = "prepplace-notes-v1";
   const streakKey = "prepplace-streak-v1";
@@ -20,6 +21,14 @@
     { id: "cpp", label: "C++" },
     { id: "c", label: "C" }
   ];
+  const STACKS = [
+    { id: "javascript", label: "JS" },
+    { id: "react", label: "React" },
+    { id: "html", label: "HTML" },
+    { id: "sql", label: "SQL" },
+    { id: "redis", label: "Redis" },
+    { id: "mongo", label: "Mongo" }
+  ];
 
   const getLang = () => {
     const saved = localStorage.getItem(langKey);
@@ -28,11 +37,60 @@
 
   const setLang = (id) => localStorage.setItem(langKey, id);
 
+  const getStack = () => {
+    const saved = localStorage.getItem(stackKey) || window.topicStack || "all";
+    if (saved === "all" || STACKS.some((s) => s.id === saved)) return saved;
+    return "all";
+  };
+
+  const setStack = (id) => {
+    window.topicStack = id;
+    localStorage.setItem(stackKey, id);
+  };
+
   const pickCode = (block, lang) => {
     if (!block) return "";
     if (block.codes && block.codes[lang]) return block.codes[lang];
     if (lang === "javascript") return block.code || block.codes?.javascript || "";
+    if (lang === "react") return block.codes?.react || "";
+    if (lang === "html") return block.codes?.html || (block.lang === "txt" || block.lang === "html" ? block.code : "") || "";
+    if (lang === "sql") return block.codes?.sql || (block.lang === "sql" ? block.code : "") || "";
     return "";
+  };
+
+  const langOfStack = (stack, item) => {
+    if (stack === "sql" || item?.lang === "sql") return "sql";
+    if (stack === "html" || item?.lang === "html" || item?.lang === "txt") return "txt";
+    return "javascript";
+  };
+
+  const itemStackIds = (item) => {
+    const ids = new Set();
+    if (item?.codes) Object.keys(item.codes).forEach((k) => ids.add(k));
+    if (item?.stack) ids.add(item.stack);
+    const lang = String(item?.lang || "").toLowerCase();
+    if (lang === "sql") ids.add("sql");
+    else if (lang === "html" || lang === "txt") ids.add("html");
+    else if (item?.code || lang === "js" || lang === "javascript") ids.add("javascript");
+    return ids;
+  };
+
+  const collectStacks = (data) => {
+    const ids = new Set();
+    for (const item of [...(data.examples || []), ...(data.questions || [])]) {
+      itemStackIds(item).forEach((k) => ids.add(k));
+    }
+    return STACKS.filter((s) => ids.has(s.id));
+  };
+
+  const itemHasStack = (item, stack) => {
+    if (!stack || stack === "all") return true;
+    return itemStackIds(item).has(stack);
+  };
+
+  const practiceSrc = (item, stack) => {
+    const want = stack && stack !== "all" ? stack : "javascript";
+    return pickCode(item, want) || (want === "javascript" ? item?.code || "" : "") || "";
   };
 
   const commentMark = (lang) => {
@@ -496,12 +554,270 @@
       </section>`).join("")}</div>`;
   };
 
+  const TEACH_HEAD = /^(What this is|What happens|What the code is doing|In the example|In the code|Also know|Say this in an interview|Watch out|Common mistake|How it works|Definition|Configuration|Operational risk|Before you use this|Why we use it|When to pick this)\.?$/i;
+
+  const extraForQuestion = (q, a) => {
+    const hay = `${q} ${a}`.toLowerCase();
+    if (/webpage load|enter a url|type a url|type google/.test(hay)) {
+      return {
+        before: "You only need to know that a URL is a name (google.com) plus a path (/search). The browser does not already know the computer's number.",
+        why: "We tell this story because every web feature — login, API, image — rides the same steps. If you skip DNS or TLS, the rest of the answer sounds guessed.",
+        extra: "A CDN or cache can skip a step if you have been here before. Service workers can serve a saved page offline. Always tell the story in this order: find the computer, open a safe pipe, ask, get HTML, fetch extras, paint.",
+        watch: "Do not start at HTML. Interviewers wait for DNS and HTTPS first. Do not say the browser talks to the database."
+      };
+    }
+    if (/\bhttps\b/.test(hay) && /http/.test(hay)) {
+      return {
+        before: "HTTP is just the request language (GET /path). Anyone on the wire can read it unless you wrap it.",
+        why: "We use HTTPS so passwords, cookies, and tokens are not sent as plain text. The certificate also helps prove you reached the real host, not a fake one.",
+        extra: "HTTPS is HTTP riding inside TLS. The padlock is the encrypted pipe plus that certificate check.",
+        watch: "Never send a password on http://. An https:// page that calls http:// is mixed content and the browser blocks it."
+      };
+    }
+    if (/\bcors\b/.test(hay)) {
+      return {
+        before: "Know what an origin is: scheme + host + port. https://app.com and http://app.com are two origins. So are localhost:5173 and localhost:3000.",
+        why: "Browsers add CORS so a random site cannot call your API with the user's cookies as if it were your UI. It protects the user, not your server from Postman.",
+        extra: "Postman and curl are not browsers, so they do not apply CORS. A mobile app talking to an API also does not.",
+        watch: "You cannot fix CORS only in React. The server must allow the UI origin, or you proxy /api so the browser sees one origin."
+      };
+    }
+    if (/event loop|microtask|macrotask/.test(hay)) {
+      return {
+        before: "JavaScript on one page runs one thing at a time. setTimeout and fetch do not freeze the page; they finish later.",
+        why: "We learn the event loop so we can predict print order and why a spinner still moves while data loads.",
+        extra: "Remember the print order: sync first, then Promise.then, then setTimeout(0). That one fact proves you understand the loop.",
+        watch: "await does not pause the whole page. It only pauses that async function."
+      };
+    }
+    if (/\bvar\b[\s\S]*\blet\b|\bconst\b/.test(hay) && /scope|hoist|tdz|temporal/.test(hay)) {
+      return {
+        before: "A variable is a name that holds a value. You need this before objects, functions, and React state.",
+        why: "We use let and const so a name cannot leak outside its block the way var can. That prevents silent bugs.",
+        extra: "Use const by default. Use let when the name must change. Skip var in new code.",
+        watch: "const only locks the name. An object inside const can still change its fields."
+      };
+    }
+    if (/closure/.test(hay)) {
+      return {
+        before: "Know that an inner function can see names from the function that created it, even after the outer function returned.",
+        why: "We use closures for counters, private passwords, and event handlers that still remember the value from when they were created.",
+        extra: "Each call to the outer function gets its own private variables. Two counters do not share n.",
+        watch: "A loop with var and a click listener is the classic bug: every click sees the last i. Use let."
+      };
+    }
+    if (/\bdom\b/.test(hay) && !/random/.test(hay)) {
+      return {
+        before: "HTML is the page text. The DOM is that page as objects JavaScript can find and change.",
+        why: "We use the DOM to show cards, handle clicks, and update text without reloading the whole page.",
+        extra: "You find nodes with querySelector, change text with textContent, and listen with addEventListener. That is the whole daily job.",
+        watch: "Do not put user text into innerHTML. That is XSS. Use textContent."
+      };
+    }
+    if (/\bdns\b/.test(hay)) {
+      return {
+        before: "People type names (prepplace.dev). Packets travel to numbers (IP addresses). Something must translate.",
+        why: "We use DNS so you can change servers without printing a new IP on every poster. One name, many possible machines over time.",
+        extra: "TTL says how long a resolver may remember an old IP. After you change an A record, some users still hit the old box until TTL dies.",
+        watch: "DNS does not load your HTML. It only answers 'which IP?'. HTTPS and HTTP come after."
+      };
+    }
+    if (/\bredis\b|cache-aside|in-memory store|ttl key|rediss:\/\//.test(hay)) {
+      return {
+        before: "You already need a real database (Postgres or Mongo) for users, orders, and money. Redis is the extra fast shelf next to it. Learn GET, SET, and EX (seconds to live) first. Install Redis locally or use a free cloud URL. Default port is 6379.",
+        why: "We use Redis so the same hot read does not hit the database a thousand times. Sessions, rate limits, and leaderboards need a shared, fast store that every API server can see. An in-memory Map on one Node process is invisible to the other processes.",
+        extra: "Redis lives in RAM, so it is often under 1 ms. It is a cache, session store, counter, tiny queue, and pub/sub bus — not the only copy of an order. Always set a TTL on cache keys. Prefix keys (prod:user:1) so apps do not clash.",
+        watch: "A FLUSHALL or a restart without persistence can wipe Redis. That should log people out or miss a cache — never delete the only user table. Do not run KEYS * in production; use SCAN."
+      };
+    }
+    if (/mongodb|document store|mongoose|objectid|\.insertone|collection/.test(hay)) {
+      return {
+        before: "If you know a JavaScript object, you already know a document. You do not CREATE TABLE first. Still decide what one document means (one student, one post). Install MongoDB or use Atlas. A collection is the folder of those documents.",
+        why: "We use Mongo when the thing you load is already a nested object and the shape changes often. One post with comments inside can be one document. Node teams like that it looks like JSON.",
+        extra: "A collection is like a table name. A document is one object. Fields can differ from one document to the next. Mongo adds _id if you do not. Query with find({ city: \"Pune\" }), not SELECT. Unique emails still need a unique index.",
+        watch: "Missing a field is not a SQL NULL column — the field is simply not there. Do not treat Mongo as 'no rules': money across two documents still needs a transaction or a better shape. Never pass req.body straight into find()."
+      };
+    }
+    if (/create table|primary key|foreign key|postgres|mysql|relational|\bselect\b[\s\S]*\bfrom\b|\bsql\b/.test(hay) && !/nosql/.test(hay)) {
+      return {
+        before: "Think of one spreadsheet per thing: students, courses. Decide the columns and which column is the unique id. Then write CREATE TABLE. You talk to the engine with SQL, not with JavaScript objects. PostgreSQL and MySQL are two engines that speak SQL.",
+        why: "We use SQL when facts must stay consistent: users, orders, money, unique emails, and reports that join tables. Constraints (PRIMARY KEY, UNIQUE, FOREIGN KEY) refuse bad rows even if the app has a bug. Transactions (BEGIN / COMMIT) keep two money updates together.",
+        extra: "CRUD is INSERT, SELECT, UPDATE, DELETE. Always use WHERE on UPDATE and DELETE. Use $1 or ? so user text stays data, not extra SQL. Index the columns you filter and join on. EXPLAIN shows whether a query used an index.",
+        watch: "UPDATE or DELETE without WHERE changes every row. String-gluing SQL is injection. Do not stuff students and courses into one table with repeating columns — use a key and a JOIN."
+      };
+    }
+    if (/oltp|olap|acid\b|replica vs shard|cap theorem|what is a database|pick a store/.test(hay)) {
+      return {
+        before: "An app should not keep the only copy of users in a JSON file on one laptop. Decide what you store (rows, documents, keys) and what questions you ask before you pick a brand.",
+        why: "We use a database so many users can read and write at once, survive a crash, search with indexes, and keep rules (unique email, foreign keys). The app sends a query; the engine owns the disk.",
+        extra: "Tables + money + joins → Postgres. Nested JSON you always load together → Mongo. Hot keys and TTL → Redis. Huge append logs → Kafka or a warehouse. Similarity search → a vector store. Most products start with one SQL database and add the others as a need appears.",
+        watch: "A cache is not a database. A replica is a copy (reads / failover). A shard is a slice of the data. Do not run a 20-second report on the checkout primary."
+      };
+    }
+    if (/nosql|cassandra|dynamodb|wide-column|graph store|key-value/.test(hay)) {
+      return {
+        before: "NoSQL is not 'no schema' and not 'always faster than SQL'. It is a family: document (Mongo), key-value (Redis, DynamoDB), wide-column (Cassandra), graph (Neo4j). Write your queries first, then pick the family.",
+        why: "We use NoSQL when the access pattern is a known key, a nested document, huge write volume, or a walk of connections. SQL still wins for money, joins, and ad-hoc reports.",
+        extra: "In NoSQL, duplication is often the design. In SQL, duplication is usually a mistake until you denormalize on purpose. Dynamo and Cassandra want the query listed on day one.",
+        watch: "Picking Mongo from a tutorial, then spending a year rebuilding relations, is the usual regret. Missing unique constraints so two accounts share an email is a product bug."
+      };
+    }
+    if (/vector|embedding|pgvector|pinecone|\brag\b/.test(hay)) {
+      return {
+        before: "Your users and orders still live in SQL or Mongo. A vector store only holds embeddings (lists of numbers) plus the chunk of text they came from. You need an embedding model first.",
+        why: "We use vectors when search must match meaning ('bike' ≈ 'bicycle'), not only the same letters. RAG finds the right paragraphs, then an LLM writes the answer.",
+        extra: "Always filter by tenant or user so one company cannot retrieve another company's chunks. Keyword search and vector search solve different jobs; hybrid does both.",
+        watch: "A vector DB does not replace Postgres. Do not dump raw user files without an access check on retrieve."
+      };
+    }
+    return {
+      before: "Read the question as a story: what already exists, then what this tool adds. Name the pieces before you jump into code.",
+      why: "We use this because it does one job better than doing that job by hand or in the wrong place. Say that job in one sentence first.",
+      extra: "Say this as a short story in order. One example beats a list of buzzwords. Name the next step before you show syntax.",
+      watch: "If you skip a step, the rest of the story sounds like a guess. Pause after each heading and check the listener followed you."
+    };
+  };
+
+  const hasTeachHead = (text, name) => new RegExp("^" + name + "\\b", "im").test(String(text || ""));
+
+  const insertAfterSection = (text, afterName, head, body) => {
+    const lines = String(text || "").split("\n");
+    let i = lines.findIndex((l) => new RegExp("^" + afterName + "\\b", "i").test(l.trim()));
+    if (i < 0) return `${head}\n${body}\n\n${text}`;
+    let j = i + 1;
+    while (j < lines.length && !TEACH_HEAD.test(lines[j].trim())) j += 1;
+    lines.splice(j, 0, "", head, body, "");
+    return lines.join("\n");
+  };
+
+  const injectTeachExtras = (text, tip) => {
+    let out = String(text || "").trim();
+    if (!out) return "";
+    if (tip.before && !hasTeachHead(out, "Before you use this")) {
+      out = `Before you use this\n${tip.before}\n\n${out}`;
+    }
+    if (tip.why && !hasTeachHead(out, "Why we use it")) {
+      out = hasTeachHead(out, "What this is")
+        ? insertAfterSection(out, "What this is", "Why we use it", tip.why)
+        : `Why we use it\n${tip.why}\n\n${out}`;
+    }
+    if (tip.extra && !hasTeachHead(out, "Also know")) out += `\n\nAlso know\n${tip.extra}`;
+    if (tip.watch && !hasTeachHead(out, "Watch out")) out += `\n\nWatch out\n${tip.watch}`;
+    return out;
+  };
+
+  const formalToTeach = (text) => {
+    const parts = String(text || "").split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+    if (!parts.some((p) => /^(Definition|How it works|Configuration|Operational risk)\./i.test(p))) return "";
+    const chunks = [];
+    for (const part of parts) {
+      const m = part.match(/^(Definition|How it works|Configuration|Operational risk)\.\s*([\s\S]*)$/i);
+      if (!m) {
+        chunks.push(part);
+        continue;
+      }
+      const key = m[1].toLowerCase();
+      const head = key.startsWith("def") ? "What this is"
+        : key.startsWith("how") ? "What happens"
+        : key.startsWith("conf") ? "Also know"
+        : "Watch out";
+      chunks.push(head, m[2].trim(), "");
+    }
+    return chunks.join("\n").trim();
+  };
+
+  const autoTeach = (text, q) => {
+    const raw = String(text || "").trim();
+    if (!raw) return "";
+    const tip = extraForQuestion(q || "", raw);
+    const labeled = formalToTeach(raw);
+    if (labeled) return injectTeachExtras(labeled, tip);
+    if (/^What this is\b/im.test(raw) || /^Before you use this\b/im.test(raw) || /^Why we use it\b/im.test(raw) || /^What the code is doing\b/im.test(raw)) {
+      return injectTeachExtras(raw, tip);
+    }
+    const parts = raw.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+    let built = "";
+    if (parts.length >= 3) {
+      built = ["What this is", parts[0], "", "What happens", parts.slice(1, -1).join("\n\n"), "", "Watch out", parts[parts.length - 1]].join("\n");
+    } else if (parts.length === 2) {
+      built = ["What this is", parts[0], "", "What happens", parts[1]].join("\n");
+    } else {
+      const bits = raw.match(/[^.!?]+[.!?]+(?:\s+|$)/g) || [raw];
+      const what = bits.slice(0, 2).join("").trim();
+      const rest = bits.slice(2).join("").trim();
+      built = ["What this is", what, "", "What happens", rest || what].join("\n");
+    }
+    return injectTeachExtras(built, tip);
+  };
+
+  const prettyTeachHead = (h) => {
+    const t = String(h || "").replace(/\.$/, "").trim();
+    if (/^before you use this/i.test(t)) return "Before you use this";
+    if (/^why we use it/i.test(t)) return "Why we use it";
+    if (/^when to pick this/i.test(t)) return "When to pick this";
+    if (/^what this is/i.test(t)) return "What this is";
+    if (/^what happens/i.test(t)) return "What happens";
+    if (/^what the code is doing/i.test(t)) return "What the code is doing";
+    if (/^in the (example|code)/i.test(t)) return "What the code is doing";
+    if (/^also know/i.test(t)) return "Also know";
+    if (/^say this/i.test(t)) return "Say this in an interview";
+    if (/^watch out/i.test(t)) return "Watch out";
+    if (/^common mistake/i.test(t)) return "Watch out";
+    if (/^definition/i.test(t)) return "What this is";
+    if (/^how it works/i.test(t)) return "What happens";
+    if (/^configuration/i.test(t)) return "Also know";
+    if (/^operational risk/i.test(t)) return "Watch out";
+    return t;
+  };
+
+  const renderTeachText = (text, q) => {
+    const src = autoTeach(text, q);
+    const lines = src.replace(/\r/g, "").split("\n");
+    const sections = [];
+    let title = "";
+    let buf = [];
+    const flush = () => {
+      const body = buf.join("\n").trim();
+      if (body) sections.push([title, body]);
+      buf = [];
+    };
+    for (const line of lines) {
+      if (TEACH_HEAD.test(line.trim())) {
+        flush();
+        title = prettyTeachHead(line.trim());
+        continue;
+      }
+      buf.push(line);
+    }
+    flush();
+    if (!sections.length) return `<p class="answer">${escapeHtml(text || "")}</p>`;
+    return `<div class="answer-sections">${sections.map(([head, body]) => `
+      <section class="answer-block">
+        ${head ? `<h4>${escapeHtml(head)}</h4>` : ""}
+        <p>${escapeHtml(body)}</p>
+      </section>`).join("")}</div>`;
+  };
+
   const langBar = (active) => `
     <div class="lang-bar btn-group" role="tablist" aria-label="Code language">
       ${CODE_LANGS.map((l) =>
         `<button class="lang-btn ${l.id === active ? "active" : ""}" type="button" data-lang="${l.id}">${l.label}</button>`
       ).join("")}
     </div>`;
+
+  const stackBar = (stacks, active) => {
+    if (!stacks.length) return "";
+    return `
+      <div class="control-block">
+        <span class="filter-label">Stack</span>
+        <div class="btn-group" role="tablist" aria-label="Code stack">
+          <button class="chip ${active === "all" ? "active" : ""}" type="button" data-stack="all">All</button>
+          ${stacks.map((s) =>
+            `<button class="chip ${active === s.id ? "active" : ""}" type="button" data-stack="${s.id}">${s.label}</button>`
+          ).join("")}
+        </div>
+      </div>`;
+  };
 
   const loadJson = (key, fallback) => {
     try { return JSON.parse(localStorage.getItem(key) || "") || fallback; }
@@ -1248,16 +1564,20 @@
     const level = window.topicLevel || "all";
     const companyF = window.topicCompany || "all";
     const bagF = window.topicBag || "all";
+    const stacks = data.kind === "practice" ? collectStacks(data) : [];
+    let stackF = data.kind === "practice" ? getStack() : "all";
+    if (stackF !== "all" && !stacks.some((s) => s.id === stackF)) stackF = "all";
     const query = (window.topicQuery || "").toLowerCase();
     const stars = starSet(id);
     const done = doneSet(id);
     const p = progressFor(id);
     const notes = data.notes || [];
-    const examples = data.examples || [];
+    const examples = (data.examples || []).filter((ex) => itemHasStack(ex, stackF));
     const allQuestions = data.questions || [];
     const questions = allQuestions.filter((item) => {
       const matchLevel = level === "all" || item.level === level;
       const matchC = companyF === "all" || companyList(item.ask).some((c) => c.toLowerCase() === companyF.toLowerCase());
+      const matchS = itemHasStack(item, stackF);
       const isDone = done.has(item.id);
       const isStar = stars.has(item.id);
       const matchB = bagF === "all" || (bagF === "done" && isDone) || (bagF === "todo" && !isDone) || (bagF === "starred" && isStar);
@@ -1266,7 +1586,7 @@
         return `${s.name} ${s.why} ${s.code || ""} ${langs}`;
       }).join(" ");
       const hay = `${item.q} ${item.a} ${item.code || ""} ${item.ask || ""} ${solText}`.toLowerCase();
-      return matchLevel && matchC && matchB && (!query || hay.includes(query));
+      return matchLevel && matchC && matchS && matchB && (!query || hay.includes(query));
     });
 
     const lang = getLang();
@@ -1297,10 +1617,11 @@
             </div>`;
           }).join("")}`;
       }
-      const single = data.kind === "dsa" ? dsaSrc(item, lang) : (pickCode(item, lang) || item.code);
+      const single = data.kind === "dsa" ? dsaSrc(item, lang) : data.kind === "practice" ? practiceSrc(item, stackF) : (pickCode(item, lang) || item.code);
       if (!single) return "";
-      const codeLang = data.kind === "dsa" ? lang : inferLang(item);
-      return `<p class="answer-label">${data.kind === "practice" ? "Easy code" : "Code"} · ${escapeHtml(data.kind === "dsa" ? langLabel : codeLang)}</p><div class="code-wrap"><button class="copy-btn" type="button" data-q-copy>Copy</button><pre class="dsa-pre"><code>${showCode(teachSrc(single, codeLang, data.kind), codeLang)}</code></pre></div>`;
+      const codeLang = data.kind === "dsa" ? lang : data.kind === "practice" ? langOfStack(stackF, item) : inferLang(item);
+      const stackLabel = STACKS.find((s) => s.id === (stackF === "all" ? "javascript" : stackF))?.label || codeLang;
+      return `<p class="answer-label">${data.kind === "practice" ? "Easy code" : "Code"} · ${escapeHtml(data.kind === "dsa" ? langLabel : data.kind === "practice" ? stackLabel : codeLang)}</p><div class="code-wrap"><button class="copy-btn" type="button" data-q-copy>Copy</button><pre class="dsa-pre"><code>${showCode(teachSrc(single, codeLang, data.kind), codeLang)}</code></pre></div>`;
     };
 
     view.innerHTML = `
@@ -1320,33 +1641,34 @@
       </div>
       ${tab === "notes" ? `
         <section class="${data.kind === "design" ? "design-stack" : "note-grid"}">
-          ${notes.map((n) => `<article class="note${data.kind === "design" ? " note-wide" : ""}"><h3>${escapeHtml(n.title)}</h3>${renderVisuals(n)}<p>${escapeHtml(n.body)}</p></article>`).join("")}
+          ${notes.map((n) => `<article class="note${data.kind === "design" ? " note-wide" : ""}"><h3>${escapeHtml(n.title)}</h3>${renderVisuals(n)}${/^(What this is|Before you use this|Why we use it|When to pick this)\b/im.test(n.body || "") ? renderTeachText(n.body, n.title) : `<p>${escapeHtml(n.body)}</p>`}</article>`).join("")}
         </section>` : tab === "examples" ? `
         ${data.kind === "dsa" ? langBar(lang) : ""}
+        ${data.kind === "practice" && stacks.length ? `<div class="control-board stack-board">${stackBar(stacks, stackF)}</div>` : ""}
         <p class="example-intro">${data.kind === "design"
           ? "Each card is a complete design: architecture diagram, request flow, and the points you should state in an interview."
           : data.kind === "dsa"
             ? "Read the explanation first, then the code. Each line is commented the way Raj writes it on LeetCode. Switch JavaScript, Python, Java, C++, or C."
             : data.kind === "practice"
-              ? "Each snippet is a small complete function. Code is on the left. Easy comments sit on the right of the same line."
+              ? "Pick JS or React above. Same card project, two stacks. Code is on the left. Easy comments sit on the right of the same line."
               : "Read the explanation first, then the code. Comments sit on the right in easy words."}</p>
         <section class="example-list">
           ${examples.map((ex, i) => `
             <article class="example">
               <div class="example-head">
                 <h3>${escapeHtml(ex.title)}</h3>
-                <span class="badge">${escapeHtml(data.kind === "dsa" ? langLabel : data.kind === "design" ? "workflow" : (ex.lang || "code"))}</span>
+                <span class="badge">${escapeHtml(data.kind === "dsa" ? langLabel : data.kind === "design" ? "workflow" : data.kind === "practice" ? (STACKS.find((s) => s.id === (stackF === "all" ? (ex.lang === "txt" || ex.lang === "html" ? "html" : "javascript") : stackF))?.label || ex.lang || "code") : (ex.lang || "code"))}</span>
               </div>
               ${renderVisuals(ex)}
               <div class="teach">
                 <p class="answer-label">${data.kind === "design" ? "Design notes" : "Explanation"}</p>
-                <p class="teach-body">${escapeHtml(ex.desc || "")}</p>
+                ${renderTeachText(ex.desc || "", ex.title)}
               </div>
-              ${pickCode(ex, data.kind === "dsa" ? lang : "javascript") || ex.code ? `
+              ${((data.kind === "dsa" ? pickCode(ex, lang) : data.kind === "practice" ? practiceSrc(ex, stackF) : pickCode(ex, "javascript")) || ex.code) ? `
               <p class="answer-label code-label">${data.kind === "design" ? "Interface sketch" : data.kind === "practice" ? "Easy code · comments on the right" : "Code · comments on the right"}</p>
               <div class="code-wrap">
                 <button class="copy-btn" type="button" data-ex="${i}">Copy</button>
-                <pre class="dsa-pre"><code>${showCode(data.kind === "dsa" ? dsaSrc(ex, lang) : teachSrc(pickCode(ex, "javascript") || ex.code || "", paintLang(ex), data.kind), data.kind === "dsa" ? lang : paintLang(ex))}</code></pre>
+                <pre class="dsa-pre"><code>${showCode(data.kind === "dsa" ? dsaSrc(ex, lang) : teachSrc(data.kind === "practice" ? practiceSrc(ex, stackF) : (pickCode(ex, "javascript") || ex.code || ""), data.kind === "practice" ? langOfStack(stackF, ex) : paintLang(ex), data.kind), data.kind === "dsa" ? lang : data.kind === "practice" ? langOfStack(stackF, ex) : paintLang(ex))}</code></pre>
               </div>` : ""}
             </article>`).join("") || `<p class="empty">${data.kind === "design" ? "No workflows yet." : "No code examples yet."}</p>`}
         </section>` : `
@@ -1375,12 +1697,14 @@
                 ).join("")}
               </div>
             </div>
+            ${data.kind === "practice" ? stackBar(stacks, stackF) : ""}
           </div>
-          ${data.kind === "dsa" ? `
+          ${data.kind === "dsa" || allQuestions.some((q) => q.ask) ? `
           <div class="control-block">
             <span class="filter-label">Company</span>
             <div class="btn-group">
               <button class="chip ${companyF === "all" ? "active" : ""}" data-co="all">All companies</button>
+              ${data.kind === "practice" ? `<button class="chip ${companyF === "Most asked" ? "active" : ""}" data-co="Most asked">Most asked</button>` : ""}
               ${COMPANIES.map((c) => `<button class="chip ${companyF === c ? "active" : ""}" data-co="${c}">${c}</button>`).join("")}
             </div>
           </div>` : ""}
@@ -1420,9 +1744,10 @@
                     <tr><th>Method</th><th>Time</th><th>Space</th></tr>
                     ${item.solutions.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.time || "")}</td><td>${escapeHtml(s.space || "")}</td></tr>`).join("")}
                   </table>` : ""}
-                <p class="answer-label">${data.kind === "dsa" ? "Explanation" : data.kind === "practice" ? "What to do" : "Technical note"}</p>
-                ${data.kind === "dsa" || data.kind === "practice" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderFormalAnswer(item.a)}
+                <p class="answer-label">${data.kind === "dsa" ? "Explanation" : data.kind === "practice" ? (item.ask ? "Interview answer" : "What to do") : "Technical note"}</p>
+                ${data.kind === "dsa" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderTeachText(item.a, item.q)}
                 ${renderVisuals(item)}
+                ${data.kind === "practice" ? renderSolutions(item) : ""}
                 ${data.kind !== "dsa" && data.kind !== "practice" && item.code ? `
                   <p class="answer-label">Reference configuration</p>
                   <div class="code-wrap">
@@ -1433,7 +1758,7 @@
                   <button class="btn" type="button" data-timer>20 min timer</button>
                   <span class="timer-chip" data-timer-view hidden>20:00</span>
                 </div>
-                <div class="sol-spoiler">${renderSolutions(item)}</div>
+                <div class="sol-spoiler">${data.kind === "practice" ? "" : renderSolutions(item)}</div>
                 <label class="answer-label" for="note-${item.id}">My notes</label>
                 <textarea class="self-note" id="note-${item.id}" data-note placeholder="Your approach, a bug you hit, or a follow-up…">${escapeHtml(getNote(id, item.id))}</textarea>
                 <div class="q-tools">
@@ -1464,6 +1789,14 @@
     });
     view.querySelectorAll("[data-co]").forEach((btn) => {
       btn.addEventListener("click", () => { window.topicCompany = btn.dataset.co; renderTopic(id, openQid); });
+    });
+    view.querySelectorAll("[data-stack]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const open = [...view.querySelectorAll(".item.open")].map((el) => el.dataset.qid);
+        setStack(btn.dataset.stack);
+        renderTopic(id, openQid);
+        open.forEach((qid) => view.querySelector(`.item[data-qid="${qid}"]`)?.classList.add("open"));
+      });
     });
     document.getElementById("topicRandom")?.addEventListener("click", () => {
       const p = randomProblem(id);
@@ -1549,8 +1882,10 @@
     view.querySelectorAll("[data-ex]").forEach((btn) => {
       btn.addEventListener("click", async () => {
           const ex = examples[Number(btn.dataset.ex)];
-          const raw = pickCode(ex, data.kind === "dsa" ? getLang() : "javascript") || ex?.code || "";
-          const code = teachSrc(raw, data.kind === "dsa" ? getLang() : paintLang(ex), data.kind);
+          const raw = data.kind === "dsa"
+            ? pickCode(ex, getLang())
+            : data.kind === "practice" ? practiceSrc(ex, getStack()) : pickCode(ex, "javascript") || ex?.code || "";
+          const code = teachSrc(raw, data.kind === "dsa" ? getLang() : data.kind === "practice" ? langOfStack(getStack(), ex) : paintLang(ex), data.kind);
           await copyText(code, btn);
       });
     });
@@ -1580,8 +1915,8 @@
         btn.addEventListener("click", async () => {
           const qid = Number(itemEl.dataset.qid);
           const item = allQuestions.find((q) => q.id === qid);
-          const raw = pickCode(item, getLang()) || item?.code || "";
-          await copyText(teachSrc(raw, inferLang(item), data.kind), btn);
+          const raw = data.kind === "practice" ? practiceSrc(item, getStack()) : pickCode(item, getLang()) || item?.code || "";
+          await copyText(teachSrc(raw, data.kind === "practice" ? langOfStack(getStack(), item) : inferLang(item), data.kind), btn);
         });
       });
     });

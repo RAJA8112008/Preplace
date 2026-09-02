@@ -3,6 +3,10 @@ window.PREP_DATA["practice-sysdesign"] = {
   "kind": "practice",
   "notes": [
     {
+      "title": "Most asked",
+      "body": "After the hands-on labs, open questions tagged Most asked. Those are the interview questions Amazon, Google, Meta, and Microsoft repeat. Same easy comments on the right of the code."
+    },
+    {
       "title": "How to use this lab",
       "body": "Tiny code that matches the drawings: shortener, rate limit, feed, HTTPS at the edge."
     },
@@ -191,6 +195,86 @@ window.PREP_DATA["practice-sysdesign"] = {
       "q": "Practice: draw then code",
       "a": "Say client → TLS → app → Redis → SQL, then paste the handler.",
       "code": "// 1 TLS  2 auth  3 rate  4 sql  5 cache"
+    },
+    {
+      "id": 19,
+      "level": "advanced",
+      "q": "Design a URL shortener.",
+      "a": "Requirements: create a short HTTPS link, redirect, optional auth on create, analytics later. API writes id→url in SQL. GET /:id reads (cache in Redis) and 302s. Unique id: random bytes + retry, or a counter. Rate-limit creates. Nginx does TLS.",
+      "code": "const id = crypto.randomBytes(4).toString(\"hex\");\nawait db.query(\"INSERT INTO links(id, url, user_id) VALUES ($1,$2,$3)\", [id, url, req.user.id]);\nres.json({ short: \"https://s.example/\" + id });",
+      "ask": "Most asked · Amazon · Google · Meta · Microsoft"
+    },
+    {
+      "id": 20,
+      "level": "advanced",
+      "q": "Design a rate limiter.",
+      "a": "Fixed window: INCR + EXPIRE in Redis, 429 over the cap. Token bucket is smoother. Key by IP or by user id. Put it in middleware before the expensive handler. Say what you would measure.",
+      "code": "const n = await redis.incr(\"rl:\" + ip);\nif (n === 1) await redis.expire(\"rl:\" + ip, 60);\nif (n > 30) return res.status(429).json({ error: \"slow down\" });",
+      "ask": "Most asked · Amazon · Google · Uber · Stripe"
+    },
+    {
+      "id": 21,
+      "level": "intermediate",
+      "q": "Explain CAP in a design interview.",
+      "a": "Name the split. If the replica cannot talk to the primary, do you block writes (C) or accept them and heal later (A)? Payments lean C. Social likes can lean A. Then draw where the cache sits.",
+      "code": "// checkout — wait for primary COMMIT\n// like counter — Redis INCR, SQL later",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 22,
+      "level": "intermediate",
+      "q": "How do you invalidate a cache?",
+      "a": "On write: update SQL, then DEL the key (cache-aside). TTL is a safety net if you forget a DEL. Do not cache private lists under a public key.",
+      "code": "await db.query(\"UPDATE todos SET text = $1 WHERE id = $2\", [text, id]);\nawait redis.del(\"todo:\" + id);",
+      "ask": "Most asked · Amazon · Meta · Google"
+    },
+    {
+      "id": 23,
+      "level": "beginner",
+      "q": "What does a load balancer do?",
+      "a": "One public HTTPS door, many app boxes behind it. Health checks drop bad boxes. Session stickiness is a smell — prefer JWT or shared Redis sessions.",
+      "code": "// client → TLS → LB → app1 / app2 / app3\napp.get(\"/health\", (req, res) => res.json({ ok: true }));",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 24,
+      "level": "beginner",
+      "q": "What is a CDN?",
+      "a": "Edge caches for static files (JS, images) close to the user. The origin is your S3 or Nginx. HTML can be cached if it is public. Private todo JSON should not be on a public CDN key.",
+      "code": "// CloudFront → S3 / origin\n// Cache-Control: public for the JS bundle, private for /api/todos",
+      "ask": "Most asked · Amazon · Netflix · Google"
+    },
+    {
+      "id": 25,
+      "level": "advanced",
+      "q": "How do you generate unique IDs at scale?",
+      "a": "UUID is easy and scattered (hurts B-tree inserts). A DB sequence is simple and ordered. Snowflake-style (time + worker + seq) is what big feeds use. Interviews want the trade-off, not a brand.",
+      "code": "const id = crypto.randomUUID();  // easy\n// or: bigserial in Postgres\n// or: time + worker + counter",
+      "ask": "Most asked · Twitter · Meta · Amazon"
+    },
+    {
+      "id": 26,
+      "level": "intermediate",
+      "q": "How do you scale reads?",
+      "a": "Add a read replica. Cache hot keys in Redis. Add a CDN for static. Only then shard. Name the bottleneck first — usually one hot query, not 'we need Kubernetes'.",
+      "code": "const hit = await redis.get(\"u:\" + id);\nif (hit) return res.redirect(302, hit);\nconst { rows } = await db.query(\"SELECT url FROM links WHERE id = $1\", [id]);",
+      "ask": "Most asked · Amazon · Google · Meta"
+    },
+    {
+      "id": 27,
+      "level": "intermediate",
+      "q": "Why a message queue?",
+      "a": "The API answers fast, a worker does the slow thing (email, thumbnail). If the worker dies, the message waits. Retry with a dead-letter queue. Do not do 10-second work inside the request.",
+      "code": "await queue.send({ type: \"welcome_email\", userId });\nres.status(201).json(user);  // user does not wait for SMTP",
+      "ask": "Most asked · Amazon · Uber · Microsoft"
+    },
+    {
+      "id": 28,
+      "level": "beginner",
+      "q": "Walk a request: short link click.",
+      "a": "Browser HTTPS → TLS at Nginx/CloudFront → app GET /abc → Redis cache → (miss) SQL → 302 to the long URL. Say what you log (short id, not the token query string).",
+      "code": "// 1 TLS  2 GET /id  3 Redis  4 SQL  5 302\nconsole.log(\"hit\", id);",
+      "ask": "Most asked · Amazon · Google · Microsoft"
     }
   ]
 };

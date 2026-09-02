@@ -3,6 +3,10 @@ window.PREP_DATA["practice-cloud"] = {
   "kind": "practice",
   "notes": [
     {
+      "title": "Most asked",
+      "body": "After the hands-on labs, open questions tagged Most asked. Those are the interview questions Amazon, Google, Meta, and Microsoft repeat. Same easy comments on the right of the code."
+    },
+    {
       "title": "How to use this lab",
       "body": "Tiny AWS tasks around a todo/login app. Free tier plus a billing alarm."
     },
@@ -191,6 +195,78 @@ window.PREP_DATA["practice-cloud"] = {
       "q": "Practice: logout / revoke",
       "a": "Short JWT TTL, or Cognito global sign-out.",
       "code": "res.clearCookie(\"sid\");"
+    },
+    {
+      "id": 19,
+      "level": "beginner",
+      "q": "What is IAM least privilege?",
+      "a": "Give a role only the actions and resources it needs. The API box can s3:PutObject on one prefix — not AdministratorAccess. Humans and apps use different identities.",
+      "code": "{\n  \"Effect\": \"Allow\",\n  \"Action\": [\"s3:PutObject\"],\n  \"Resource\": \"arn:aws:s3:::my-app-uploads/*\"\n}",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 20,
+      "level": "beginner",
+      "q": "S3 vs EBS vs EFS?",
+      "a": "S3 is object storage (files via API, photos). EBS is a disk attached to one EC2. EFS is a shared network file system for many EC2s. Todos as rows belong in RDS, not S3.",
+      "code": "// photos → S3\n// boot disk → EBS\n// shared uploads folder → EFS\n// todos → RDS",
+      "ask": "Most asked · Amazon"
+    },
+    {
+      "id": 21,
+      "level": "intermediate",
+      "q": "Public subnet vs private subnet?",
+      "a": "Public has a route to an Internet Gateway — things with a public IP can be reached. Private has no public IP; outbound goes through NAT. Put RDS and workers in private. Put the load balancer in public.",
+      "code": "ALB — public subnets\nAPI / RDS — private subnets",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 22,
+      "level": "intermediate",
+      "q": "EC2 vs Lambda?",
+      "a": "EC2 is a server you keep running. Lambda runs your function per request and scales to zero. Lambda fits short burst work. A long WebSocket or a constant API may be cheaper or simpler on EC2 / ECS.",
+      "code": "exports.handler = async function () {\n  return { statusCode: 200, body: \"{\"ok\":true}\" };\n};",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 23,
+      "level": "intermediate",
+      "q": "Security group vs NACL?",
+      "a": "A security group is a stateful firewall on an ENI (allow 443 in, replies go out). A NACL is stateless on the subnet (you must allow both directions). Most apps live on security groups.",
+      "code": "ALB SG: 443 from 0.0.0.0/0\nAPI SG: 3000 from ALB SG\nRDS SG: 5432 from API SG",
+      "ask": "Most asked · Amazon"
+    },
+    {
+      "id": 24,
+      "level": "beginner",
+      "q": "What is a VPC?",
+      "a": "Your private network in the cloud: subnets, route tables, gateways. Resources inside can talk using private IPs. You control what is public.",
+      "code": "// VPC → public + private subnets → route tables → IGW / NAT",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 25,
+      "level": "beginner",
+      "q": "Why CloudFront in front of S3?",
+      "a": "HTTPS with your domain, cache at the edge, hide the bucket, cheaper egress. A public S3 website endpoint is weaker and often HTTP-first.",
+      "code": "// S3 origin + ACM cert + redirect-to-https",
+      "ask": "Most asked · Amazon"
+    },
+    {
+      "id": 26,
+      "level": "intermediate",
+      "q": "What does RDS Multi-AZ do?",
+      "a": "A standby in another zone. Failover if the primary dies. It is high availability, not extra read scale. Read scale is a read replica.",
+      "code": "-- Multi-AZ = standby\n-- read replica = extra reads",
+      "ask": "Most asked · Amazon"
+    },
+    {
+      "id": 27,
+      "level": "beginner",
+      "q": "Why never commit AWS keys?",
+      "a": "Anyone with the key can spend your money. Use an instance role or a task role. If a key leaked, disable it and rotate. git rm does not unsend the history.",
+      "code": "// use the instance / task role\n// if leaked: disable the access key the same day",
+      "ask": "Most asked · Amazon · Google · Microsoft"
     }
   ]
 };

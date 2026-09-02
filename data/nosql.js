@@ -3,6 +3,10 @@ window.PREP_DATA["nosql"] = {
   "kind": "design",
   "notes": [
     {
+      "title": "Before you say NoSQL",
+      "body": "Before you use this\nNoSQL is not 'no schema' and not 'always faster than SQL'. It is a family of stores that are not 'tables + SQL joins' as the main model. Write the queries you need first. Then pick a family. You still need unique emails, backups, and a plan for money.\n\nWhy we use it\nDifferent products ask different questions. A session is a key. A blog post is a nested document. A chat history is a huge write stream. A 'friends of friends' walk is a graph. One SQL table is a poor fit for some of those — that is why NoSQL exists.\n\nWhen to pick this\nDocument → Mongo. Key-value / TTL → Redis. Huge writes, known key → Cassandra or DynamoDB. Connections → Neo4j. If you need multi-row money, rich joins, and reports, start with SQL."
+    },
+    {
       "title": "What NoSQL means",
       "layers": [
         [

@@ -3,6 +3,10 @@ window.PREP_DATA["vectordb"] = {
   "kind": "design",
   "notes": [
     {
+      "title": "Before you add a vector store",
+      "body": "Before you use this\nUsers and orders still live in SQL or Mongo. A vector store only holds embeddings (lists of numbers) plus the chunk of text they came from. You need an embedding model first (OpenAI, a local model, or similar). Decide the chunk size — a whole book as one vector is useless.\n\nWhy we use it\nKeyword search matches letters. Vector search matches meaning: 'bike' sits near 'bicycle'. We use it for semantic search, recommendations, and RAG — retrieve the right paragraphs, then let an LLM write.\n\nWhen to pick this\nUse it when LIKE '%term%' is not enough. Do not use it as the login database. Always filter retrieve by tenant so company A cannot see company B's chunks."
+    },
+    {
       "title": "What a vector database is",
       "layers": [
         [

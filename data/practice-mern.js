@@ -3,6 +3,10 @@ window.PREP_DATA["practice-mern"] = {
   "kind": "practice",
   "notes": [
     {
+      "title": "Most asked",
+      "body": "After the hands-on labs, open questions tagged Most asked. Those are the interview questions Amazon, Google, Meta, and Microsoft repeat. Same easy comments on the right of the code."
+    },
+    {
       "title": "How to use this lab",
       "body": "MERN glues React to Express to Mongo. Each snippet is a complete function with easy comments on the right."
     },
@@ -199,6 +203,102 @@ window.PREP_DATA["practice-mern"] = {
       "q": "Practice: React logout",
       "a": "Remove token, clear user, go to login.",
       "code": "function logout(setUser, navigate) {\n  localStorage.removeItem(\"token\");  // forget login\n  setUser(null);  // clear the screen\n  navigate(\"/login\");\n}"
+    },
+    {
+      "id": 19,
+      "level": "beginner",
+      "q": "What does MERN stand for?",
+      "a": "MongoDB (documents), Express (API), React (UI), Node (runtime). One language — JavaScript — on both sides. You still need HTML, CSS, Git, and HTTPS to ship.",
+      "code": "// React  →  fetch(\"/api/todos\")\n// Express →  db.collection(\"todos\").find()\n// Mongo   →  { text, done, userId }",
+      "ask": "Most asked · Amazon · Microsoft · startup"
+    },
+    {
+      "id": 20,
+      "level": "intermediate",
+      "q": "Why does React on :5173 fail to call Express on :3000?",
+      "a": "Different origins. The browser applies CORS. Proxy /api in Vite for local work. In production, put UI and API on one domain or set Access-Control-Allow-Origin to the real UI URL.",
+      "code": "export default { server: { proxy: { \"/api\": \"http://localhost:3000\" } } };",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 21,
+      "level": "intermediate",
+      "q": "MongoDB vs SQL — when do you pick Mongo in MERN?",
+      "a": "Pick Mongo when the document is the API shape (nested comments) and you want one JS object in and out. Pick SQL when you have many relations, reports, and strict rules. Interviews like: start with the queries, then pick the store.",
+      "code": "await todos.insertOne({ text, done: false, userId });  // one document\n// SQL: INSERT INTO todos(user_id, text) VALUES ($1, $2)",
+      "ask": "Most asked · Amazon · Microsoft · Google"
+    },
+    {
+      "id": 22,
+      "level": "intermediate",
+      "q": "Where should a MERN app store the JWT?",
+      "a": "Best: httpOnly cookie on the API domain. Common student path: localStorage — simpler, weaker against XSS. Never put the token in a query string or Git.",
+      "code": "localStorage.setItem(\"token\", data.token);  // common, XSS-sensitive\nres.cookie(\"sid\", sid, { httpOnly: true, sameSite: \"lax\", secure: true });  // safer",
+      "ask": "Most asked · Google · Meta · Microsoft"
+    },
+    {
+      "id": 23,
+      "level": "beginner",
+      "q": "Walk through signup → login → list todos in MERN.",
+      "a": "Signup: hash password, insert user, return JWT. Login: find user, compare hash, return JWT. List: React sends Bearer token. Express verifies, then find({ userId }).",
+      "code": "const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);\n// React: Authorization: Bearer + token\n// Express: req.user = jwt.verify(token)\n// Mongo: find({ userId: req.user.id })",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 24,
+      "level": "intermediate",
+      "q": "What is mongoose populate?",
+      "a": "populate replaces an id with the related document. It is a second query (or a $lookup). Easy to read. Easy to create N+1 if you populate in a loop. For lists, project the fields you need.",
+      "code": "const post = await Post.findById(id).populate(\"author\", \"name\");  // author becomes an object",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 25,
+      "level": "beginner",
+      "q": "How do you structure a MERN repo?",
+      "a": "client/ (Vite React) and server/ (Express). One Git repo. .env in server, VITE_API in client. Never commit secrets. Proxy /api in dev.",
+      "code": "// repo/\n//   client/   React\n//   server/   Express + Mongo\n//   .gitignore  includes .env",
+      "ask": "Most asked · Microsoft · Amazon"
+    },
+    {
+      "id": 26,
+      "level": "beginner",
+      "q": "What is an environment variable in MERN?",
+      "a": "A setting that changes per machine: DATABASE_URL, JWT_SECRET, VITE_API. process.env on the server. import.meta.env.VITE_* on the client. Client vars are public — never put the DB password in VITE_.",
+      "code": "const db = process.env.DATABASE_URL;  // server only\nconst api = import.meta.env.VITE_API;  // public in the built JS",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 27,
+      "level": "intermediate",
+      "q": "What is a Mongo ObjectId and why check it?",
+      "a": "ObjectId is a 24-hex id Mongo makes. If you pass 'abc' into findById, Mongoose can throw. Check ObjectId.isValid and return 400.",
+      "code": "if (!ObjectId.isValid(id)) return res.status(400).json({ error: \"bad id\" });",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 28,
+      "level": "beginner",
+      "q": "How does React show a 401 from Express?",
+      "a": "If res.status === 401, remove the token and navigate to /login. Also handle it in one api() helper so every page does the same thing.",
+      "code": "if (res.status === 401) {\n  localStorage.removeItem(\"token\");  // ticket is dead\n  navigate(\"/login\");\n}",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 29,
+      "level": "intermediate",
+      "q": "CSR vs SSR — what does a typical MERN app use?",
+      "a": "Create React App / Vite is CSR: the server sends a shell, JS paints the page. SSR (Next.js) renders HTML on the server. CSR is simpler. SSR helps first paint and SEO.",
+      "code": "// Vite CSR: index.html + bundle\n// Next SSR: the server returns HTML for this URL",
+      "ask": "Most asked · Meta · Amazon · Microsoft"
+    },
+    {
+      "id": 30,
+      "level": "intermediate",
+      "q": "How do you keep Mongo emails unique?",
+      "a": "createIndex({ email: 1 }, { unique: true }). Catch error code 11000 and return 409. Do not only check findOne in your code — two signups can race.",
+      "code": "await users.createIndex({ email: 1 }, { unique: true });\n// catch err.code === 11000 → 409 email taken",
+      "ask": "Most asked · Amazon · Microsoft"
     }
   ]
 };

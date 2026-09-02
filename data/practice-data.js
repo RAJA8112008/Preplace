@@ -3,6 +3,10 @@ window.PREP_DATA["practice-data"] = {
   "kind": "practice",
   "notes": [
     {
+      "title": "Most asked",
+      "body": "After the hands-on labs, open questions tagged Most asked. Those are the interview questions Amazon, Google, Meta, and Microsoft repeat. Same easy comments on the right of the code."
+    },
+    {
       "title": "How to use this lab",
       "body": "CRUD here is rows in a table. Auth is who may see this report."
     },
@@ -191,6 +195,70 @@ window.PREP_DATA["practice-data"] = {
       "q": "Practice: 401 on the dash API",
       "a": "No cookie → no JSON.",
       "code": "if (!req.session.userId) return res.status(401).json({ error: \"login\" });"
+    },
+    {
+      "id": 19,
+      "level": "beginner",
+      "q": "WHERE vs HAVING?",
+      "a": "WHERE filters rows before the group. HAVING filters groups after GROUP BY. You cannot put SUM(amount) in WHERE.",
+      "code": "SELECT region, SUM(amount)\nFROM sales\nWHERE sold_on >= '2026-01-01'  -- row filter\nGROUP BY region\nHAVING SUM(amount) > 1000;  -- group filter",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 20,
+      "level": "beginner",
+      "q": "INNER JOIN vs LEFT JOIN?",
+      "a": "INNER: only matching pairs. LEFT: every left row, NULLs on the right if no match. Use LEFT when you must keep customers with zero sales.",
+      "code": "SELECT c.name, SUM(s.amount)\nFROM customers c\nLEFT JOIN sales s ON s.customer_id = c.id\nGROUP BY c.name;",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 21,
+      "level": "beginner",
+      "q": "What does GROUP BY do?",
+      "a": "It collapses rows that share a key into one output row. Non-grouped columns must be aggregated (SUM, COUNT). If you SELECT region, amount without an aggregate, SQL will complain (or pick a random amount).",
+      "code": "SELECT region, SUM(amount) AS total\nFROM sales\nGROUP BY region;",
+      "ask": "Most asked · Amazon · Microsoft · Google"
+    },
+    {
+      "id": 22,
+      "level": "intermediate",
+      "q": "What is a window function?",
+      "a": "An aggregate that does not collapse rows. SUM(amount) OVER (PARTITION BY region) gives a running or group total next to each sale.",
+      "code": "SELECT id, region, amount,\n       SUM(amount) OVER (PARTITION BY region) AS region_total\nFROM sales;",
+      "ask": "Most asked · Amazon · Google · Meta"
+    },
+    {
+      "id": 23,
+      "level": "beginner",
+      "q": "OLTP vs OLAP / warehouse?",
+      "a": "OLTP is the checkout box — fast small writes. OLAP / warehouse is the report box — big scans and GROUP BY. Do not run the CEO dashboard on the checkout primary.",
+      "code": "-- app writes → OLTP\n-- SELECT region, SUM(amount) → replica or warehouse",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 24,
+      "level": "beginner",
+      "q": "Primary key vs foreign key?",
+      "a": "A primary key uniquely names a row (users.id). A foreign key says this value must exist in the other table (todos.user_id → users.id). That is how you keep orphan todos from appearing.",
+      "code": "user_id INTEGER REFERENCES users(id)",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 25,
+      "level": "beginner",
+      "q": "How does NULL work in SQL?",
+      "a": "NULL means unknown. NULL = NULL is not true. Use IS NULL. SUM skips NULL. COUNT(col) skips NULL, COUNT(*) counts rows.",
+      "code": "SELECT SUM(COALESCE(amount, 0)) FROM sales;\nSELECT * FROM sales WHERE region IS NULL;",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 26,
+      "level": "intermediate",
+      "q": "When does an index not help?",
+      "a": "A query that reads most of the table, or a function on the column (WHERE LOWER(email) = …) that the index cannot use. Also tiny tables. Measure EXPLAIN before you add ten indexes.",
+      "code": "EXPLAIN SELECT * FROM sales WHERE region = 'west';",
+      "ask": "Most asked · Amazon · Google"
     }
   ]
 };

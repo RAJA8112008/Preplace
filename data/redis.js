@@ -3,6 +3,10 @@ window.PREP_DATA["redis"] = {
   "kind": "design",
   "notes": [
     {
+      "title": "Before you add Redis",
+      "body": "Before you use this\nYou already need a real database for users and orders (Postgres or Mongo). Redis is the extra fast shelf next to it, not instead of it. Install Redis locally or grab a free cloud URL. Default port is 6379. Learn three commands first: GET, SET, and EX (how many seconds the key may live).\n\nWhy we use it\nThe same profile or session is read thousands of times. Hitting disk SQL for every read is slow and expensive. Redis keeps that hot copy in RAM (often under 1 ms) and every API server can see the same key. We also use it to count login tries, hold a shopping cart for a day, and push a tiny job list.\n\nWhen to pick this\nCache, sessions, rate limits, leaderboards, short locks, pub/sub. Not the only copy of money, users, or legal documents. A FLUSHALL should be annoying, not a company-ending event."
+    },
+    {
       "title": "What Redis is",
       "layers": [
         [
@@ -113,7 +117,7 @@ window.PREP_DATA["redis"] = {
         "SQL",
         "SET EX 120"
       ],
-      "desc": "Definition. The API checks Redis before Postgres.\n\nHow it works. A hit returns JSON immediately. A miss loads the row, stores it for 120 seconds, then returns.\n\nOperational risk. Updating the user name in SQL without DEL user:1 shows the old name until TTL ends.",
+      "desc": "Before you use this\nThe user row already lives in Postgres. Redis is empty until the first read. You need a key name (user:1) and a TTL in seconds.\n\nWhat this is\nCache-aside: the API checks Redis before Postgres.\n\nWhy we use it\nThe same profile is read on every page. Hitting SQL each time is slow. A 120-second copy in RAM makes the page feel instant and protects the database.\n\nWhat the code is doing\nGET user:id. A hit parses JSON and returns. A miss loads the row, SET EX 120, then returns. Next calls skip SQL until the key dies.\n\nWatch out\nUpdating the user name in SQL without DEL user:1 shows the old name until TTL ends.",
       "code": "async function getUser(id) {\n  const key = \"user:\" + id;\n  const hit = await redis.get(key);\n  if (hit) return JSON.parse(hit);\n  const row = await db.users.find(id);\n  if (!row) return null;\n  await redis.set(key, JSON.stringify(row), \"EX\", 120);\n  return row;\n}"
     },
     {
@@ -124,13 +128,13 @@ window.PREP_DATA["redis"] = {
         "UPDATE sql",
         "DEL user:1"
       ],
-      "desc": "Definition. A write must change the source of truth and drop the stale cache key.\n\nHow it works. Update Postgres first. Then DEL the key so the next read refills from SQL.\n\nOperational risk. Deleting before the commit can refill Redis with the old row.",
+      "desc": "Before you use this\nYou already cache with SET EX. Now you change the user. The database is still the truth.\n\nWhat this is\nA write must change the source of truth and drop the stale cache key.\n\nWhy we use it\nWithout DEL, users see the old name for up to 120 seconds. Invalidation is why a cache is safe to add.\n\nWhat the code is doing\nUpdate Postgres first. Then DEL user:id so the next GET misses and refills from SQL.\n\nWatch out\nDeleting before the commit can refill Redis with the old row.",
       "code": "async function updateUser(id, patch) {\n  await db.users.update(id, patch);\n  await redis.del(\"user:\" + id);\n}"
     },
     {
       "title": "Session with TTL",
       "lang": "js",
-      "desc": "Definition. A session is a random id that points at the logged-in user.\n\nHow it works. After login, SET session:<token> to the user id with EX 86400 (one day). Each request GETs that key. Logout DELs it. Sliding sessions can EXPIRE again on activity.\n\nOperational risk. A token without TTL lives until Redis evicts it.",
+      "desc": "Before you use this\nThe user table stays in SQL. You already checked the password with bcrypt. Now you need something the browser can send on the next request.\n\nWhat this is\nA session is a random id that points at the logged-in user.\n\nWhy we use it\nEvery API process can GET the same key. An in-memory Map on one Node process is invisible to the others. TTL logs the person out after a day without a cron job.\n\nWhat the code is doing\nAfter login, SET session:token to the user id with EX 86400. Each request GETs that key. Logout DELs it.\n\nWatch out\nA guessable token is a stolen login. A token without TTL lives until Redis evicts it.",
       "code": "await redis.set(\"session:\" + token, userId, \"EX\", 86400);\nconst userId = await redis.get(\"session:\" + token);"
     },
     {
@@ -142,19 +146,19 @@ window.PREP_DATA["redis"] = {
         "EXPIRE first time",
         "if n > 100 → 429"
       ],
-      "desc": "Definition. Count requests per user per minute in Redis so every API replica shares the same budget.\n\nHow it works. INCR creates the key at 1. EXPIRE on n === 1 starts the window. If n > 100, reject.\n\nOperational risk. Forgetting EXPIRE leaves the counter forever and blocks the user.",
+      "desc": "Before you use this\nLogin and other public routes get guessed. One Node process counting in a Map fails when you run four processes — the attacker gets 4x tries.\n\nWhat this is\nCount requests per user per minute in Redis so every API replica shares the same budget.\n\nWhy we use it\nWe use Redis INCR because it is atomic and shared. The 101st try in that minute is 429 from any server.\n\nWhat the code is doing\nINCR creates the key at 1. EXPIRE on n === 1 starts the 60s window. If n > 100, reject.\n\nWatch out\nForgetting EXPIRE leaves the counter forever and blocks the user.",
       "code": "async function allow(userId) {\n  const key = \"rl:\" + userId;\n  const n = await redis.incr(key);\n  if (n === 1) await redis.expire(key, 60);\n  return n <= 100;\n}"
     },
     {
       "title": "Simple queue with a list",
       "lang": "js",
-      "desc": "Definition. LPUSH adds work. BRPOP waits for work. That is a tiny queue.\n\nHow it works. The API pushes a job JSON. A worker blocks on BRPOP and processes one job.\n\nOperational risk. If the worker crashes after pop and before finish, the job is gone. Use Streams or a real queue when loss is not allowed.",
+      "desc": "Before you use this\nSending email inside the HTTP request makes the user wait and can time out. You need a worker process that can run later.\n\nWhat this is\nLPUSH adds work. BRPOP waits for work. That is a tiny queue.\n\nWhy we use it\nThe API returns 202 immediately. The worker pops jobs when it is free. Redis is shared, so any worker box can help.\n\nWhat the code is doing\nThe API pushes a job JSON. A worker blocks on BRPOP and processes one job.\n\nWatch out\nIf the worker crashes after pop and before finish, the job is gone. Use Streams or SQS when loss is not allowed.",
       "code": "await redis.lpush(\"mail:jobs\", JSON.stringify({ to: \"a@b.com\" }));\nconst job = await redis.brpop(\"mail:jobs\", 0);"
     },
     {
       "title": "Leaderboard with a sorted set",
       "lang": "js",
-      "desc": "Definition. A ZSET stores members with scores. ZINCRBY adds points. ZREVRANGE reads the top.\n\nHow it works. Player names are members. Scores are points. Redis keeps them ordered.\n\nOperational risk. Using a SQL ORDER BY on every page refresh when the table is huge.",
+      "desc": "Before you use this\nYou already have players and scores. A SQL ORDER BY on every refresh gets expensive when the table is huge.\n\nWhat this is\nA sorted set stores members with scores. ZINCRBY adds points. ZREVRANGE reads the top.\n\nWhy we use it\nRedis keeps the list ordered in memory. Top-10 is one command, not a full table sort.\n\nWhat the code is doing\nPlayer names are members. Scores are points. zincrby adds 10 to ada. zrevrange 0 9 is the leaderboard.\n\nWatch out\nThis is a live ranking, not the only copy of money. Persist the real score in SQL if it matters.",
       "code": "await redis.zincrby(\"game:scores\", 10, \"ada\");\nconst top = await redis.zrevrange(\"game:scores\", 0, 9, \"WITHSCORES\");"
     }
   ],
@@ -163,7 +167,7 @@ window.PREP_DATA["redis"] = {
       "id": 1,
       "level": "beginner",
       "q": "What is Redis?",
-      "a": "Definition. Redis is an in-memory key-value store used as a cache, session store, counter, and small queue.\n\nHow it works. Data lives in RAM. Commands like GET and SET are extremely fast.\n\nOperational risk. Treating Redis as the only database for orders or money."
+      "a": "Before you use this\nYou already need Postgres or Mongo for users and orders. Redis is the extra fast shelf. Install it or use a cloud URL. Port 6379. Learn GET, SET, and EX first.\n\nWhat this is\nRedis is an in-memory key-value store used as a cache, session store, counter, and small queue.\n\nWhy we use it\nThe same hot read should not hit disk a thousand times. Every API server can see the same key. TTL expires sessions and rate-limit windows without a cron.\n\nWhat happens\nData lives in RAM. GET and SET are often under 1 ms. You still write the truth to SQL or Mongo. On a cache miss you load the database and SET EX.\n\nWatch out\nTreating Redis as the only database for orders or money. A restart can wipe a cache — that must not wipe accounts."
     },
     {
       "id": 2,

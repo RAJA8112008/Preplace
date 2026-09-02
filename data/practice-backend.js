@@ -3,6 +3,10 @@ window.PREP_DATA["practice-backend"] = {
   "kind": "practice",
   "notes": [
     {
+      "title": "Most asked",
+      "body": "After the hands-on labs, open questions tagged Most asked. Those are the interview questions Amazon, Google, Meta, and Microsoft repeat. Same easy comments on the right of the code."
+    },
+    {
       "title": "How to use this lab",
       "body": "Express functions with easy comments on the right. Run with node. Hash passwords. Check roles on the server."
     },
@@ -199,6 +203,134 @@ window.PREP_DATA["practice-backend"] = {
       "q": "Practice: health check",
       "a": "A cheap GET so the host knows the process is up.",
       "code": "app.get(\"/health\", function (req, res) {\n  res.json({ ok: true });  // I am alive\n});"
+    },
+    {
+      "id": 19,
+      "level": "beginner",
+      "q": "What is REST? Name the verbs and status codes.",
+      "a": "GET reads (200). POST creates (201). PUT replaces. PATCH changes some fields. DELETE removes (204). 400 bad input, 401 login, 403 forbidden, 404 missing, 500 server bug.",
+      "code": "app.get(\"/todos\", list);  // 200\napp.post(\"/todos\", create);  // 201\napp.patch(\"/todos/:id\", update);\napp.delete(\"/todos/:id\", remove);  // 204",
+      "ask": "Most asked · Amazon · Microsoft · Google"
+    },
+    {
+      "id": 20,
+      "level": "intermediate",
+      "q": "JWT vs session cookie?",
+      "a": "A session stores login on the server and puts an id in a cookie. A JWT is a signed ticket the client sends back. Sessions are easy to revoke. JWTs scale without server memory but need a short life or a block-list to log out everywhere.",
+      "code": "req.session.userId = user.id;  // server remembers\nconst token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);  // client remembers",
+      "ask": "Most asked · Amazon · Google · Meta"
+    },
+    {
+      "id": 21,
+      "level": "beginner",
+      "q": "401 vs 403 vs 404?",
+      "a": "401: we do not know who you are — log in. 403: we know you, you may not. 404: that id is not here (sometimes also used so we do not leak that a row exists).",
+      "code": "res.status(401).json({ error: \"login\" });\nres.status(403).json({ error: \"forbidden\" });\nres.status(404).json({ error: \"missing\" });",
+      "ask": "Most asked · Amazon · Microsoft · Google"
+    },
+    {
+      "id": 22,
+      "level": "intermediate",
+      "q": "Hashing vs encryption?",
+      "a": "Hashing is one-way. You cannot get the password back. Encryption is two-way with a key. Passwords are hashed (bcrypt). Bank numbers may be encrypted so you can decrypt them later.",
+      "code": "const hash = await bcrypt.hash(password, 10);  // one way — store this\nconst ok = await bcrypt.compare(password, hash);  // check at login\n// encryption would need a key to turn ciphertext back into the original",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 23,
+      "level": "intermediate",
+      "q": "What is SQL injection and how do you stop it?",
+      "a": "If you glue user text into SQL, they can close the quote and run their own command. Always use parameters ($1, ?) so the driver sends data separately from the query.",
+      "code": "await db.query(\"SELECT * FROM users WHERE email = $1\", [email]);  // safe\n// \"SELECT * FROM users WHERE email = '\" + email + \"'\"  // never",
+      "ask": "Most asked · Amazon · Microsoft · Google"
+    },
+    {
+      "id": 24,
+      "level": "beginner",
+      "q": "What is Express middleware?",
+      "a": "A function (req, res, next) that runs before the route. auth checks the token then calls next(). The last function is the handler. Order matters.",
+      "code": "function auth(req, res, next) {\n  req.user = readToken(req);  // or 401\n  next();  // go to the next function\n}\napp.get(\"/me\", auth, meHandler);",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 25,
+      "level": "intermediate",
+      "q": "What is a database index?",
+      "a": "An index is a lookup structure, like a book index. WHERE user_id = 9 becomes a jump, not a full table scan. Indexes speed reads and slow writes a little. Index the columns you filter on.",
+      "code": "CREATE INDEX todos_user ON todos(user_id);  -- list-my-todos gets fast\nSELECT * FROM todos WHERE user_id = $1;",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 26,
+      "level": "intermediate",
+      "q": "What is ACID?",
+      "a": "Atomic: all writes in the transaction happen, or none. Consistent: rules like foreign keys stay true. Isolated: two checkouts do not mix. Durable: after COMMIT, a crash does not lose the row.",
+      "code": "await db.query(\"BEGIN\");\nawait db.query(\"UPDATE accounts SET bal = bal - 10 WHERE id = 1\");\nawait db.query(\"UPDATE accounts SET bal = bal + 10 WHERE id = 2\");\nawait db.query(\"COMMIT\");  // both or neither",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 27,
+      "level": "intermediate",
+      "q": "How do you rate-limit login?",
+      "a": "Count attempts per IP (or email) in Redis. If the count is high, return 429. Expire the key so the window resets.",
+      "code": "const n = await redis.incr(\"login:\" + ip);\nif (n === 1) await redis.expire(\"login:\" + ip, 60);  // 60s window\nif (n > 10) return res.status(429).json({ error: \"slow down\" });",
+      "ask": "Most asked · Amazon · Uber · Google"
+    },
+    {
+      "id": 28,
+      "level": "intermediate",
+      "q": "What cookie flags matter?",
+      "a": "HttpOnly: JS cannot read it (helps XSS). Secure: only HTTPS. SameSite=Lax or Strict: helps CSRF. Path and Domain limit where it is sent.",
+      "code": "res.cookie(\"sid\", sid, { httpOnly: true, secure: true, sameSite: \"lax\" });",
+      "ask": "Most asked · Google · Meta · Microsoft"
+    },
+    {
+      "id": 29,
+      "level": "intermediate",
+      "q": "What does idempotent mean?",
+      "a": "Repeating the request does not create a second effect. GET, PUT, DELETE are idempotent. POST /todos twice can make two rows. Use an Idempotency-Key for payments and creates.",
+      "code": "const key = req.headers[\"idempotency-key\"];\nconst cached = await redis.get(\"idemp:\" + key);\nif (cached) return res.json(JSON.parse(cached));  // same answer, no second row",
+      "ask": "Most asked · Amazon · Stripe · Google"
+    },
+    {
+      "id": 30,
+      "level": "advanced",
+      "q": "What is the N+1 query problem?",
+      "a": "You load 50 todos (1 query), then for each todo you load the user (50 queries). That is 51 trips. Fix: JOIN, or one IN query for all user ids.",
+      "code": "const { rows } = await db.query(\n  \"SELECT t.*, u.email FROM todos t JOIN users u ON u.id = t.user_id\"  // one trip\n);",
+      "ask": "Most asked · Amazon · Meta · Microsoft"
+    },
+    {
+      "id": 31,
+      "level": "beginner",
+      "q": "Horizontal vs vertical scaling?",
+      "a": "Vertical: a bigger machine. Horizontal: more machines behind a load balancer. Vertical is simple until you hit a ceiling. Horizontal needs stateless apps (JWT or shared session store).",
+      "code": "// many Node processes behind Nginx — horizontal\n// each process must not keep the only copy of login in its own memory",
+      "ask": "Most asked · Amazon · Google"
+    },
+    {
+      "id": 32,
+      "level": "intermediate",
+      "q": "How does HTTPS work in one minute?",
+      "a": "The client and server do a TLS handshake. The server shows a certificate. They agree on keys. After that, HTTP bytes are encrypted. Nginx or a load balancer often terminates TLS, then talks HTTP to Node on localhost.",
+      "code": "listen 443 ssl;  # TLS ends here\nlocation / { proxy_pass http://127.0.0.1:3000; }  # app sees HTTP on loopback",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 33,
+      "level": "beginner",
+      "q": "Why bcrypt and not MD5 for passwords?",
+      "a": "MD5 is fast and broken for passwords. bcrypt is slow on purpose and salts each hash so two users with 'secret' do not look the same. Slow hashes make guessing expensive.",
+      "code": "const hash = await bcrypt.hash(password, 10);  // slow + salt\n// md5(password)  // never for passwords",
+      "ask": "Most asked · Amazon · Microsoft · Google"
+    },
+    {
+      "id": 34,
+      "level": "beginner",
+      "q": "Why not trust req.body.role?",
+      "a": "Anyone can POST { role: \"admin\" }. Set role in your database on signup. Promote admins by a trusted process, not the public form.",
+      "code": "const user = { email, hash, role: \"user\" };  // ignore body.role",
+      "ask": "Most asked · Amazon · Microsoft"
     }
   ]
 };

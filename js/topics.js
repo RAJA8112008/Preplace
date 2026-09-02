@@ -35,16 +35,18 @@ window.PREP_TOPICS = [
   { id: "nginx", title: "Nginx", category: "DevOps", icon: "🟩", blurb: "Reverse proxy, static files, HTTPS, load balancing, and VPS layouts." },
   { id: "hosting", title: "Vercel, Render & Hosting", category: "DevOps", icon: "🚀", blurb: "Vercel, Render, Netlify, Railway — Git to HTTPS, env vars, and split UI/API." },
   { id: "messaging", title: "Queues & Kafka", category: "Backend", icon: "📬", blurb: "RabbitMQ, Kafka, SQS, workers, retries, and dead-letter queues." },
-  { id: "practice-frontend", title: "Frontend practice", category: "Practice", icon: "🧪", blurb: "Todo, CRUD, fake login, roles, and HTTPS fetch — easy commented code." },
-  { id: "practice-backend", title: "Backend practice", category: "Practice", icon: "🧪", blurb: "REST CRUD, JWT login, admin checks, cookies, and HTTPS behind Nginx." },
-  { id: "practice-mern", title: "MERN practice", category: "Practice", icon: "🧪", blurb: "React + Express + Mongo todo app: signup, JWT, owner delete, CORS, HTTPS." },
-  { id: "practice-fullstack", title: "Full stack practice", category: "Practice", icon: "🧪", blurb: "React + Express + SQL: users, todos, sessions, owner checks, HTTPS cookies." },
-  { id: "practice-devops", title: "DevOps practice", category: "Practice", icon: "🧪", blurb: "Dockerize a todo API, Nginx TLS, health checks, and a CI test job." },
-  { id: "practice-cloud", title: "Cloud practice", category: "Practice", icon: "🧪", blurb: "S3 + HTTPS, Lambda, RDS todos, IAM, Cognito/JWT, and security groups." },
-  { id: "practice-ml", title: "ML practice", category: "Practice", icon: "🧪", blurb: "Train, save, predict API, API key, retrain role, and HTTPS deploy." },
-  { id: "practice-data", title: "Data practice", category: "Practice", icon: "🧪", blurb: "SQL CRUD reports, region auth, pandas export, and HTTPS dashboards." },
-  { id: "practice-datastores", title: "Data stores practice", category: "Practice", icon: "🧪", blurb: "The same todo in SQL, Mongo, Redis sessions, and a tiny vector search." },
-  { id: "practice-sysdesign", title: "System design practice", category: "Practice", icon: "🧪", blurb: "Code the drawing: shortener, rate limit, feed fan-out, HTTPS at the edge." }
+  { id: "practice-web", title: "JS & Web interview", category: "Practice", icon: "🌐", blurb: "var/let/const, event loop, HTTP, DNS, CORS, JWT, XSS — answers plus easy commented examples." },
+  { id: "practice-dom", title: "Card & DOM projects", category: "Practice", icon: "🃏", blurb: "Show cards, click listeners, delegation, add/delete, search, modal, localStorage." },
+  { id: "practice-frontend", title: "Frontend practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked interviews: CORS, XSS, JWT storage, React keys, HTTPS." },
+  { id: "practice-backend", title: "Backend practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: REST, JWT vs session, 401/403, SQL injection, ACID." },
+  { id: "practice-mern", title: "MERN practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: MERN flow, CORS, Mongo vs SQL, JWT, ObjectId." },
+  { id: "practice-fullstack", title: "Full stack practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: click-to-SQL, XSS vs CSRF, cache-aside, deploy." },
+  { id: "practice-devops", title: "DevOps practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: CI vs CD, containers, blue-green, health, secrets." },
+  { id: "practice-cloud", title: "Cloud practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: IAM, VPC, S3 vs EBS, EC2 vs Lambda, Multi-AZ." },
+  { id: "practice-ml", title: "ML practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: overfit, precision/recall, bias/variance, leakage." },
+  { id: "practice-data", title: "Data practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: WHERE vs HAVING, JOINs, GROUP BY, OLTP vs warehouse." },
+  { id: "practice-datastores", title: "Data stores practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: SQL vs NoSQL, Redis, CAP, replica vs shard, vectors." },
+  { id: "practice-sysdesign", title: "System design practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: shortener, rate limiter, CAP, cache, CDN, queues." }
 ];
 
 window.PREP_DATA = window.PREP_DATA || {};

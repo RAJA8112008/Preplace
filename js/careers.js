@@ -9,6 +9,8 @@ window.PREP_CAREERS = [
     steps: [
       { topic: "htmlcss", learn: "HTML & CSS", why: "This is the page itself: text, layout, colors, mobile view." },
       { topic: "javascript", learn: "JavaScript", why: "Makes the page do things: clicks, lists, talking to a server." },
+      { topic: "practice-web", learn: "JS & Web interview", why: "var/let/const, closures, event loop, HTTP, DNS, CORS — with examples." },
+      { topic: "practice-dom", learn: "Card & DOM projects", why: "Paint a card grid, listeners, delegation, add/delete, search, modal." },
       { topic: "git", learn: "Git & GitHub", why: "Save your work and share it. Every job asks for this." },
       { topic: "react", learn: "React", why: "The common way to build real frontend apps in jobs." },
       { topic: "typescript", learn: "TypeScript", why: "JavaScript with types. Helps you make fewer mistakes." },
@@ -20,7 +22,8 @@ window.PREP_CAREERS = [
       "Responsive design (phone and laptop)",
       "Accessibility: labels, keyboard, contrast",
       "One project: a personal site + a small React app",
-      "Finish the Practice labs: todo → localStorage → login screen → HTTPS fetch"
+      "Finish the Practice labs: todo → localStorage → login screen → HTTPS fetch",
+      "Card & DOM projects: show all cards → delegation → add/delete → modal"
     ]
   },
   {
@@ -32,6 +35,7 @@ window.PREP_CAREERS = [
     time: "5–8 months",
     steps: [
       { topic: "javascript", learn: "JavaScript", why: "Same language you will use in Node.js." },
+      { topic: "practice-web", learn: "JS & Web interview", why: "HTTP methods, status codes, cookies, CORS, TCP, DNS." },
       { topic: "git", learn: "Git & GitHub", why: "Work with a team and keep history." },
       { topic: "nodeexpress", learn: "Node.js & Express", why: "Create APIs: GET, POST, login, errors." },
       { topic: "sql", learn: "SQL & Databases", why: "Store users and data in tables. Most companies use SQL." },
@@ -62,6 +66,8 @@ window.PREP_CAREERS = [
     steps: [
       { topic: "htmlcss", learn: "HTML & CSS", why: "You still need a real page, even in React." },
       { topic: "javascript", learn: "JavaScript", why: "Used in both React and Node. Learn this well." },
+      { topic: "practice-web", learn: "JS & Web interview", why: "Promises, this, REST, JWT, XSS, CSRF — the questions after JS." },
+      { topic: "practice-dom", learn: "Card & DOM projects", why: "The UI of a MERN app is still cards, clicks, and the DOM." },
       { topic: "git", learn: "Git & GitHub", why: "Save frontend and backend in one repo." },
       { topic: "react", learn: "React", why: "The 'MERN' R. Build the user interface." },
       { topic: "nodeexpress", learn: "Node.js & Express", why: "The 'E' and 'N'. Build the API." },
@@ -88,6 +94,8 @@ window.PREP_CAREERS = [
     steps: [
       { topic: "htmlcss", learn: "HTML & CSS", why: "Start with the page." },
       { topic: "javascript", learn: "JavaScript", why: "Language for both sides of the stack." },
+      { topic: "practice-web", learn: "JS & Web interview", why: "Full JS + HTTP + DNS + browser security sheet with examples." },
+      { topic: "practice-dom", learn: "Card & DOM projects", why: "Build the card grid before you wrap it in React." },
       { topic: "git", learn: "Git & GitHub", why: "Daily tool for every developer." },
       { topic: "react", learn: "React", why: "Frontend of most full stack job posts." },
       { topic: "typescript", learn: "TypeScript", why: "Used in serious full stack teams." },

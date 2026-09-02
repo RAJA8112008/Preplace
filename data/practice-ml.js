@@ -3,6 +3,10 @@ window.PREP_DATA["practice-ml"] = {
   "kind": "practice",
   "notes": [
     {
+      "title": "Most asked",
+      "body": "After the hands-on labs, open questions tagged Most asked. Those are the interview questions Amazon, Google, Meta, and Microsoft repeat. Same easy comments on the right of the code."
+    },
+    {
       "title": "How to use this lab",
       "body": "Train → save → predict. Then wrap predict in a small HTTPS API with a key."
     },
@@ -191,6 +195,70 @@ window.PREP_DATA["practice-ml"] = {
       "q": "Spam vs ham labels",
       "a": "0/1 or spam/ham. Keep a codebook.",
       "code": "y = [0, 0, 1, 1]  # 1 = spam"
+    },
+    {
+      "id": 19,
+      "level": "beginner",
+      "q": "What is overfitting?",
+      "a": "The model memorizes the training rows and fails on new rows. You spot it when train score is high and test score is low. Fix: more data, simpler model, regularization, stop early.",
+      "code": "print(m.score(Xt, yt), m.score(Xv, yv))  # train vs holdout",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 20,
+      "level": "beginner",
+      "q": "Train / validation / test — why three?",
+      "a": "Train: learn. Validation: pick hyperparameters. Test: one final number you did not tune on. If you tune on the test set, it is no longer a fair exam.",
+      "code": "Xt, Xv, yt, yv = train_test_split(X, y, test_size=0.25, random_state=0)",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 21,
+      "level": "intermediate",
+      "q": "Precision vs recall?",
+      "a": "Precision: of the rows we called spam, how many were spam. Recall: of all real spam, how many we caught. A medical screen often wants high recall. A spam filter that hides real mail wants high precision.",
+      "code": "# precision = tp / (tp + fp)\n# recall    = tp / (tp + fn)",
+      "ask": "Most asked · Amazon · Google · Meta"
+    },
+    {
+      "id": 22,
+      "level": "intermediate",
+      "q": "Bias vs variance?",
+      "a": "High bias: the model is too simple (underfit). High variance: the model is too wiggly (overfit). You trade them. More data lowers variance. A simpler model lowers variance and can raise bias.",
+      "code": "# underfit — raise model capacity\n# overfit  — more data or a simpler model",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 23,
+      "level": "beginner",
+      "q": "Supervised vs unsupervised?",
+      "a": "Supervised has labels (spam / ham). Unsupervised has no labels (cluster customers). Most interview 'predict X' stories are supervised.",
+      "code": "X, y = features, labels  # supervised\n# kmeans.fit(X)  # unsupervised — no y",
+      "ask": "Most asked · Amazon · Microsoft · Google"
+    },
+    {
+      "id": 24,
+      "level": "beginner",
+      "q": "What is a confusion matrix?",
+      "a": "A 2x2 (or NxN) of predicted vs real. True positive, false positive, true negative, false negative. Accuracy alone hides a 99% 'not spam' model that never catches spam.",
+      "code": "#            predicted no   predicted yes\n# real no        TN              FP\n# real yes       FN              TP",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 25,
+      "level": "intermediate",
+      "q": "Why scale features?",
+      "a": "Distance-based models and gradient methods treat a salary of 90000 as 'bigger' than age 30 unless you scale. Trees care less. Fit the scaler on train only, then transform test.",
+      "code": "from sklearn.preprocessing import StandardScaler\nsc = StandardScaler().fit(Xt)\nXt2, Xv2 = sc.transform(Xt), sc.transform(Xv)",
+      "ask": "Most asked · Amazon · Google"
+    },
+    {
+      "id": 26,
+      "level": "advanced",
+      "q": "What is data leakage?",
+      "a": "The model saw information it would not have at predict time — a future column, the test set, or a target-derived feature. Scores look magical, then production dies. Split first, then fit.",
+      "code": "# split first\nXt, Xv, yt, yv = train_test_split(X, y)\n# then fit scaler / model on Xt only",
+      "ask": "Most asked · Amazon · Google · Meta"
     }
   ]
 };

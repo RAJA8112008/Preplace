@@ -3,6 +3,10 @@ window.PREP_DATA["practice-frontend"] = {
   "kind": "practice",
   "notes": [
     {
+      "title": "Most asked",
+      "body": "After the hands-on labs, open questions tagged Most asked. Those are the interview questions Amazon, Google, Meta, and Microsoft repeat. Same easy comments on the right of the code."
+    },
+    {
       "title": "How to use this lab",
       "body": "Each problem is a small complete function. Code is on the left. The green text on the right is the easy meaning of that same line. Copy it, run it, then hide it and write it again."
     },
@@ -199,6 +203,134 @@ window.PREP_DATA["practice-frontend"] = {
       "q": "Practice: CORS from the UI side",
       "a": "Call same-origin /api and let Vite proxy it.",
       "code": "async function loadViaProxy() {\n  const res = await fetch(\"/api/todos\");  // same origin — Vite sends this to :3000\n  if (!res.ok) throw new Error(\"load failed\");\n  return res.json();\n}"
+    },
+    {
+      "id": 19,
+      "level": "beginner",
+      "q": "What is authentication vs authorization?",
+      "a": "Authentication answers who you are (login). Authorization answers what you may do (admin can delete, user cannot). A token proves login. A role check proves permission. The UI can hide a button. The server must still say 403.",
+      "code": "function canDelete(user) {\n  if (!user) return false;  // not logged in — authentication\n  return user.role === \"admin\";  // authorization\n}",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 20,
+      "level": "beginner",
+      "q": "localStorage vs sessionStorage vs cookies?",
+      "a": "localStorage stays until you clear it. sessionStorage dies when the tab closes. Cookies go to the server on each request. For a login ticket, an httpOnly cookie is safer than localStorage because JS (and XSS) cannot read it.",
+      "code": "localStorage.setItem(\"theme\", \"dark\");  // stays after refresh\nsessionStorage.setItem(\"draft\", \"hello\");  // gone when the tab closes\ndocument.cookie = \"sid=abc; Secure; HttpOnly; SameSite=Lax\";  // server can read this",
+      "ask": "Most asked · Amazon · Google · Meta"
+    },
+    {
+      "id": 21,
+      "level": "intermediate",
+      "q": "What is CORS and why does localhost:5173 fail?",
+      "a": "The browser blocks a page on one origin from reading another origin. Origin is scheme + host + port. :5173 and :3000 are different. Fix it on the server (Allow-Origin) or proxy /api in Vite so the browser sees one origin.",
+      "code": "app.use(cors({ origin: \"http://localhost:5173\" }));  // server allows this UI\n// or Vite: server.proxy[\"/api\"] = \"http://localhost:3000\"",
+      "ask": "Most asked · Amazon · Microsoft · Netflix"
+    },
+    {
+      "id": 22,
+      "level": "intermediate",
+      "q": "Why is JWT in localStorage risky?",
+      "a": "Any XSS script can read localStorage and steal the token. An httpOnly cookie cannot be read by JS. If you must use localStorage, lock down XSS: no innerHTML of user text, Content-Security-Policy, short token life.",
+      "code": "// safer: server sets httpOnly cookie\nres.cookie(\"sid\", sid, { httpOnly: true, secure: true, sameSite: \"lax\" });\n// riskier: JS can read this, so XSS can steal it\nlocalStorage.setItem(\"token\", jwt);",
+      "ask": "Most asked · Google · Meta · Microsoft"
+    },
+    {
+      "id": 23,
+      "level": "intermediate",
+      "q": "What is XSS?",
+      "a": "Cross-site scripting means attacker text runs as JS in your page. If you put user input into innerHTML, they can steal cookies or tokens. Use textContent, or a library that escapes HTML.",
+      "code": "el.textContent = userName;  // safe — shown as text\n// el.innerHTML = userName;  // dangerous if userName has <script>",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 24,
+      "level": "beginner",
+      "q": "What is event bubbling and delegation?",
+      "a": "A click on a child rises to the parent (bubble). Delegation means one listener on the parent handles many children. Useful for a todo list that grows.",
+      "code": "list.addEventListener(\"click\", function (e) {\n  const btn = e.target.closest(\"[data-id]\");  // which row?\n  if (!btn) return;\n  removeTodo(Number(btn.dataset.id));  // one listener for every row\n});",
+      "ask": "Most asked · Amazon · Microsoft · Adobe"
+    },
+    {
+      "id": 25,
+      "level": "intermediate",
+      "q": "useState vs useRef in React?",
+      "a": "useState stores a value and redraws the screen when it changes. useRef stores a value and does not redraw. Use state for text the user should see. Use ref for a timer id or a DOM node.",
+      "code": "const [text, setText] = useState(\"\");  // changing this paints again\nconst inputRef = useRef(null);  // no extra paint\ninputRef.current.focus();  // talk to the real input",
+      "ask": "Most asked · Meta · Google · Amazon"
+    },
+    {
+      "id": 26,
+      "level": "beginner",
+      "q": "Why does React need a key on a list?",
+      "a": "key tells React which item is which after the list changes. Using the index breaks when you insert or delete. Use a stable id.",
+      "code": "todos.map((t) => <li key={t.id}>{t.text}</li>);  // stable id, not the index",
+      "ask": "Most asked · Meta · Amazon · Microsoft"
+    },
+    {
+      "id": 27,
+      "level": "intermediate",
+      "q": "Debounce vs throttle?",
+      "a": "Debounce waits until typing stops, then runs once (search box). Throttle runs at most once per window (scroll). Both cut extra work.",
+      "code": "function debounce(fn, ms) {\n  let t;\n  return function (...args) {\n    clearTimeout(t);  // cancel the last wait\n    t = setTimeout(function () { fn.apply(null, args); }, ms);  // run after quiet\n  };\n}",
+      "ask": "Most asked · Amazon · Uber · Adobe"
+    },
+    {
+      "id": 28,
+      "level": "beginner",
+      "q": "Promise vs async/await?",
+      "a": "They are the same idea. await pauses inside an async function until the Promise settles. Use try/catch with await. Use .then when you cannot use await.",
+      "code": "async function load() {\n  try {\n    const res = await fetch(\"/api/todos\");  // wait for the server\n    return res.json();\n  } catch (err) {\n    console.log(\"network failed\");  // await errors land here\n  }\n}",
+      "ask": "Most asked · Amazon · Microsoft · Google"
+    },
+    {
+      "id": 29,
+      "level": "beginner",
+      "q": "What happens when you type a URL?",
+      "a": "DNS finds the IP. TLS (HTTPS) encrypts the pipe. The browser sends an HTTP request. The server answers with HTML or JSON. The browser then asks for CSS, JS, and images, and paints the page.",
+      "code": "async function openHome() {\n  const res = await fetch(\"https://example.com/\");  // DNS + TLS + HTTP\n  const html = await res.text();  // body of the first response\n  console.log(html.slice(0, 40));\n}",
+      "ask": "Most asked · Amazon · Google · Microsoft"
+    },
+    {
+      "id": 30,
+      "level": "beginner",
+      "q": "Controlled vs uncontrolled input?",
+      "a": "Controlled: React state is the value, onChange updates it. Uncontrolled: the DOM holds the value, you read it with a ref. Forms you validate live should be controlled.",
+      "code": "function Box() {\n  const [text, setText] = useState(\"\");  // React owns the value\n  return <input value={text} onChange={(e) => setText(e.target.value)} />;\n}",
+      "ask": "Most asked · Meta · Amazon"
+    },
+    {
+      "id": 31,
+      "level": "intermediate",
+      "q": "How do you protect a React route?",
+      "a": "If there is no token (or /me fails), render Navigate to /login. This is only UX. The API must still return 401 without a ticket.",
+      "code": "function Private({ children }) {\n  if (!localStorage.getItem(\"token\")) return <Navigate to=\"/login\" />;  // bounce guests\n  return children;\n}",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 32,
+      "level": "beginner",
+      "q": "HTTP vs HTTPS?",
+      "a": "HTTPS is HTTP plus TLS encryption. The padlock means the path is encrypted. Login and cookies must use HTTPS. Mixed content is an HTTPS page calling http:// — the browser blocks it.",
+      "code": "fetch(\"https://api.example.com/login\", { method: \"POST\", body: form });  // encrypted\n// fetch(\"http://api.example.com/login\")  // never for a password",
+      "ask": "Most asked · Amazon · Google"
+    },
+    {
+      "id": 33,
+      "level": "beginner",
+      "q": "What is REST?",
+      "a": "REST is a style: URLs name resources, HTTP verbs say the action. GET /todos reads. POST /todos creates. PATCH /todos/1 updates. DELETE /todos/1 removes. Status codes tell how it went.",
+      "code": "app.get(\"/todos\", list);  // Read\napp.post(\"/todos\", create);  // Create\napp.patch(\"/todos/:id\", update);  // Update\napp.delete(\"/todos/:id\", remove);  // Delete",
+      "ask": "Most asked · Amazon · Microsoft"
+    },
+    {
+      "id": 34,
+      "level": "intermediate",
+      "q": "What is a closure? (todo counter)",
+      "a": "A closure is a function that still sees variables from the function that created it. The inner function keeps count even after makeCounter has returned.",
+      "code": "function makeCounter() {\n  let count = 0;  // closed over\n  return function next() {\n    count += 1;  // still sees count\n    return count;\n  };\n}",
+      "ask": "Most asked · Amazon · Google · Microsoft"
     }
   ]
 };
