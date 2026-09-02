@@ -8,6 +8,10 @@
   const starKey = "prepplace-stars-v1";
   const noteKey = "prepplace-notes-v1";
   const streakKey = "prepplace-streak-v1";
+  const accountsKey = "prepplace-accounts-v1";
+  const sessionKey = "prepplace-session-v1";
+  const userDataKey = "prepplace-user-data-v1";
+  const CONTACT = { name: "Raj Kumar", email: "kraj9380286@gmail.com" };
   const COMPANIES = ["Google", "Meta", "Amazon", "Apple", "Microsoft", "Netflix", "Uber", "Adobe"];
   const CODE_LANGS = [
     { id: "javascript", label: "JavaScript" },
@@ -38,13 +42,52 @@
       ).join("")}
     </div>`;
 
-  const loadProgress = () => {
-    try { return JSON.parse(localStorage.getItem(storageKey) || "{}"); }
-    catch { return {}; }
+  const loadJson = (key, fallback) => {
+    try { return JSON.parse(localStorage.getItem(key) || "") || fallback; }
+    catch { return fallback; }
   };
 
-  const saveProgress = (data) => localStorage.setItem(storageKey, JSON.stringify(data));
+  const emptyBundle = () => ({ progress: {}, stars: {}, notes: {}, streak: { count: 0, last: "" } });
 
+  const sessionEmail = () => (localStorage.getItem(sessionKey) || "").trim().toLowerCase();
+  const currentUid = () => sessionEmail() || "guest";
+  const currentUser = () => {
+    const email = sessionEmail();
+    if (!email) return null;
+    return loadJson(accountsKey, {})[email] || null;
+  };
+
+  const migrateGuestOnce = (store) => {
+    if (store.guest) return store;
+    store.guest = {
+      progress: loadJson(storageKey, {}),
+      stars: loadJson(starKey, {}),
+      notes: loadJson(noteKey, {}),
+      streak: loadJson(streakKey, { count: 0, last: "" })
+    };
+    return store;
+  };
+
+  const readStore = () => migrateGuestOnce(loadJson(userDataKey, {}));
+  const writeStore = (store) => localStorage.setItem(userDataKey, JSON.stringify(store));
+
+  const userData = () => {
+    const store = readStore();
+    const uid = currentUid();
+    if (!store[uid]) store[uid] = emptyBundle();
+    return store[uid];
+  };
+
+  const patchUser = (fn) => {
+    const store = readStore();
+    const uid = currentUid();
+    if (!store[uid]) store[uid] = emptyBundle();
+    fn(store[uid]);
+    writeStore(store);
+  };
+
+  const loadProgress = () => userData().progress || {};
+  const saveProgress = (data) => patchUser((u) => { u.progress = data; });
   const doneSet = (topicId) => new Set(loadProgress()[topicId] || []);
 
   const toggleDone = (topicId, qid) => {
@@ -56,32 +99,29 @@
     if (set.has(qid)) bumpStreak();
   };
 
-  const loadJson = (key, fallback) => {
-    try { return JSON.parse(localStorage.getItem(key) || "") || fallback; }
-    catch { return fallback; }
-  };
-
-  const starSet = (topicId) => new Set(loadJson(starKey, {})[topicId] || []);
+  const starSet = (topicId) => new Set((userData().stars || {})[topicId] || []);
   const toggleStar = (topicId, qid) => {
-    const all = loadJson(starKey, {});
-    const set = new Set(all[topicId] || []);
-    if (set.has(qid)) set.delete(qid); else set.add(qid);
-    all[topicId] = [...set];
-    localStorage.setItem(starKey, JSON.stringify(all));
+    patchUser((u) => {
+      const set = new Set((u.stars || {})[topicId] || []);
+      if (set.has(qid)) set.delete(qid); else set.add(qid);
+      u.stars = u.stars || {};
+      u.stars[topicId] = [...set];
+    });
   };
 
   const noteId = (topicId, qid) => `${topicId}:${qid}`;
-  const getNote = (topicId, qid) => loadJson(noteKey, {})[noteId(topicId, qid)] || "";
+  const getNote = (topicId, qid) => (userData().notes || {})[noteId(topicId, qid)] || "";
   const saveNote = (topicId, qid, text) => {
-    const all = loadJson(noteKey, {});
-    all[noteId(topicId, qid)] = text;
-    localStorage.setItem(noteKey, JSON.stringify(all));
+    patchUser((u) => {
+      u.notes = u.notes || {};
+      u.notes[noteId(topicId, qid)] = text;
+    });
   };
 
   const todayStamp = () => new Date().toISOString().slice(0, 10);
-  const readStreak = () => loadJson(streakKey, { count: 0, last: "" });
+  const readStreak = () => userData().streak || { count: 0, last: "" };
   const bumpStreak = () => {
-    const s = readStreak();
+    const s = { ...readStreak() };
     const today = todayStamp();
     if (s.last === today) return;
     const y = new Date();
@@ -89,7 +129,43 @@
     const yesterday = y.toISOString().slice(0, 10);
     s.count = s.last === yesterday ? s.count + 1 : 1;
     s.last = today;
-    localStorage.setItem(streakKey, JSON.stringify(s));
+    patchUser((u) => { u.streak = s; });
+  };
+
+  const randomSalt = () => {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+  };
+
+  const hashPass = async (password, salt) => {
+    const raw = `${salt}:${password}`;
+    if (globalThis.crypto?.subtle) {
+      try {
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
+        return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+      } catch { /* file:// and some browsers skip Web Crypto */ }
+    }
+    let h = 5381n;
+    for (let i = 0; i < raw.length; i += 1) h = (h * 33n) + BigInt(raw.charCodeAt(i));
+    return h.toString(16);
+  };
+
+  const paintAuth = () => {
+    const bar = document.getElementById("authBar");
+    if (!bar) return;
+    const user = currentUser();
+    bar.innerHTML = user
+      ? `<span class="auth-hello">Hi, ${escapeHtml(user.name)}</span>
+         <a class="tab" href="#/contact">Message</a>
+         <button class="tab" type="button" id="logoutBtn">Log out</button>`
+      : `<a class="tab" href="#/login">Log in</a>
+         <a class="tab" href="#/signup">Sign up</a>`;
+    document.getElementById("logoutBtn")?.addEventListener("click", () => {
+      localStorage.removeItem(sessionKey);
+      paintAuth();
+      route();
+    });
   };
 
   const dsaTopics = () => window.PREP_TOPICS.filter((t) => t.id.startsWith("dsa-"));
@@ -174,13 +250,143 @@
     setTimeout(() => { btn.textContent = "Copy"; }, 1200);
   };
 
+  const showAuthError = (msg) => {
+    const el = document.getElementById("authError");
+    if (!el) return;
+    el.hidden = false;
+    el.textContent = msg;
+  };
+
+  const renderAuth = (mode) => {
+    const signup = mode === "signup";
+    const user = currentUser();
+    if (user) {
+      view.innerHTML = `
+        <article class="auth-card">
+          <a class="back-btn" href="#/">← Home</a>
+          <h1>You are signed in</h1>
+          <p>Hi ${escapeHtml(user.name)}. Progress, stars, notes, and your streak are saved under ${escapeHtml(user.email)} on this device.</p>
+          <p><button class="tab" type="button" id="logoutPageBtn">Log out</button></p>
+        </article>`;
+      document.getElementById("logoutPageBtn")?.addEventListener("click", () => {
+        localStorage.removeItem(sessionKey);
+        paintAuth();
+        location.hash = "#/login";
+      });
+      return;
+    }
+
+    view.innerHTML = `
+      <article class="auth-card">
+        <a class="back-btn" href="#/">← Home</a>
+        <h1>${signup ? "Create your account" : "Log in"}</h1>
+        <p>${signup
+          ? "Sign up so marked questions, stars, notes, and your streak stay with your name. Guest progress on this browser is copied into the new account."
+          : "Log in to open the progress saved under your email on this device."}</p>
+        <form id="authForm" class="auth-form">
+          ${signup ? `<label>Your name<input class="auth-field" name="name" required maxlength="40" autocomplete="name" /></label>` : ""}
+          <label>Email<input class="auth-field" name="email" type="email" required autocomplete="email" /></label>
+          <label>Password<input class="auth-field" name="password" type="password" required minlength="6" autocomplete="${signup ? "new-password" : "current-password"}" /></label>
+          <p class="form-error" id="authError" hidden></p>
+          <button class="tab" type="submit">${signup ? "Sign up and keep my progress" : "Log in"}</button>
+        </form>
+        <p class="auth-switch">${signup
+          ? `Already have an account? <a href="#/login">Log in</a>`
+          : `New here? <a href="#/signup">Sign up</a>`}</p>
+        <p class="auth-note">Accounts stay in this browser. There is no PrepPlace server yet, so use the same device to see your progress.</p>
+      </article>`;
+
+    document.getElementById("authForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const email = String(fd.get("email") || "").trim().toLowerCase();
+      const password = String(fd.get("password") || "");
+      const name = String(fd.get("name") || "").trim();
+      const accounts = loadJson(accountsKey, {});
+
+      if (!email || password.length < 6) {
+        showAuthError("Use a real email and a password of at least 6 characters.");
+        return;
+      }
+
+      if (signup) {
+        if (!name) {
+          showAuthError("Please add your name.");
+          return;
+        }
+        if (accounts[email]) {
+          showAuthError("That email is already signed up on this browser. Log in instead.");
+          return;
+        }
+        const salt = randomSalt();
+        const hash = await hashPass(password, salt);
+        accounts[email] = { name, email, salt, hash, created: Date.now() };
+        localStorage.setItem(accountsKey, JSON.stringify(accounts));
+        const store = readStore();
+        const guest = store.guest || emptyBundle();
+        store[email] = {
+          progress: { ...guest.progress },
+          stars: { ...guest.stars },
+          notes: { ...guest.notes },
+          streak: { ...(guest.streak || { count: 0, last: "" }) }
+        };
+        writeStore(store);
+        localStorage.setItem(sessionKey, email);
+        location.hash = "#/";
+        return;
+      }
+
+      const acc = accounts[email];
+      if (!acc) {
+        showAuthError("No account with that email on this browser. Sign up first.");
+        return;
+      }
+      const hash = await hashPass(password, acc.salt);
+      if (hash !== acc.hash) {
+        showAuthError("Wrong password. Try again.");
+        return;
+      }
+      localStorage.setItem(sessionKey, email);
+      location.hash = "#/";
+    });
+  };
+
+  const renderContact = () => {
+    const user = currentUser();
+    view.innerHTML = `
+      <article class="auth-card">
+        <a class="back-btn" href="#/">← Home</a>
+        <h1>Message Raj Kumar</h1>
+        <p>Questions, feedback, or help with PrepPlace. This opens your mail app to <a href="mailto:${CONTACT.email}">${CONTACT.email}</a>.</p>
+        <form id="contactForm" class="auth-form">
+          <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
+          <label>Your email<input class="auth-field" name="from" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
+          <label>Message<textarea class="auth-field" name="msg" rows="7" required minlength="8" placeholder="What do you want Raj to know?"></textarea></label>
+          <button class="tab" type="submit">Open email to Raj</button>
+        </form>
+        <p class="auth-note">If your mail app does not open, write directly to <strong>${CONTACT.email}</strong>.</p>
+      </article>`;
+
+    document.getElementById("contactForm")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const subject = encodeURIComponent(`PrepPlace message from ${fd.get("name")}`);
+      const body = encodeURIComponent(`From: ${fd.get("name")} <${fd.get("from")}>\n\n${fd.get("msg")}`);
+      location.href = `mailto:${CONTACT.email}?subject=${subject}&body=${body}`;
+    });
+  };
+
   const route = () => {
+    paintAuth();
     const hash = location.hash.slice(2) || "";
     const [page, id, extra] = hash.split("/");
     if (page === "topic" && id && topicById(id)) renderTopic(id, extra);
     else if (page === "career" && id && careerById(id)) renderCareer(id);
     else if (page === "topics") renderTopics(searchInput.value);
     else if (page === "dsa") renderDsaSheet();
+    else if (page === "login") renderAuth("login");
+    else if (page === "signup") renderAuth("signup");
+    else if (page === "contact") renderContact();
     else renderHome();
   };
 
@@ -217,6 +423,12 @@
       <section class="hero">
         <h1>Pick a career. See what to learn.</h1>
         <p>Frontend, backend, MERN, full stack, ML, DevOps, and a FAANG DSA path. Each path shows the order, then opens notes, easy code, and practice questions.</p>
+        <p class="account-line">${(() => {
+          const user = currentUser();
+          return user
+            ? `Signed in as <strong>${escapeHtml(user.name)}</strong> · ${escapeHtml(user.email)}. Done questions, stars, and notes stay with this account.`
+            : `You are a guest. <a href="#/signup">Sign up</a> to keep progress under your name, or <a href="#/login">log in</a>. Message <a href="#/contact">Raj Kumar</a> anytime.`;
+        })()}</p>
         <div class="stats">
           <div class="stat"><b>${window.PREP_CAREERS.length}</b><span>career paths</span></div>
           <div class="stat"><b>${window.PREP_TOPICS.length}</b><span>subjects</span></div>
@@ -651,7 +863,7 @@
       });
     });
     view.querySelectorAll(".q-row").forEach((btn) => {
-      btn.addEventListener("click", () => btn.parentElement.classList.toggle("open"));
+      btn.addEventListener("click", () => btn.closest(".item").classList.toggle("open"));
     });
     view.querySelectorAll(".done-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -756,6 +968,7 @@
     }     else if (hash.startsWith("#/career/")) renderCareer(hash.split("/")[2]);
     else if (hash.startsWith("#/topics")) renderTopics(searchInput.value);
     else if (hash.startsWith("#/dsa")) renderDsaSheet();
+    else if (hash.startsWith("#/login") || hash.startsWith("#/signup") || hash.startsWith("#/contact")) return;
     else renderHome(searchInput.value);
   });
 
