@@ -268,6 +268,7 @@ html, body {
 }
 
 .form-page { max-width: 560px; margin: 0 auto; }
+.form-page.contact-wide { max-width: 980px; }
 
 .page-actions {
   display: flex;
@@ -284,7 +285,8 @@ html, body {
 
 body[data-page="login"] .search-wrap,
 body[data-page="signup"] .search-wrap,
-body[data-page="contact"] .search-wrap {
+body[data-page="contact"] .search-wrap,
+body[data-page="feedback"] .search-wrap {
   display: none;
 }
 
@@ -1165,10 +1167,121 @@ body[data-page="contact"] .search-wrap {
   box-shadow: 0 6px 16px rgba(28, 25, 20, 0.12);
 }
 
+.contact-photo-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.contact-photo-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 @media (max-width: 520px) {
   .contact-photo {
     width: 68px;
     height: 68px;
+  }
+}
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.contact-layout .auth-card {
+  max-width: none;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.contact-layout .auth-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-layout .auth-form label:has(textarea) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.contact-layout .auth-form textarea {
+  flex: 1;
+  min-height: 160px;
+  resize: vertical;
+}
+
+.contact-layout .form-actions { margin-top: auto; }
+
+.star-row {
+  display: flex;
+  gap: 4px;
+}
+
+.star-pick {
+  border: 0;
+  background: none;
+  color: var(--line);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.star-pick.on,
+.star-pick:hover { color: #c9a227; }
+
+.photo-lightbox {
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: none;
+  max-height: none;
+}
+
+.photo-lightbox::backdrop { background: rgba(18, 17, 15, 0.84); }
+
+.photo-lightbox-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(94vw, 1024px);
+  max-height: calc(100vh - 72px);
+  object-fit: contain;
+  border-radius: 16px;
+}
+
+.photo-lightbox-close {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+@media (min-width: 840px) {
+  .contact-layout {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
   }
 }
 

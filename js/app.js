@@ -1197,7 +1197,9 @@
 
   const currentPage = () => {
     const hash = location.hash.slice(2) || "";
-    return hash.split("/")[0] || "home";
+    const parts = hash.split("/");
+    if (parts[0] === "contact" && parts[1] === "feedback") return "feedback";
+    return parts[0] || "home";
   };
 
   const paintChrome = () => {
@@ -1414,6 +1416,40 @@
     });
   };
 
+  const postToRaj = (fields) => {
+    const frameName = "prepplaceMail";
+    let frame = document.getElementById(frameName);
+    if (!frame) {
+      frame = document.createElement("iframe");
+      frame.id = frameName;
+      frame.name = frameName;
+      frame.className = "honey";
+      frame.title = "hidden";
+      document.body.appendChild(frame);
+    }
+    const sink = document.createElement("form");
+    sink.action = `https://formsubmit.co/${CONTACT.email}`;
+    sink.method = "POST";
+    sink.target = frameName;
+    sink.className = "honey";
+    const payload = {
+      ...fields,
+      _template: "table",
+      _captcha: "false",
+      _next: "https://formsubmit.co/ajax/thanks"
+    };
+    Object.entries(payload).forEach(([key, value]) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = key;
+      input.value = String(value ?? "");
+      sink.appendChild(input);
+    });
+    document.body.appendChild(sink);
+    sink.submit();
+    sink.remove();
+  };
+
   const setContactStatus = (text, kind) => {
     const el = document.getElementById("contactStatus");
     if (!el) return;
@@ -1422,38 +1458,74 @@
     el.className = `form-status${kind ? ` ${kind}` : ""}`;
   };
 
-  const renderContact = () => {
+  const renderContact = (section) => {
     const user = currentUser();
     view.innerHTML = `
-      <section class="form-page">
+      <section class="form-page contact-wide">
         <div class="page-actions">
           <a class="btn btn-ghost" href="#/">← Home</a>
         </div>
-        <article class="auth-card">
-          <div class="contact-head">
-            <div>
-              <h1>Message Raj Kumar</h1>
-              <p>Write your note and press <strong>Send message</strong>. It goes to <strong>${CONTACT.email}</strong>.</p>
+        <div class="contact-layout">
+          <article class="auth-card" id="messageCard">
+            <div class="contact-head">
+              <div>
+                <h1>Message Raj Kumar</h1>
+                <p>Write your note and press <strong>Send message</strong>. It goes to <strong>${CONTACT.email}</strong>.</p>
+                <p>Any problem related to a DSA question — a wrong answer, a missing solution, or a doubt — you can message Raj here.</p>
+              </div>
+              <button type="button" class="contact-photo-btn" id="openRajPhoto" aria-label="View Raj Kumar's full photo">
+                <img class="contact-photo" src="assets/raj.jpg" width="88" height="88" alt="Raj Kumar" />
+              </button>
             </div>
-            <img class="contact-photo" src="assets/raj.jpg" width="88" height="88" alt="Raj Kumar" />
-          </div>
-          <form id="contactForm" class="auth-form">
-            <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
-            <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
-            <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
-            <label>Message<textarea class="auth-field" name="message" rows="7" required minlength="8" placeholder="What do you want Raj to know?"></textarea></label>
-            <p class="form-status" id="contactStatus" hidden></p>
-            <div class="form-actions">
-              <button class="btn btn-primary btn-wide" type="submit" id="contactSend">Send message</button>
-            </div>
-          </form>
-          <p class="auth-note">The first send asks Raj to confirm his inbox once. After that, every message lands in <strong>${CONTACT.email}</strong>.</p>
-        </article>
+            <form id="contactForm" class="auth-form">
+              <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+              <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
+              <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
+              <label>Message<textarea class="auth-field" name="message" rows="6" required minlength="8" placeholder="What do you want Raj to know?"></textarea></label>
+              <p class="form-status" id="contactStatus" hidden></p>
+              <div class="form-actions">
+                <button class="btn btn-primary btn-wide" type="submit" id="contactSend">Send message</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="auth-card" id="feedbackCard">
+            <h1>Feedback</h1>
+            <p>Tell Raj what to keep, what is confusing, or what to add next. This is separate from a private message.</p>
+            <form id="feedbackForm" class="auth-form">
+              <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+              <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
+              <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
+              <p class="filter-label">How is PrepPlace?</p>
+              <div class="star-row" id="feedbackStars" role="group" aria-label="Rating">
+                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-pick" data-star="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}
+              </div>
+              <input type="hidden" name="rating" id="feedbackRating" value="" />
+              <label>Kind
+                <select class="auth-field" name="kind">
+                  <option value="general">General</option>
+                  <option value="bug">Something is broken</option>
+                  <option value="content">Content request</option>
+                  <option value="thanks">Thank you</option>
+                </select>
+              </label>
+              <label>Your feedback<textarea class="auth-field" name="feedback" rows="5" required minlength="8" placeholder="What should Raj know about the site?"></textarea></label>
+              <p class="form-status" id="feedbackStatus" hidden></p>
+              <div class="form-actions">
+                <button class="btn btn-primary btn-wide" type="submit" id="feedbackSend">Send feedback</button>
+              </div>
+            </form>
+          </article>
+        </div>
+        <dialog class="photo-lightbox" id="rajPhotoDialog" aria-label="Photo">
+          <button type="button" class="photo-lightbox-close" id="closeRajPhoto">Close</button>
+          <img class="photo-lightbox-img" id="lightboxImg" src="assets/raj.jpg" alt="" />
+        </dialog>
       </section>`;
 
     const form = document.getElementById("contactForm");
     const sendBtn = document.getElementById("contactSend");
-    form?.addEventListener("submit", async (e) => {
+    form?.addEventListener("submit", (e) => {
       e.preventDefault();
       const fd = new FormData(form);
       if (String(fd.get("_gotcha") || "").trim()) return;
@@ -1464,47 +1536,92 @@
         setContactStatus("Please add your name, email, and a short message.", "is-error");
         return;
       }
-
-      sendBtn.disabled = true;
-      sendBtn.textContent = "Sending…";
-      setContactStatus("Sending to Raj…", "");
-
-      try {
-        const res = await fetch(`https://formsubmit.co/ajax/${CONTACT.email}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json"
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            message,
-            _subject: `PrepPlace message from ${name}`,
-            _template: "table",
-            _captcha: "false"
-          })
-        });
-        const data = await res.json().catch(() => ({}));
-        const ok = res.ok && data.success !== false && data.success !== "false";
-        if (!ok) throw new Error(data.message || "Send failed");
-        form.reset();
-        if (user) {
-          form.elements.name.value = user.name || "";
-          form.elements.email.value = user.email || "";
-        }
-        setContactStatus(`Sent. Raj will see this at ${CONTACT.email}.`, "is-ok");
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Send another";
-      } catch {
-        setContactStatus(`Could not send from this browser. Write Raj at ${CONTACT.email}.`, "is-error");
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Send message";
-        const subject = encodeURIComponent(`PrepPlace message from ${name}`);
-        const body = encodeURIComponent(`From: ${name} <${email}>\n\n${message}`);
-        window.open(`mailto:${CONTACT.email}?subject=${subject}&body=${body}`, "_blank");
+      postToRaj({
+        name,
+        email,
+        message,
+        _subject: `PrepPlace message from ${name}`
+      });
+      form.reset();
+      if (user) {
+        form.elements.name.value = user.name || "";
+        form.elements.email.value = user.email || "";
       }
+      setContactStatus("Sent. Thank you — Raj will read this.", "is-ok");
+      sendBtn.textContent = "Send another";
     });
+
+    const setFeedbackStatus = (text, kind) => {
+      const el = document.getElementById("feedbackStatus");
+      if (!el) return;
+      el.hidden = !text;
+      el.textContent = text;
+      el.className = `form-status${kind ? ` ${kind}` : ""}`;
+    };
+
+    const stars = view.querySelectorAll("[data-star]");
+    const ratingInput = document.getElementById("feedbackRating");
+    const paintStars = (n) => {
+      stars.forEach((btn) => btn.classList.toggle("on", Number(btn.dataset.star) <= n));
+    };
+    stars.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const n = Number(btn.dataset.star);
+        ratingInput.value = String(n);
+        paintStars(n);
+      });
+    });
+
+    const feedbackForm = document.getElementById("feedbackForm");
+    const feedbackBtn = document.getElementById("feedbackSend");
+    feedbackForm?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(feedbackForm);
+      if (String(fd.get("_gotcha") || "").trim()) return;
+      const name = String(fd.get("name") || "").trim();
+      const email = String(fd.get("email") || "").trim();
+      const kind = String(fd.get("kind") || "general").trim();
+      const rating = String(fd.get("rating") || "").trim();
+      const feedback = String(fd.get("feedback") || "").trim();
+      if (!name || !email || feedback.length < 8) {
+        setFeedbackStatus("Please add your name, email, and a short note.", "is-error");
+        return;
+      }
+      postToRaj({
+        name,
+        email,
+        kind,
+        rating: rating || "not rated",
+        feedback,
+        _subject: `PrepPlace feedback from ${name}`
+      });
+      feedbackForm.reset();
+      ratingInput.value = "";
+      paintStars(0);
+      if (user) {
+        feedbackForm.elements.name.value = user.name || "";
+        feedbackForm.elements.email.value = user.email || "";
+      }
+      setFeedbackStatus("Sent. Thank you — Raj will read this.", "is-ok");
+      feedbackBtn.textContent = "Send more feedback";
+    });
+
+    const dialog = document.getElementById("rajPhotoDialog");
+    const lightImg = document.getElementById("lightboxImg");
+    const openLight = (src, alt) => {
+      if (lightImg) {
+        lightImg.src = src;
+        lightImg.alt = alt;
+      }
+      dialog?.showModal();
+    };
+    document.getElementById("openRajPhoto")?.addEventListener("click", () => openLight("assets/raj.jpg", "Raj Kumar"));
+    document.getElementById("closeRajPhoto")?.addEventListener("click", () => dialog?.close());
+    dialog?.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+
+    if (section === "feedback") {
+      document.getElementById("feedbackCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   const route = () => {
@@ -1517,7 +1634,7 @@
     else if (page === "dsa") renderDsaSheet();
     else if (page === "login") renderAuth("login");
     else if (page === "signup") renderAuth("signup");
-    else if (page === "contact") renderContact();
+    else if (page === "contact") renderContact(id);
     else renderHome();
   };
 
