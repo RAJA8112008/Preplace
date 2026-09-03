@@ -1,6 +1,14 @@
+window.PREP_CAREER_SECTIONS = [
+  { id: "web", title: "Web", blurb: "Frontend, backend, MERN, and full stack." },
+  { id: "dsa", title: "DSA", blurb: "FAANG problem sheet and system design." },
+  { id: "data", title: "Data & ML", blurb: "SQL, stores, analyst work, and machine learning." },
+  { id: "ops", title: "Cloud & DevOps", blurb: "Ship the app and keep it running." }
+];
+
 window.PREP_CAREERS = [
   {
     id: "frontend",
+    section: "web",
     title: "Frontend Developer",
     icon: "🖥️",
     blurb: "Build what people see and click: websites and web apps.",
@@ -31,6 +39,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "backend",
+    section: "web",
     title: "Backend Developer",
     icon: "🛠️",
     blurb: "Build the server, APIs, and database behind the app.",
@@ -66,6 +75,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "mern",
+    section: "web",
     title: "MERN Stack Developer",
     icon: "🟢",
     blurb: "MongoDB + Express + React + Node. One path for full web apps.",
@@ -97,6 +107,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "fullstack",
+    section: "web",
     title: "Full Stack Developer",
     icon: "🧩",
     blurb: "Frontend + backend + a little deploy. You can ship a feature alone.",
@@ -139,6 +150,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "ml",
+    section: "data",
     title: "ML Developer",
     icon: "🧠",
     blurb: "Teach computers from data: predictions, models, and Python.",
@@ -167,6 +179,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "devops",
+    section: "ops",
     title: "DevOps Engineer",
     icon: "🔁",
     blurb: "Help code go from your laptop to production safely.",
@@ -196,6 +209,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "cloud",
+    section: "ops",
     title: "Cloud / AWS Developer",
     icon: "☁️",
     blurb: "Put apps on AWS: servers, files, databases, and access rules.",
@@ -225,6 +239,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "data",
+    section: "data",
     title: "Data Analyst",
     icon: "📊",
     blurb: "Turn tables into answers: SQL, a little Python, clear charts.",
@@ -248,6 +263,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "datastores",
+    section: "data",
     title: "Databases & Data Stores",
     icon: "🗃️",
     blurb: "SQL, NoSQL, Redis, and vector search — pick the right store and explain why.",
@@ -271,6 +287,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "sde",
+    section: "dsa",
     title: "SDE / FAANG Interview",
     icon: "💼",
     blurb: "The DSA path MAANG and FAANG companies ask: arrays first, then graphs and DP.",
@@ -303,6 +320,7 @@ window.PREP_CAREERS = [
   },
   {
     id: "sysdesign",
+    section: "dsa",
     title: "System Design",
     icon: "🏛️",
     blurb: "High-level design for interviews: building blocks first, then full products with diagrams and request flows.",

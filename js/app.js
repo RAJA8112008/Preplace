@@ -1655,10 +1655,41 @@
 
   const renderHome = (filter = "") => {
     const q = (filter || searchInput.value || "").trim().toLowerCase();
+    const sections = window.PREP_CAREER_SECTIONS || [];
     const careers = (window.PREP_CAREERS || []).filter((c) => {
-      const hay = `${c.title} ${c.blurb} ${c.builds} ${c.steps.map((s) => s.learn).join(" ")}`.toLowerCase();
+      const sec = sections.find((s) => s.id === c.section);
+      const hay = `${c.title} ${c.blurb} ${c.builds} ${sec?.title || ""} ${sec?.blurb || ""} ${c.steps.map((s) => s.learn).join(" ")}`.toLowerCase();
       return !q || hay.includes(q);
     });
+    const careerLabel = (c) => c.title
+      .replace(" Developer", "")
+      .replace(" Engineer", "")
+      .replace("SDE / FAANG Interview", "FAANG DSA")
+      .replace("Databases & Data Stores", "Data stores")
+      .replace("MERN Stack", "MERN");
+    const careerCard = (c) => {
+      const p = careerProgress(c);
+      const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+      return `
+        <a class="card career-card" href="#/career/${c.id}">
+          <div class="card-top">
+            <span class="icon">${c.icon}</span>
+            <span class="badge">${c.steps.length} steps</span>
+          </div>
+          <h2>${c.title}</h2>
+          <p>${c.blurb}</p>
+          <p class="time">About ${c.time}</p>
+          <p>${p.done}/${p.total} questions done</p>
+          <div class="progress"><span style="width:${pct}%"></span></div>
+        </a>`;
+    };
+    const visibleSections = sections
+      .map((sec) => ({ ...sec, items: careers.filter((c) => c.section === sec.id) }))
+      .filter((sec) => sec.items.length);
+    const leftover = careers.filter((c) => !sections.some((s) => s.id === c.section));
+    if (leftover.length) {
+      visibleSections.push({ id: "more", title: "More paths", blurb: "", items: leftover });
+    }
 
     const totals = window.PREP_TOPICS.reduce((acc, t) => {
       const p = progressFor(t.id);
@@ -1667,22 +1698,53 @@
       return acc;
     }, { questions: 0, done: 0 });
 
+    const user = currentUser();
+    const pathPills = sections.map((sec) => {
+      const items = (window.PREP_CAREERS || []).filter((c) => c.section === sec.id);
+      if (!items.length) return "";
+      return `
+        <div class="hero-path-group">
+          <p>${escapeHtml(sec.title)}</p>
+          <ul class="hero-paths">${items.map((c) => `<li><a href="#/career/${c.id}">${c.icon} ${escapeHtml(careerLabel(c))}</a></li>`).join("")}</ul>
+        </div>`;
+    }).join("");
+
     view.innerHTML = `
       <section class="hero">
-        <img class="hero-logo" src="assets/logo.svg" width="72" height="72" alt="PrepPlace" />
-        <h1>Pick a career. See what to learn.</h1>
-        <p>Frontend, backend, MERN, full stack, ML, DevOps, and a FAANG DSA path. Each path shows the order, then opens notes, easy code, and practice questions.</p>
-        <p class="account-line">${(() => {
-          const user = currentUser();
-          return user
-            ? `Signed in as <strong>${escapeHtml(user.name)}</strong> · ${escapeHtml(user.email)}. Done questions, stars, and notes stay with this account.`
-            : `You are a guest. <a href="#/signup">Sign up</a> to keep progress under your name, or <a href="#/login">log in</a>. Message <a href="#/contact">Raj Kumar</a> anytime.`;
-        })()}</p>
-        <div class="stats">
-          <div class="stat"><b>${window.PREP_CAREERS.length}</b><span>career paths</span></div>
-          <div class="stat"><b>${window.PREP_TOPICS.length}</b><span>subjects</span></div>
-          <div class="stat"><b>${totals.questions}</b><span>questions</span></div>
-          <div class="stat"><b>${readStreak().count}</b><span>day streak</span></div>
+        <div class="hero-stage">
+          <div class="hero-copy">
+            <div class="hero-brand">
+              <img class="hero-logo" src="assets/logo.svg" width="64" height="64" alt="" />
+              <p class="hero-kicker">Career paths · notes · practice</p>
+            </div>
+            <h1>Pick a career.<br />See what to learn.</h1>
+            <p class="hero-lead">Frontend, backend, MERN, full stack, ML, DevOps, and a FAANG DSA path. Each path shows the order, then opens notes, easy code, and practice questions.</p>
+            <p class="account-line">${user
+              ? `Signed in as <strong>${escapeHtml(user.name)}</strong> · ${escapeHtml(user.email)}. Done questions, stars, and notes stay with this account.`
+              : `You are a guest. <a href="#/signup">Sign up</a> to keep progress under your name, or <a href="#/login">log in</a>. Message <a href="#/contact">Raj Kumar</a> anytime.`
+            }</p>
+            <div class="hero-cta">
+              <button class="btn btn-primary" type="button" id="scrollCareers">Browse paths</button>
+              <a class="btn" href="#/dsa">Problem sheet</a>
+              ${user ? `<a class="btn btn-ghost" href="#/contact">Message Raj</a>` : `<a class="btn btn-ghost" href="#/signup">Sign up</a>`}
+            </div>
+          </div>
+          <aside class="hero-panel">
+            <a class="hero-portrait" href="#/contact">
+              <img src="assets/raj.jpg" width="84" height="84" alt="Raj Kumar" />
+              <span>
+                <strong>Raj Kumar</strong>
+                <span>Message anytime — DSA doubts welcome</span>
+              </span>
+            </a>
+            ${pathPills}
+          </aside>
+          <div class="stats">
+            <div class="stat"><b>${window.PREP_CAREERS.length}</b><span>career paths</span></div>
+            <div class="stat"><b>${window.PREP_TOPICS.length}</b><span>subjects</span></div>
+            <div class="stat"><b>${totals.questions}</b><span>questions</span></div>
+            <div class="stat"><b>${readStreak().count}</b><span>day streak</span></div>
+          </div>
         </div>
       </section>
       ${(() => {
@@ -1707,28 +1769,37 @@
         </article>
       </div>`;
       })()}
-      <section class="career-grid">
-        ${careers.map((c) => {
-          const p = careerProgress(c);
-          const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
-          return `
-            <a class="card career-card" href="#/career/${c.id}">
-              <div class="card-top">
-                <span class="icon">${c.icon}</span>
-                <span class="badge">${c.steps.length} steps</span>
-              </div>
-              <h2>${c.title}</h2>
-              <p>${c.blurb}</p>
-              <p class="time">About ${c.time}</p>
-              <p>${p.done}/${p.total} questions done</p>
-              <div class="progress"><span style="width:${pct}%"></span></div>
-            </a>`;
-        }).join("") || `<p class="empty">No career matches that search.</p>`}
-      </section>
+      <div class="home-paths" id="homeCareers">
+        <div class="home-paths-top">
+          <h2 class="section-title">Choose a career path</h2>
+          ${visibleSections.length > 1 ? `
+          <nav class="home-jumps" aria-label="Path sections">
+            ${visibleSections.map((sec) => `<button type="button" data-sec="${sec.id}">${escapeHtml(sec.title)}</button>`).join("")}
+          </nav>` : ""}
+        </div>
+        ${visibleSections.map((sec) => `
+          <section class="home-section" id="sec-${sec.id}">
+            <div class="home-section-head">
+              <h3>${escapeHtml(sec.title)}</h3>
+              ${sec.blurb ? `<p>${escapeHtml(sec.blurb)}</p>` : ""}
+            </div>
+            <div class="career-grid">
+              ${sec.items.map(careerCard).join("")}
+            </div>
+          </section>`).join("") || `<p class="empty">No career matches that search.</p>`}
+      </div>
       <p class="example-intro" style="margin-top:22px">
         Want one subject only? <a href="#/topics">Browse all subjects</a> · <a href="#/dsa">Search every DSA problem</a>
       </p>
     `;
+    document.getElementById("scrollCareers")?.addEventListener("click", () => {
+      document.getElementById("homeCareers")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.querySelectorAll(".home-jumps [data-sec]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.getElementById(`sec-${btn.dataset.sec}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
     document.getElementById("openDaily")?.addEventListener("click", () => {
       const p = dailyProblem();
       if (p) goProblem(p.topicId, p.id);
