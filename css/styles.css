@@ -835,6 +835,12 @@ body[data-page="feedback"] .search-wrap {
   margin: 0 0 6px;
   font-size: 1rem;
   font-weight: 700;
+}
+
+.answer-block:first-child {
+  border-left-color: var(--ok);
+  background: var(--ok-soft);
+}
   letter-spacing: 0;
   text-transform: none;
   color: var(--accent);

@@ -606,7 +606,7 @@
       </section>`).join("")}</div>`;
   };
 
-  const TEACH_HEAD = /^(What this is|What happens|What the code is doing|In the example|In the code|Also know|Say this in an interview|Watch out|Common mistake|How it works|Definition|Configuration|Operational risk|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\.?$/i;
+  const TEACH_HEAD = /^(Summary|What this is|What happens|What the code is doing|In the example|In the code|Also know|Say this in an interview|Watch out|Common mistake|How it works|Definition|Configuration|Operational risk|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\.?$/i;
 
   const extraForQuestion = (q, a) => {
     const hay = `${q} ${a}`.toLowerCase();
@@ -897,13 +897,7 @@
         "A vector DB does not replace Postgres. Filter by tenant so one company cannot retrieve another company's chunks."
       );
     }
-    return story(
-      "Before this tool, the job was done by hand, in the wrong place, or on one machine — and it broke when more people arrived.",
-      "This tool takes that one job and does it in a safer, shared way. Say the pain first, then the tool.",
-      "Map it to a shop: guest (user), desk (this tool), back room (database or app). One sentence each.",
-      "Use it where that job shows up every day. Do not use it as a second copy of money unless it is built for that.",
-      "If you cannot name the problem it fixed, you are only reciting a definition."
-    );
+    return {};
   };
 
   const hasTeachHead = (text, name) => new RegExp("^" + name + "\\b", "im").test(String(text || ""));
@@ -983,7 +977,7 @@
     const tip = extraForQuestion(q || "", raw);
     const labeled = formalToTeach(raw);
     if (labeled) return injectTeachExtras(labeled, tip);
-    if (/^What this is\b/im.test(raw) || /^Before you use this\b/im.test(raw) || /^Why we use it\b/im.test(raw) || /^What the code is doing\b/im.test(raw) || /^The problem before\b/im.test(raw) || /^What it solves\b/im.test(raw)) {
+    if (/^Summary\b/im.test(raw) || /^What this is\b/im.test(raw) || /^Before you use this\b/im.test(raw) || /^Why we use it\b/im.test(raw) || /^What the code is doing\b/im.test(raw) || /^The problem before\b/im.test(raw) || /^What it solves\b/im.test(raw)) {
       return injectTeachExtras(raw, tip);
     }
     const parts = raw.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
@@ -1003,6 +997,7 @@
 
   const prettyTeachHead = (h) => {
     const t = String(h || "").replace(/\.$/, "").trim();
+    if (/^summary$/i.test(t)) return "Summary";
     if (/^the problem before/i.test(t)) return "The problem before";
     if (/^before you use this/i.test(t)) return "The problem before";
     if (/^what it solves/i.test(t)) return "What it solves";
