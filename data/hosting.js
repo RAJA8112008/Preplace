@@ -28,7 +28,7 @@ window.PREP_DATA["hosting"] = {
         "CDN or VM",
         "https://your.app"
       ],
-      "body": "Deploy means other people can open your app on the internet. On your laptop only you can. Platforms such as Vercel, Render, Netlify, and Railway watch a GitHub repo, run npm run build, and give you an HTTPS URL. You do not start by renting a raw VM. You start by connecting Git."
+      "body": "The problem before\nThe app runs only on your laptop. A friend cannot open it. An interviewer cannot click a link. You think the next step is renting a raw Linux box.\n\nWhat this is\nDeploy means other people can open your app on the internet. Platforms such as Vercel, Render, Netlify, and Railway watch a GitHub repo, run npm run build, and give you an HTTPS URL. You start by connecting Git, not by renting a VM.\n\nWhat it solves\nA git push becomes a live URL. Reviewers and interviewers click that URL. You skip sysadmin work until you actually need a VPS.\n\nReal-life example\nA project on a USB stick is only yours. Pinning it on the school notice board is deploy: anyone in the corridor can read it. The host reprints the board when you update the file in Git.\n\nUses\nAny portfolio app. Interview opener: \"I push to GitHub, the host builds, I get https.\"\n\nWatch out\nCalling localhost a deploy. Renting EC2 before you have a URL. Forgetting that the platform must see the repo."
     },
     {
       "title": "Vercel",
@@ -56,7 +56,7 @@ window.PREP_DATA["hosting"] = {
         "Preview URL",
         "Production domain"
       ],
-      "body": "Vercel is built for frontend and Next.js. Every pull request gets a preview URL. Static files go to a CDN. API routes and server components become serverless functions. You set environment variables in the dashboard. There is no long-lived Express process unless you use a different host for that API. Cold starts exist on functions."
+      "body": "The problem before\nYou want a frontend live, but you do not want to run Nginx. Pull requests have no URL. You try to keep a long-lived Express process on a frontend host.\n\nWhat this is\nVercel is built for frontend and Next.js. Every pull request gets a preview URL. Static files go to a CDN; API routes become serverless functions. You set environment variables in the dashboard.\n\nWhat it solves\nGit push becomes a preview and a production domain. Static files are fast at the edge. You do not babysit a VM for a React or Next app.\n\nReal-life example\nA classroom printer that reprints the poster for every draft. Each PR is a new poster on the wall. The final copy hangs on the main board. There is no clerk sitting at a desk all night unless you add functions.\n\nUses\nVite/React, Next.js, marketing sites. Interview: \"preview URL on every PR.\"\n\nWatch out\nNo long-lived Express unless you host that API elsewhere. Cold starts on functions. A key that exists only in Production will be missing on a preview deploy."
     },
     {
       "title": "Render",
@@ -93,15 +93,15 @@ window.PREP_DATA["hosting"] = {
         "Always-on process",
         "Health check"
       ],
-      "body": "Render runs a real process — closer to a VPS than Vercel. A Web Service can be npm start on port 10000 (Render sets PORT). You can add a managed Postgres and Redis. Background Workers run queues. Free web services spin down after idle time; the first request is slow. Paid services stay up."
+      "body": "The problem before\nVercel will not keep your Express process awake. You need Postgres and Redis next to a Node server. Free hosting that sleeps surprises your live demo.\n\nWhat this is\nRender runs a real process — closer to a VPS than Vercel. A Web Service can be npm start on the port Render sets (PORT). You can add managed Postgres and Redis. Background Workers run queues.\n\nWhat it solves\nAn always-on API with a database in one dashboard. You get a health check and a public URL. Paid services stay up; free ones spin down after idle time.\n\nReal-life example\nA shop that keeps the shutter open all day (paid) versus a stall that packs up after lunch (free). The first customer after lunch waits while you unlock. Health check is the manager peeking if the lights are on.\n\nUses\nExpress APIs, workers, Postgres, Redis. Interview: \"process, not only serverless.\"\n\nWatch out\nFree web services sleep; the first request is slow. Listen on process.env.PORT, not hardcoded 3000. Health checks fail if you bind the wrong port."
     },
     {
       "title": "Netlify and Cloudflare Pages",
-      "body": "Netlify is like Vercel for static sites and JAMstack functions. Cloudflare Pages puts static assets on Cloudflare's edge. Both connect to Git. Use them for marketing sites and SPAs. A long-running WebSocket server does not belong here; use Render, a VPS, or a dedicated socket host."
+      "body": "The problem before\nYou have a static site or SPA and you overpay for a VM. Client routes 404 on refresh. You try to run a WebSocket server on a static host.\n\nWhat this is\nNetlify is like Vercel for static sites and JAMstack functions. Cloudflare Pages puts static assets on Cloudflare's edge. Both connect to Git. Use them for marketing sites and SPAs.\n\nWhat it solves\nA fast CDN URL from a git push. Optional functions for small APIs. SPA redirects send /login back to index.html so refresh does not 404.\n\nReal-life example\nA printed brochure on every street corner (CDN). The brochure cannot run a phone switchboard. A live chat desk needs a real shop — Render or a VPS.\n\nUses\nDocs, portfolios, SPAs. Interview: \"static on the edge.\"\n\nWatch out\nA long-running WebSocket server does not belong here. Missing SPA redirect → refresh 404. Expecting a Node process to stay running."
     },
     {
       "title": "Railway, Fly.io, and a VPS",
-      "body": "Railway is Git-to-container with add-on databases — similar to Render. Fly.io runs your image close to users. A VPS (DigitalOcean, Lightsail, EC2) means you install Nginx, Node, and TLS yourself. Platforms are faster to start. A VPS teaches Nginx and costs less at a predictable size."
+      "body": "The problem before\nPlatforms feel like magic and you cannot explain them. Or you jump to a VPS and drown in Nginx on week one. You cannot name when you would leave the platform.\n\nWhat this is\nRailway is Git-to-container with add-on databases — similar to Render. Fly.io runs your image close to users. A VPS (DigitalOcean, Lightsail, EC2) means you install Nginx, Node, and TLS yourself.\n\nWhat it solves\nPlatforms are faster to start. A VPS teaches Nginx and costs less at a predictable size. Fly puts the box nearer to the student in another city.\n\nReal-life example\nA managed canteen (Railway/Render) versus renting the kitchen and buying your own stove (VPS). Fly is opening a stall in the next neighbourhood so the dosa is still hot.\n\nUses\nWhen you outgrow hobby hosts, need a region, or want to learn Nginx. Interview: \"I started on a platform; I know what a VPS would add.\"\n\nWatch out\nCopying .env into a Docker image. No firewall on a VPS. Leaving a database publicly open."
     },
     {
       "title": "Environment variables",
@@ -110,7 +110,7 @@ window.PREP_DATA["hosting"] = {
         "Build or runtime env",
         "process.env.DATABASE_URL"
       ],
-      "body": "Never put DATABASE_URL or API keys in the repo. Set them in Vercel / Render / Netlify env settings. Remember: Vercel has Production, Preview, and Development scopes. A key that exists only in Production will be missing on a preview deploy. Restart or redeploy after you change env vars."
+      "body": "The problem before\nDATABASE_URL sits in the repo. Preview deploys miss the key that exists only in Production. You change a secret and wonder why the old one still runs.\n\nWhat this is\nNever put DATABASE_URL or API keys in the repo. Set them in Vercel / Render / Netlify env settings. Vercel has Production, Preview, and Development scopes. Restart or redeploy after you change env vars.\n\nWhat it solves\nSecrets stay out of Git. Each environment can have its own database. The running process reads process.env at boot.\n\nReal-life example\nThe shop safe combination is not written on the menu. The manager whispers it to the morning shift. A trainee shift (preview) does not get the production safe unless you hand them a separate key.\n\nUses\nEvery hosted app. Interview: \"secrets in the dashboard, never in Git.\"\n\nWatch out\nA private key with NEXT_PUBLIC_ or VITE_. Preview missing Production-only vars. Forgetting to redeploy after a change."
     },
     {
       "title": "Frontend on Vercel, API on Render",
@@ -141,19 +141,19 @@ window.PREP_DATA["hosting"] = {
         "Render",
         "DB"
       ],
-      "body": "A common student setup: Vite/React on Vercel, Express on Render, Postgres on Render. You must set CORS on the API and use the real HTTPS origin. Cookies need SameSite and a shared parent domain or you use tokens. This split is normal and interviewers understand it."
+      "body": "The problem before\nOne host cannot do both jobs well. Cookies and CORS break after you leave localhost. You think split hosting is wrong architecture.\n\nWhat this is\nA common student setup: Vite/React on Vercel, Express on Render, Postgres on Render. You must set CORS on the API and use the real HTTPS origin. Cookies need SameSite and a shared parent domain, or you use tokens.\n\nWhat it solves\nThe UI is fast on a CDN. The API is an always-on process with a database. Interviewers understand this split.\n\nReal-life example\nThe shop window display (Vercel) and the back-office till (Render). The window must know the till's address. The till must let in that window, not every stranger on the street (CORS).\n\nUses\nMERN and Vite portfolios. Interview: \"UI here, API there, DB there.\"\n\nWatch out\nCORS origin left as localhost. Mixed content (HTTPS page calling HTTP API). origin: '*' with cookies."
     },
     {
       "title": "Build versus start",
-      "body": "Build is npm run build — it creates files (dist or .next). Start is npm start — it runs the server. Vercel mostly cares about build output. Render needs both a build command and a start command for a Node API. If start binds to a hardcoded 3000 instead of process.env.PORT, Render health checks fail."
+      "body": "The problem before\nYou run vite in production. Render returns 502 because you listen on 3000. You cannot say what npm run build actually produces.\n\nWhat this is\nBuild is npm run build — it creates files (dist or .next). Start is npm start — it runs the server. Vercel mostly cares about build output. Render needs both a build command and a start command for a Node API.\n\nWhat it solves\nStatic hosts get a folder to ship. Process hosts get a command that binds the platform port. You stop mixing the homework compile with the shop opening hours.\n\nReal-life example\nBaking the biscuits (build) versus opening the counter (start). Vercel mostly wants the biscuits in a box. Render wants the baker standing at the counter on the door they chose.\n\nUses\nRender web services, any Node API. Interview: \"build artifacts vs start process.\"\n\nWatch out\nstart: vite in production. listen(3000) instead of process.env.PORT. Building the wrong folder in a monorepo."
     },
     {
       "title": "Custom domains and TLS",
-      "body": "Add example.com in the dashboard. Point DNS (A or CNAME) where the docs say. The platform issues a certificate. Preview URLs stay on *.vercel.app or *.onrender.com. Do not commit those as the only production URL if you have a real domain."
+      "body": "The problem before\nYour live URL is a random *.vercel.app. DNS points at an old IP. You commit the preview URL as the only production address.\n\nWhat this is\nAdd example.com in the dashboard. Point DNS (A or CNAME) where the docs say. The platform issues a certificate. Preview URLs stay on *.vercel.app or *.onrender.com.\n\nWhat it solves\nA name people can remember. HTTPS without running certbot. Previews stay separate from the real domain.\n\nReal-life example\nThe shop's printed street address versus a temporary stall number at the fair. Customers should get the street name. The stall number is for the inspector during a PR.\n\nUses\nAny public product. Interview: \"custom domain + managed TLS.\"\n\nWatch out\nAn A record to an old IP after you switched hosts. Huge TTL so a change takes a day. Using only the platform subdomain in the README when you have a real domain."
     },
     {
       "title": "What to say in an interview",
-      "body": "Name where the UI lives, where the API lives, where the database lives, and how secrets are injected. Say 'preview deploy on every PR' if you use Vercel. Say 'process spun down on the free tier' if you use Render free. That honesty scores higher than 'I used the cloud'."
+      "body": "The problem before\nYou say \"I used the cloud\" and cannot name where the UI, API, and database live. You hide free-tier sleep. The interviewer cannot picture the system.\n\nWhat this is\nName where the UI lives, where the API lives, where the database lives, and how secrets are injected. Say \"preview deploy on every PR\" if you use Vercel. Say \"process spun down on the free tier\" if you use Render free.\n\nWhat it solves\nHonesty scores higher than fog. They can follow the arrows. You sound like you shipped, not like you copied a logo.\n\nReal-life example\nA shop tour: window, till, storeroom, and who holds the safe key. You do not say \"we have a mall.\" You point at each room.\n\nUses\nEvery hosting question. Portfolio README in one sentence.\n\nWatch out\nVague \"AWS/cloud.\" Hiding cold starts. A localhost-only project with no URL."
     }
   ],
   "examples": [

@@ -542,11 +542,40 @@ body[data-page="feedback"] .search-wrap {
   gap: 14px;
   align-items: flex-start;
   padding: 16px 18px;
-  color: inherit;
+  color: #111;
   text-decoration: none;
 }
 
-.asked-q-list a:hover { background: var(--bg-2); }
+.asked-q-list a:hover {
+  background: var(--bg-2);
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.asked-list {
+  margin: 8px 0 0;
+  padding-left: 1.35em;
+}
+
+.asked-list a {
+  color: #111;
+  text-decoration: none;
+}
+
+.asked-list a:hover {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+html[data-theme="dark"] .asked-list a,
+html[data-theme="dark"] .asked-q-list a {
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .asked-list a:hover,
+html[data-theme="dark"] .asked-q-list a:hover {
+  color: #60a5fa;
+}
 
 .asked-q-num {
   flex-shrink: 0;
@@ -944,7 +973,7 @@ body[data-page="feedback"] .search-wrap {
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: var(--shadow);
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -997,22 +1026,23 @@ body[data-page="feedback"] .search-wrap {
   font-weight: 700;
 }
 
-.note > .arch,
-.note > .flow-row,
-.note > .answer-label {
-  margin-left: 16px;
-  margin-right: 16px;
+.note .arch,
+.note .flow-row,
+.note .readmore-body > .answer-label {
+  margin: 0 0 10px;
 }
 
 .note .readmore {
-  flex: 1;
+  flex: 0 0 auto;
   padding: 10px 16px 14px;
-  gap: 6px;
+  gap: 8px;
 }
 
 .note .readmore-btn {
-  min-height: 40px;
-  padding: 6px 0 2px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 9px;
 }
 
 .note p, .answer, .teach-body {
@@ -1056,16 +1086,29 @@ body[data-page="feedback"] .search-wrap {
   background: linear-gradient(to bottom, transparent, var(--card));
 }
 
-.readmore-btn {
+.readmore-bar {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  background: var(--card);
+  padding-top: 2px;
+}
+
+.readmore-btn,
+.readmore-btn[hidden] {
+  display: inline-flex;
+  align-items: center;
   margin: 0;
-  padding: 4px 0;
-  min-height: 32px;
+  padding: 3px 9px;
+  min-height: 26px;
   border: 0;
-  background: none;
+  border-radius: 7px;
+  background: var(--accent-soft);
   color: var(--accent);
   font: inherit;
-  font-weight: 650;
-  font-size: 0.92rem;
+  font-weight: 600;
+  font-size: 0.75rem;
   cursor: pointer;
   text-decoration: none;
 }
@@ -1241,16 +1284,29 @@ body[data-page="feedback"] .search-wrap {
   background: linear-gradient(to bottom, transparent, var(--card));
 }
 
-.readmore-btn {
+.readmore-bar {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  background: var(--card);
+  padding-top: 2px;
+}
+
+.readmore-btn,
+.readmore-btn[hidden] {
+  display: inline-flex;
+  align-items: center;
   margin: 0;
-  padding: 4px 0;
-  min-height: 32px;
+  padding: 3px 9px;
+  min-height: 26px;
   border: 0;
-  background: none;
+  border-radius: 7px;
+  background: var(--accent-soft);
   color: var(--accent);
   font: inherit;
-  font-weight: 650;
-  font-size: 0.92rem;
+  font-weight: 600;
+  font-size: 0.75rem;
   cursor: pointer;
   text-decoration: none;
 }
@@ -2194,4 +2250,63 @@ body[data-page="feedback"] .search-wrap {
   .control-grid { grid-template-columns: 1fr; }
   .q-row { grid-template-columns: auto 1fr; }
   .q-row .level { grid-column: 2; justify-self: start; }
+}
+
+.readmore-note:not(.is-open) .readmore-body {
+  max-height: none;
+  overflow: visible;
+}
+
+.readmore-note:not(.is-open) .readmore-body::after {
+  display: none;
+}
+
+.readmore-note:not(.is-open) .note-extra {
+  display: none;
+}
+
+.readmore-note:not(.is-open) .note-preview p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+
+.readmore-note.is-open .note-preview {
+  display: none;
+}
+
+.readmore-note.is-open .readmore-body {
+  max-height: none;
+  overflow: visible;
+}
+
+.readmore-note.is-open .readmore-body::after {
+  display: none;
+}
+
+.note-preview,
+.note-extra {
+  width: 100%;
+}
+
+.readmore-note:not(.is-open) .note-preview {
+  position: relative;
+}
+
+.readmore-note:not(.is-open) .note-preview::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.8em;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--card));
+}
+
+.note-extra .arch,
+.note-extra .flow-row,
+.note-extra > .answer-label {
+  margin: 0 0 12px;
 }

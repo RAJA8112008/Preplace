@@ -837,7 +837,7 @@ window.PREP_DATA.git = {
       "level": "beginner",
       "q": "How do you rename a branch?",
       "a": "Renaming a branch only changes the sticker text. The commits stay the same.\nIf the old name was on the remote, you publish the new name and delete the old remote name.\nIn the code:\nbefore sticker is loginFix at c12. after is fix-login at c12. online still had loginFix until you publish the new name. c12 did not change.\nA common mistake is renaming locally and leaving the old name on origin, so two names point at the same work.",
-      "code": "// same photos, new sticker text\nbefore = { stickers: { loginFix: \"c12\" } };\nafter  = { stickers: { fix-login: \"c12\" } };\n\nonline = { loginFix: \"c12\" };\n// after publishing: online has fix-login, and loginFix can be removed\n// c12 did not change"
+      "code": "// same photos, new sticker text\nbefore = { stickers: { loginFix: \"c12\" } };\nafter  = { stickers: { \"fix-login\": \"c12\" } };\n\nonline = { loginFix: \"c12\" };\n// after publishing: online has fix-login, and loginFix can be removed\n// c12 did not change"
     },
     {
       "id": 93,

@@ -343,6 +343,11 @@
     const lines = String(code).split("\n");
     const out = [];
     let pending = [];
+    const flushPending = () => {
+      if (!pending.length) return;
+      pending.filter(Boolean).forEach((note) => out.push(`${mark} ${note}`));
+      pending = [];
+    };
     for (const line of lines) {
       const t = line.trim();
       if (isStandaloneComment(t, lang)) {
@@ -350,7 +355,7 @@
         continue;
       }
       if (!t) {
-        if (!pending.length) out.push(line);
+        flushPending();
         continue;
       }
       if (pending.length && t !== "{" && t !== "}" && t !== "};") {
@@ -364,6 +369,7 @@
       pending = [];
       out.push(line);
     }
+    flushPending();
     return out.join("\n");
   };
 
@@ -402,16 +408,41 @@
     const c = String(item?.code || "");
     if (/^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|WITH)\b/im.test(c)) return "sql";
     if (/^\s*(from |import |def |print\(|joblib)/m.test(c)) return "python";
-    if (/^\s*(FROM |WORKDIR |COPY |RUN |CMD |services:|on: \[|listen )/m.test(c)) return "txt";
-    if (/^\s*(git |gh |curl |ssh-|npx newman |BASE=|### )/m.test(c)) return "txt";
+    if (/^\s*(FROM |WORKDIR |COPY |RUN |CMD |services:|on: \[|listen |location \/)/m.test(c)) return "txt";
+    if (/^\s*(git |gh |curl |ssh-|npx newman |BASE=|### |#!\/)/m.test(c)) return "txt";
+    if (/^\s*https?:\/\//.test(c.trim())) return "txt";
     return "javascript";
+  };
+
+  const commentCut = (line, lang) => {
+    const hashCmt = lang === "python" || lang === "txt";
+    const isSql = lang === "sql";
+    const mark = isSql ? "--" : hashCmt ? "#" : "//";
+    let inS = false;
+    let inD = false;
+    let inT = false;
+    let esc = false;
+    for (let i = 0; i < line.length; i += 1) {
+      const ch = line[i];
+      if (esc) { esc = false; continue; }
+      if ((inS || inD || inT) && ch === "\\") { esc = true; continue; }
+      if (!inS && !inD && !inT) {
+        if (ch === "'") { inS = true; continue; }
+        if (ch === "\"") { inD = true; continue; }
+        if (ch === "`") { inT = true; continue; }
+        if (line.startsWith(mark, i)) {
+          if (mark === "//" && i > 0 && line[i - 1] === ":") continue;
+          return i;
+        }
+      } else if (inS && ch === "'") inS = false;
+      else if (inD && ch === "\"") inD = false;
+      else if (inT && ch === "`") inT = false;
+    }
+    return -1;
   };
 
   const paintCode = (src, lang) => {
     if (!src) return "";
-    const hashCmt = lang === "python" || lang === "txt";
-    const isSql = lang === "sql";
-    const mark = isSql ? "--" : hashCmt ? "#" : "//";
     return String(src).split("\n").map((line) => {
       const trimmed = line.trim();
       if (!trimmed) return "";
@@ -421,13 +452,9 @@
       if (/^(\/\/|#|--|\/\*|\*)/.test(trimmed) || trimmed.startsWith("*/")) {
         return `<span class="code-line is-cmt"><span class="code-cmt">${escapeHtml(line)}</span></span>`;
       }
-      let cut = isSql ? line.search(/\s--/) : hashCmt ? line.search(/(^|[^"'])\s#/) : line.search(/\s\/\//);
-      if (!hashCmt && !isSql && cut < 0) cut = line.search(/\/\/[a-zA-Z]/);
-      if (cut >= 0) {
-        const at = line.indexOf(mark, cut);
-        if (at > 0) {
-          return `<span class="code-line has-cmt"><span class="code-src">${escapeHtml(line.slice(0, at).trimEnd())}</span><span class="code-cmt">${escapeHtml(line.slice(at).trim())}</span></span>`;
-        }
+      const at = commentCut(line, lang);
+      if (at > 0) {
+        return `<span class="code-line has-cmt"><span class="code-src">${escapeHtml(line.slice(0, at).trimEnd())}</span><span class="code-cmt">${escapeHtml(line.slice(at).trim())}</span></span>`;
       }
       return `<span class="code-line"><span class="code-src">${escapeHtml(line)}</span></span>`;
     }).filter(Boolean).join("\n");
@@ -1071,31 +1098,75 @@
   const wrapReadMore = (html, variant = "note") => `
     <div class="readmore readmore-${variant}" data-readmore>
       <div class="readmore-body">${html}</div>
-      <button type="button" class="readmore-btn" data-readmore-btn hidden aria-expanded="false">… Read more</button>
+      <div class="readmore-bar">
+        <button type="button" class="readmore-btn" data-readmore-btn aria-expanded="false">Read more</button>
+      </div>
     </div>`;
 
   const bindReadMore = (root) => {
     const boxes = [...(root || document).querySelectorAll("[data-readmore]")];
     const setup = (box) => {
       if (box.dataset.bound === "1") return;
-      const body = box.querySelector(".readmore-body");
       const btn = box.querySelector("[data-readmore-btn]");
-      if (!body || !btn) return;
+      if (!btn) return;
       const wrap = box.closest(".answer-wrap");
       if (wrap && getComputedStyle(wrap).display === "none") return;
       box.dataset.bound = "1";
-      if (body.scrollHeight <= body.clientHeight + 8) return;
       btn.hidden = false;
       btn.addEventListener("click", () => {
         const open = box.classList.toggle("is-open");
         box.closest(".note")?.classList.toggle("is-open", open);
-        btn.textContent = open ? "Read less" : "… Read more";
+        btn.textContent = open ? "Read less" : "Read more";
         btn.setAttribute("aria-expanded", String(open));
-        const card = box.closest(".note, .item, .example");
-        card?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       });
     };
     requestAnimationFrame(() => boxes.forEach(setup));
+  };
+
+  const splitNoteBody = (body) => {
+    const text = String(body || "").replace(/\r/g, "").trim();
+    if (!text) return { preview: "", sections: [] };
+    const sections = [];
+    let title = "";
+    let buf = [];
+    const flush = () => {
+      const chunk = buf.join("\n").trim();
+      if (title || chunk) sections.push({ title, body: chunk });
+      buf = [];
+    };
+    const lines = text.split("\n");
+    const headed = lines.some((line) => TEACH_HEAD.test(line.trim()));
+    if (headed) {
+      for (const line of lines) {
+        if (TEACH_HEAD.test(line.trim())) {
+          flush();
+          title = prettyTeachHead(line.trim());
+          continue;
+        }
+        buf.push(line);
+      }
+      flush();
+    } else {
+      text.split(/\n\n+/).map((p) => p.trim()).filter(Boolean).forEach((p) => {
+        sections.push({ title: "", body: p });
+      });
+    }
+    return { preview: sections[0]?.body || "", sections };
+  };
+
+  const noteInner = (n) => {
+    const { preview, sections } = splitNoteBody(n?.body);
+    const extra = sections.map((sec) => `
+      <section class="answer-block">
+        ${sec.title ? `<h4>${escapeHtml(sec.title)}</h4>` : ""}
+        ${sec.body.split(/\n\n+/).map((p) => `<p>${escapeHtml(p.trim()).replace(/\n/g, "<br />")}</p>`).join("")}
+      </section>`).join("");
+    return `
+      <div class="note-preview">${preview ? `<p>${escapeHtml(preview)}</p>` : ""}</div>
+      <div class="note-extra">
+        ${renderVisuals(n)}
+        ${extra ? `<div class="answer-sections">${extra}</div>` : ""}
+      </div>`;
   };
 
   const topicLangs = (data) => {
@@ -2407,8 +2478,12 @@
         : (pickCode(item, lang) || item.code);
       if (!single) return "";
       const codeLang = useLangBar ? lang : data.kind === "practice" ? langOfStack(stackF, item) : inferLang(item);
-      const stackLabel = STACKS.find((s) => s.id === (stackF === "all" ? "javascript" : stackF))?.label || codeLang;
-      return `<p class="answer-label">${data.kind === "practice" ? "Easy code" : "Code"} · ${escapeHtml(useLangBar ? langLabel : data.kind === "practice" ? stackLabel : codeLang)}</p><div class="code-wrap"><button class="copy-btn" type="button" data-q-copy>Copy</button><pre class="dsa-pre"><code>${showCode(teachSrc(single, codeLang, data.kind), codeLang)}</code></pre></div>`;
+      const shownLang = useLangBar ? langLabel
+        : codeLang === "txt" ? "text"
+        : codeLang === "sql" ? "SQL"
+        : codeLang === "html" ? "HTML"
+        : (STACKS.find((s) => s.id === (stackF === "all" ? "javascript" : stackF))?.label || codeLang);
+      return `<p class="answer-label">${data.kind === "practice" ? "Easy code" : "Code"} · ${escapeHtml(shownLang)}</p><div class="code-wrap"><button class="copy-btn" type="button" data-q-copy>Copy</button><pre class="dsa-pre"><code>${showCode(teachSrc(single, codeLang, data.kind), codeLang)}</code></pre></div>`;
     };
 
     view.innerHTML = `
@@ -2429,17 +2504,16 @@
       ${tab === "notes" ? `
         <section class="notes-board">
           <div class="notes-board-top">
-            <p>${notes.length} note${notes.length === 1 ? "" : "s"} · open a card to read the rest</p>
+            <p>${notes.length} note${notes.length === 1 ? "" : "s"} · each card opens the same way</p>
             ${notes.length > 6 ? `<input class="field notes-search" id="noteSearch" type="search" placeholder="Filter notes…" />` : ""}
           </div>
-          <div class="${data.kind === "design" ? "design-stack" : "note-grid"}">
-            ${notes.map((n, i) => `<article class="note${data.kind === "design" ? " note-wide" : ""}">
+          <div class="design-stack">
+            ${notes.map((n, i) => `<article class="note note-wide">
               <div class="note-head">
                 <span class="note-num">${String(i + 1).padStart(2, "0")}</span>
                 <h3>${escapeHtml(n.title)}</h3>
               </div>
-              ${renderVisuals(n)}
-              ${wrapReadMore(/^(What this is|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\b/im.test(n.body || "") ? renderTeachText(n.body, n.title) : `<p>${escapeHtml(n.body)}</p>`, "note")}
+              ${wrapReadMore(noteInner(n), "note")}
             </article>`).join("") || `<p class="empty">No notes in this subject yet.</p>`}
           </div>
         </section>` : tab === "examples" ? `
@@ -2463,10 +2537,9 @@
                 <h3>${escapeHtml(ex.title)}</h3>
                 <span class="badge">${escapeHtml(useLangBar ? langLabel : data.kind === "design" ? "workflow" : data.kind === "practice" ? (STACKS.find((s) => s.id === (stackF === "all" ? (ex.lang === "txt" || ex.lang === "html" ? "html" : "javascript") : stackF))?.label || ex.lang || "code") : (ex.lang || "code"))}</span>
               </div>
-              ${renderVisuals(ex)}
               <div class="teach">
                 <p class="answer-label">${data.kind === "design" ? "Design notes" : "Explanation"}</p>
-                ${wrapReadMore(renderTeachText(ex.desc || "", ex.title), "example")}
+                ${wrapReadMore(`${renderVisuals(ex)}${renderTeachText(ex.desc || "", ex.title)}`, "example")}
               </div>
               ${((useLangBar ? pickCode(ex, lang) : data.kind === "practice" ? practiceSrc(ex, stackF) : pickCode(ex, "javascript")) || ex.code) ? `
               <p class="answer-label code-label">${data.kind === "design" ? "Interface sketch" : data.kind === "practice" ? "Easy code · comments on the right" : "Code · comments on the right"}</p>
