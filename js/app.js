@@ -1605,109 +1605,46 @@
     el.textContent = msg;
   };
 
+  const showPendingWork = (el, feature) => {
+    if (!el) return;
+    el.hidden = false;
+    el.textContent = `This work is pending. ${feature} is not active yet.`;
+    el.className = "form-status is-pending";
+  };
+
   const renderAuth = (mode) => {
     const signup = mode === "signup";
-    const user = currentUser();
-    if (user) {
-      view.innerHTML = `
-        <section class="form-page">
-          <div class="page-actions">
-            <a class="btn btn-ghost" href="#/">← Home</a>
-          </div>
-          <article class="auth-card">
-            <h1>You are signed in</h1>
-            <p>Hi ${escapeHtml(user.name)}. Progress, stars, notes, and your streak are saved under ${escapeHtml(user.email)} on this device.</p>
-            <div class="form-actions">
-              <button class="btn btn-primary btn-wide" type="button" id="logoutPageBtn">Log out</button>
-            </div>
-          </article>
-        </section>`;
-      document.getElementById("logoutPageBtn")?.addEventListener("click", () => {
-        localStorage.removeItem(sessionKey);
-        paintChrome();
-        location.hash = "#/login";
-      });
-      return;
-    }
-
     view.innerHTML = `
       <section class="form-page">
         <div class="page-actions">
           <a class="btn btn-ghost" href="#/">← Home</a>
         </div>
         <article class="auth-card">
+          <p class="pending-banner">Work pending</p>
           <h1>${signup ? "Create your account" : "Log in"}</h1>
           <p>${signup
-            ? "Sign up so marked questions, stars, notes, and your streak stay with your name. Guest progress on this browser is copied into the new account."
-            : "Log in to open the progress saved under your email on this device."}</p>
-          <form id="authForm" class="auth-form">
-            ${signup ? `<label>Your name<input class="auth-field" name="name" required maxlength="40" autocomplete="name" /></label>` : ""}
-            <label>Email<input class="auth-field" name="email" type="email" required autocomplete="email" /></label>
-            <label>Password<input class="auth-field" name="password" type="password" required minlength="6" autocomplete="${signup ? "new-password" : "current-password"}" /></label>
-            <p class="form-error" id="authError" hidden></p>
+            ? "This signup page is ready to look at. Creating an account is not active yet."
+            : "This login page is ready to look at. Signing in is not active yet."}</p>
+          <form id="authForm" class="auth-form" novalidate>
+            ${signup ? `<label>Your name<input class="auth-field" name="name" maxlength="40" autocomplete="name" /></label>` : ""}
+            <label>Email<input class="auth-field" name="email" type="email" autocomplete="email" /></label>
+            <label>Password<input class="auth-field" name="password" type="password" minlength="6" autocomplete="${signup ? "new-password" : "current-password"}" /></label>
+            <p class="form-status" id="authError" hidden></p>
             <div class="form-actions">
-              <button class="btn btn-primary btn-wide" type="submit">${signup ? "Sign up and keep my progress" : "Log in"}</button>
+              <button class="btn btn-primary btn-wide" type="submit">${signup ? "Sign up" : "Log in"}</button>
               <a class="btn btn-ghost btn-wide" href="${signup ? "#/login" : "#/signup"}">${signup ? "I already have an account" : "Create an account"}</a>
             </div>
           </form>
-          <p class="auth-note">Accounts stay in this browser. There is no Preplace server yet, so use the same device to see your progress.</p>
+          <p class="auth-note">Raj is still finishing accounts. You can use Preplace without logging in.</p>
         </article>
       </section>`;
 
-    document.getElementById("authForm")?.addEventListener("submit", async (e) => {
+    document.getElementById("authForm")?.addEventListener("submit", (e) => {
       e.preventDefault();
-      const fd = new FormData(e.target);
-      const email = String(fd.get("email") || "").trim().toLowerCase();
-      const password = String(fd.get("password") || "");
-      const name = String(fd.get("name") || "").trim();
-      const accounts = loadJson(accountsKey, {});
-
-      if (!email || password.length < 6) {
-        showAuthError("Use a real email and a password of at least 6 characters.");
-        return;
-      }
-
-      if (signup) {
-        if (!name) {
-          showAuthError("Please add your name.");
-          return;
-        }
-        if (accounts[email]) {
-          showAuthError("That email is already signed up on this browser. Log in instead.");
-          return;
-        }
-        const salt = randomSalt();
-        const hash = await hashPass(password, salt);
-        accounts[email] = { name, email, salt, hash, created: Date.now() };
-        localStorage.setItem(accountsKey, JSON.stringify(accounts));
-        const store = readStore();
-        const guest = store.guest || emptyBundle();
-        store[email] = {
-          progress: { ...guest.progress },
-          stars: { ...guest.stars },
-          notes: { ...guest.notes },
-          streak: { ...(guest.streak || { count: 0, last: "" }) }
-        };
-        writeStore(store);
-        localStorage.setItem(sessionKey, email);
-        countLearnerOnce(email);
-        location.hash = "#/";
-        return;
-      }
-
-      const acc = accounts[email];
-      if (!acc) {
-        showAuthError("No account with that email on this browser. Sign up first.");
-        return;
-      }
-      const hash = await hashPass(password, acc.salt);
-      if (hash !== acc.hash) {
-        showAuthError("Wrong password. Try again.");
-        return;
-      }
-      localStorage.setItem(sessionKey, email);
-      countLearnerOnce(email);
-      location.hash = "#/";
+      showPendingWork(
+        document.getElementById("authError"),
+        signup ? "Sign up" : "Login"
+      );
     });
   };
 
@@ -1768,31 +1705,40 @@
   };
 
   const renderContact = () => {
-    const user = currentUser();
     view.innerHTML = `
       <section class="form-page">
         <div class="page-actions">
           <a class="btn btn-ghost" href="#/">← Home</a>
           <a class="btn" href="#/feedback">Feedback</a>
         </div>
+        <article class="author-card">
+          <button type="button" class="contact-photo-btn" id="openRajPhoto" aria-label="View Raj Kumar's full photo">
+            <img class="contact-photo" src="assets/raj.jpg" width="88" height="88" alt="Raj Kumar" />
+          </button>
+          <div>
+            <p class="hero-kicker">Author</p>
+            <h2>Raj Kumar</h2>
+            <p>I built Preplace so interview prep stays in one place: notes, DSA, labs, and the questions companies repeat.</p>
+            <p class="contact-links">
+              Email: <a href="mailto:${CONTACT.email}">${CONTACT.email}</a><br />
+              LinkedIn: <a href="${CONTACT.linkedin}" target="_blank" rel="noopener noreferrer">linkedin.com/in/raja-o</a>
+            </p>
+          </div>
+        </article>
         <article class="auth-card">
+          <p class="pending-banner">Work pending</p>
           <div class="contact-head">
             <div>
               <p class="hero-kicker">Message</p>
               <h1>Message Raj Kumar</h1>
-              <p>Write your note and press <strong>Send message</strong>. It goes to <strong>${CONTACT.email}</strong>.</p>
-              <p>DSA doubts, a wrong answer, or a missing solution — send it here. Site comments go on the Feedback page.</p>
-              <p class="contact-links">LinkedIn: <a href="${CONTACT.linkedin}" target="_blank" rel="noopener noreferrer">linkedin.com/in/raja-o</a></p>
+              <p>This form is here so you can see how a message to the author will look. Sending is not active yet.</p>
+              <p>DSA doubts and missing solutions will go here when this work is finished.</p>
             </div>
-            <button type="button" class="contact-photo-btn" id="openRajPhoto" aria-label="View Raj Kumar's full photo">
-              <img class="contact-photo" src="assets/raj.jpg" width="88" height="88" alt="Raj Kumar" />
-            </button>
           </div>
-          <form id="contactForm" class="auth-form">
-            <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
-            <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
-            <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
-            <label>Message<textarea class="auth-field" name="message" rows="8" required minlength="8" placeholder="What do you want Raj to know?"></textarea></label>
+          <form id="contactForm" class="auth-form" novalidate>
+            <label>Your name<input class="auth-field" name="name" maxlength="80" /></label>
+            <label>Your email<input class="auth-field" name="email" type="email" /></label>
+            <label>Message<textarea class="auth-field" name="message" rows="8" placeholder="What do you want Raj to know?"></textarea></label>
             <p class="form-status" id="contactStatus" hidden></p>
             <div class="form-actions">
               <button class="btn btn-primary btn-wide" type="submit" id="contactSend">Send message</button>
@@ -1806,32 +1752,9 @@
         </dialog>
       </section>`;
 
-    const form = document.getElementById("contactForm");
-    const sendBtn = document.getElementById("contactSend");
-    form?.addEventListener("submit", (e) => {
+    document.getElementById("contactForm")?.addEventListener("submit", (e) => {
       e.preventDefault();
-      const fd = new FormData(form);
-      if (String(fd.get("_gotcha") || "").trim()) return;
-      const name = String(fd.get("name") || "").trim();
-      const email = String(fd.get("email") || "").trim();
-      const message = String(fd.get("message") || "").trim();
-      if (!name || !email || message.length < 8) {
-        setContactStatus("Please add your name, email, and a short message.", "is-error");
-        return;
-      }
-      postToRaj({
-        name,
-        email,
-        message,
-        _subject: `Preplace message from ${name}`
-      });
-      form.reset();
-      if (user) {
-        form.elements.name.value = user.name || "";
-        form.elements.email.value = user.email || "";
-      }
-      setContactStatus("Sent. Thank you — Raj will read this.", "is-ok");
-      sendBtn.textContent = "Send another";
+      showPendingWork(document.getElementById("contactStatus"), "Sending a message");
     });
     bindRajPhoto();
   };
@@ -2029,10 +1952,12 @@
             </div>
             <h1>Pick a career.<br />See what to learn.</h1>
             <p class="hero-lead">Frontend, backend, MERN, full stack, ML, DevOps, and a FAANG DSA path. Each path shows the order, then opens notes, easy code, and practice questions.</p>
+            <!-- Work pending: signed-in / guest paragraph
             <p class="account-line">${user
               ? `Signed in as <strong>${escapeHtml(user.name)}</strong> · ${escapeHtml(user.email)}. Done questions, stars, and notes stay with this account.`
               : `You are a guest. <a href="#/signup">Sign up</a> to keep progress under your name, or <a href="#/login">log in</a>. Message <a href="#/contact">Raj Kumar</a> anytime.`
             }</p>
+            -->
             <div class="hero-cta">
               <button class="btn btn-primary" type="button" id="scrollCareers">Browse paths</button>
               <a class="btn" href="#/topic/practice-web">Practice questions</a>
@@ -2055,6 +1980,7 @@
               <p>${daily ? `${daily.topicIcon} ${escapeHtml(daily.q)} · ${escapeHtml(daily.topicTitle)}` : "DSA topics are still loading."}</p>
               ${daily ? `<button class="btn btn-primary" type="button" id="openDailyHero">Open</button>` : ""}
             </div>
+            <!-- Work pending: signed-in count and rating
             <div class="hero-panel-meta">
               <p><b data-learners>${Math.max(publicStats.learners, localLearnerCount()).toLocaleString()}</b> signed in</p>
               <div class="author-rate">
@@ -2065,6 +1991,7 @@
                 <p class="site-rating-meta" id="homeRatingMeta"></p>
               </div>
             </div>
+            -->
           </aside>
           <div class="hero-stats">
           <div class="stats">
@@ -2073,6 +2000,7 @@
             <div class="stat"><b>${totals.questions}</b><span>questions</span></div>
             <div class="stat"><b>${readStreak().count}</b><span>day streak</span></div>
           </div>
+          <!-- Work pending: signed-in count and rating
           <p class="social-bar">
             <span><b id="statLearners">${Math.max(publicStats.learners, localLearnerCount()).toLocaleString()}</b> signed in</span>
             <span>
@@ -2082,6 +2010,7 @@
               <span id="statRatingMeta">${publicStats.ratingN ? `${publicStats.ratingN.toLocaleString()} rating${publicStats.ratingN === 1 ? "" : "s"}` : "no ratings yet"}</span>
             </span>
           </p>
+          -->
           </div>
         </div>
       </section>
@@ -2157,14 +2086,15 @@
       const p = randomProblem();
       if (p) goProblem(p.topicId, p.id);
     });
-    paintHomeSocial(publicStats);
-    view.querySelectorAll("[data-home-rate]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const stats = await saveSiteRating(btn.dataset.homeRate);
-        paintHomeSocial(stats);
-      });
-    });
-    refreshPublicStats().then((stats) => paintHomeSocial(stats));
+    // Work pending: signed-in count and rating stay in the markup above, but do not run.
+    // paintHomeSocial(publicStats);
+    // view.querySelectorAll("[data-home-rate]").forEach((btn) => {
+    //   btn.addEventListener("click", async () => {
+    //     const stats = await saveSiteRating(btn.dataset.homeRate);
+    //     paintHomeSocial(stats);
+    //   });
+    // });
+    // refreshPublicStats().then((stats) => paintHomeSocial(stats));
     if (scrollAuthor) {
       requestAnimationFrame(() => {
         document.getElementById("heroFocus")?.scrollIntoView({ behavior: "smooth", block: "start" });

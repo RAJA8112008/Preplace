@@ -2101,6 +2101,47 @@ html[data-theme="dark"] .contact-links a:hover {
 
 .form-status.is-ok { color: var(--ok); }
 
+.form-status.is-pending {
+  color: var(--accent);
+}
+
+.pending-banner {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.author-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  margin: 0 0 16px;
+  padding: 20px 22px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.author-card h2 {
+  margin: 0 0 8px;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.55rem;
+}
+
+.author-card p {
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+
+.author-card .contact-links { margin-top: 8px; }
+
 .honey {
   position: absolute;
   left: -9999px;
