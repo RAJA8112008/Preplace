@@ -12,7 +12,11 @@
   const accountsKey = "prepplace-accounts-v1";
   const sessionKey = "prepplace-session-v1";
   const userDataKey = "prepplace-user-data-v1";
-  const CONTACT = { name: "Raj Kumar", email: "kraj9380286@gmail.com" };
+  const CONTACT = {
+    name: "Raj Kumar",
+    email: "kraj9380286@gmail.com",
+    linkedin: "https://www.linkedin.com/in/raja-o/"
+  };
   const statsCacheKey = "prepplace-public-stats-v1";
   const countedEmailsKey = "prepplace-counted-emails-v1";
   const myRatingKey = "prepplace-my-rating-v1";
@@ -1778,6 +1782,7 @@
               <h1>Message Raj Kumar</h1>
               <p>Write your note and press <strong>Send message</strong>. It goes to <strong>${CONTACT.email}</strong>.</p>
               <p>DSA doubts, a wrong answer, or a missing solution — send it here. Site comments go on the Feedback page.</p>
+              <p class="contact-links">LinkedIn: <a href="${CONTACT.linkedin}" target="_blank" rel="noopener noreferrer">linkedin.com/in/raja-o</a></p>
             </div>
             <button type="button" class="contact-photo-btn" id="openRajPhoto" aria-label="View Raj Kumar's full photo">
               <img class="contact-photo" src="assets/raj.jpg" width="88" height="88" alt="Raj Kumar" />

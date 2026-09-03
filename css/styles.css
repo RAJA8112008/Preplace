@@ -1906,6 +1906,29 @@ html[data-theme="dark"] .asked-q-list a:hover {
   margin: 0 0 8px;
 }
 
+.contact-links {
+  margin: 10px 0 0;
+}
+
+.contact-links a {
+  color: #111;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.contact-links a:hover {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+html[data-theme="dark"] .contact-links a {
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .contact-links a:hover {
+  color: #60a5fa;
+}
+
 .contact-photo {
   width: 88px;
   height: 88px;
