@@ -3,8 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#f4efe6" id="themeColor" />
   <title>Preplace — Learn by career path</title>
   <meta name="description" content="Choose Frontend, Backend, MERN, Full Stack, ML, DevOps, or a FAANG DSA path. Notes, easy code, and interview questions with brute, optimal, and more optimal solutions." />
+  <script>
+    (function () {
+      try {
+        var key = "prepplace-theme";
+        var t = localStorage.getItem(key);
+        if (t !== "dark" && t !== "light") {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.dataset.theme = t;
+        document.documentElement.style.colorScheme = t;
+      } catch (e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -28,7 +43,7 @@
             <span class="sr-only">Search topics</span>
             <input id="globalSearch" type="search" placeholder="Search careers, topics, or questions…" autocomplete="off" />
           </label>
-          <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme">☾</button>
+          <button id="themeToggle" class="icon-btn" type="button" aria-label="Switch to dark mode" aria-pressed="false">☾</button>
         </div>
       </div>
       <div class="topbar-row">

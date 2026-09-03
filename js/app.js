@@ -1460,13 +1460,24 @@
   const goProblem = (topicId, qid) => { location.hash = `#/topic/${topicId}/${qid}`; };
 
   const applyTheme = (theme) => {
-    document.documentElement.dataset.theme = theme;
-    themeToggle.textContent = theme === "dark" ? "☀" : "☾";
-    localStorage.setItem(themeKey, theme);
+    const next = theme === "dark" ? "dark" : "light";
+    document.documentElement.dataset.theme = next;
+    document.documentElement.style.colorScheme = next;
+    const colorMeta = document.getElementById("themeColor");
+    if (colorMeta) colorMeta.setAttribute("content", next === "dark" ? "#12110f" : "#f4efe6");
+    if (themeToggle) {
+      themeToggle.textContent = next === "dark" ? "☀" : "☾";
+      themeToggle.setAttribute("aria-pressed", String(next === "dark"));
+      themeToggle.setAttribute("aria-label", next === "dark" ? "Switch to light mode" : "Switch to dark mode");
+    }
+    localStorage.setItem(themeKey, next);
   };
 
-  applyTheme(localStorage.getItem(themeKey) || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
-  themeToggle.addEventListener("click", () => {
+  const savedTheme = localStorage.getItem(themeKey);
+  applyTheme(savedTheme === "dark" || savedTheme === "light"
+    ? savedTheme
+    : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  themeToggle?.addEventListener("click", () => {
     applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
   });
 

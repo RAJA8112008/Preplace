@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --bg: #f4efe6;
   --bg-2: #ebe3d4;
   --ink: #1c1914;
@@ -9,6 +10,7 @@
   --accent-soft: #f3d7c6;
   --ok: #2f6b4f;
   --ok-soft: #d7ebe0;
+  --danger: #b42318;
   --shadow: 0 10px 30px rgba(28, 25, 20, 0.07);
   --shadow-hover: 0 16px 36px rgba(28, 25, 20, 0.12);
   --radius: 18px;
@@ -18,7 +20,8 @@
   --lead: 1.12rem;
 }
 
-[data-theme="dark"] {
+html[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #12110f;
   --bg-2: #1b1915;
   --ink: #f3eadc;
@@ -29,6 +32,7 @@
   --accent-soft: #3a271c;
   --ok: #7dcaa4;
   --ok-soft: #1d3328;
+  --danger: #ff8a7a;
   --shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
   --shadow-hover: 0 18px 40px rgba(0, 0, 0, 0.4);
 }
@@ -183,6 +187,10 @@ body {
   min-width: 180px;
 }
 
+input, textarea, select, button {
+  color-scheme: inherit;
+}
+
 .search-wrap input,
 .field {
   width: 100%;
@@ -193,6 +201,18 @@ body {
   padding: 12px 16px;
   font: inherit;
   font-size: var(--fs);
+}
+
+.search-wrap input::placeholder,
+.auth-field::placeholder {
+  color: var(--muted);
+}
+
+.search-wrap input:-webkit-autofill,
+.auth-field:-webkit-autofill {
+  -webkit-text-fill-color: var(--ink);
+  box-shadow: 0 0 0 1000px var(--card) inset;
+  caret-color: var(--ink);
 }
 
 .field { max-width: 360px; }
@@ -225,6 +245,12 @@ body {
   height: 44px;
   padding: 0;
   flex-shrink: 0;
+}
+
+.icon-btn[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
 }
 
 .btn-ghost,
@@ -1985,7 +2011,7 @@ body[data-page="feedback"] .search-wrap {
 .form-error,
 .form-status.is-error {
   margin: 0;
-  color: #b42318;
+  color: var(--danger);
   font-weight: 600;
 }
 
@@ -2010,6 +2036,10 @@ body[data-page="feedback"] .search-wrap {
 @media (max-width: 720px) {
   html { font-size: 106.25%; }
   .app { padding: 16px 14px 36px; }
+  .hero-cta-stack { grid-template-columns: 1fr; }
+  .hero-cta-stack .btn-ghost { grid-column: auto; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .icon-btn { width: 44px; height: 44px; }
   .hero {
     padding: 18px 16px 16px;
     border-radius: 22px;
