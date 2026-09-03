@@ -13,6 +13,12 @@
   const sessionKey = "prepplace-session-v1";
   const userDataKey = "prepplace-user-data-v1";
   const CONTACT = { name: "Raj Kumar", email: "kraj9380286@gmail.com" };
+  const statsCacheKey = "prepplace-public-stats-v1";
+  const countedEmailsKey = "prepplace-counted-emails-v1";
+  const myRatingKey = "prepplace-my-rating-v1";
+  const ratedPublicKey = "prepplace-rated-public-v1";
+  const ABACUS = "https://abacus.jasoncameron.dev";
+  const ABACUS_NS = "prepplace-rajkumar";
   const COMPANIES = ["Google", "Meta", "Amazon", "Apple", "Microsoft", "Netflix", "Uber", "Adobe"];
   const CODE_LANGS = [
     { id: "javascript", label: "JavaScript" },
@@ -606,7 +612,7 @@
       </section>`).join("")}</div>`;
   };
 
-  const TEACH_HEAD = /^(Summary|What this is|What happens|What the code is doing|In the example|In the code|Also know|Say this in an interview|Watch out|Common mistake|How it works|Definition|Configuration|Operational risk|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\.?$/i;
+  const TEACH_HEAD = /^(Summary|How the code works|What this is|What happens|What the code is doing|In the example|In the code|Also know|Say this in an interview|Watch out|Common mistake|Wrong answer|Check yourself|Follow-up questions|Worked example|In production|How it works|Definition|Configuration|Operational risk|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\.?$/i;
 
   const extraForQuestion = (q, a) => {
     const hay = `${q} ${a}`.toLowerCase();
@@ -977,7 +983,7 @@
     const tip = extraForQuestion(q || "", raw);
     const labeled = formalToTeach(raw);
     if (labeled) return injectTeachExtras(labeled, tip);
-    if (/^Summary\b/im.test(raw) || /^What this is\b/im.test(raw) || /^Before you use this\b/im.test(raw) || /^Why we use it\b/im.test(raw) || /^What the code is doing\b/im.test(raw) || /^The problem before\b/im.test(raw) || /^What it solves\b/im.test(raw)) {
+    if (/^Summary\b/im.test(raw) || /^How the code works\b/im.test(raw) || /^What this is\b/im.test(raw) || /^Before you use this\b/im.test(raw) || /^Why we use it\b/im.test(raw) || /^What the code is doing\b/im.test(raw) || /^The problem before\b/im.test(raw) || /^What it solves\b/im.test(raw)) {
       return injectTeachExtras(raw, tip);
     }
     const parts = raw.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
@@ -997,6 +1003,12 @@
 
   const prettyTeachHead = (h) => {
     const t = String(h || "").replace(/\.$/, "").trim();
+    if (/^wrong answer/i.test(t)) return "Wrong answer";
+    if (/^check yourself/i.test(t)) return "Check yourself";
+    if (/^follow-up questions/i.test(t)) return "Follow-up questions";
+    if (/^worked example/i.test(t)) return "Worked example";
+    if (/^in production/i.test(t)) return "In production";
+    if (/^how the code works/i.test(t)) return "How the code works";
     if (/^summary$/i.test(t)) return "Summary";
     if (/^the problem before/i.test(t)) return "The problem before";
     if (/^before you use this/i.test(t)) return "The problem before";
@@ -1044,8 +1056,38 @@
     return `<div class="answer-sections">${sections.map(([head, body]) => `
       <section class="answer-block">
         ${head ? `<h4>${escapeHtml(head)}</h4>` : ""}
-        <p>${escapeHtml(body)}</p>
+        ${body.split(/\n\n+/).map((p) => `<p>${escapeHtml(p.trim()).replace(/\n/g, "<br />")}</p>`).join("")}
       </section>`).join("")}</div>`;
+  };
+
+  const wrapReadMore = (html, variant = "note") => `
+    <div class="readmore readmore-${variant}" data-readmore>
+      <div class="readmore-body">${html}</div>
+      <button type="button" class="readmore-btn" data-readmore-btn hidden aria-expanded="false">… Read more</button>
+    </div>`;
+
+  const bindReadMore = (root) => {
+    const boxes = [...(root || document).querySelectorAll("[data-readmore]")];
+    const setup = (box) => {
+      if (box.dataset.bound === "1") return;
+      const body = box.querySelector(".readmore-body");
+      const btn = box.querySelector("[data-readmore-btn]");
+      if (!body || !btn) return;
+      const wrap = box.closest(".answer-wrap");
+      if (wrap && getComputedStyle(wrap).display === "none") return;
+      box.dataset.bound = "1";
+      if (body.scrollHeight <= body.clientHeight + 8) return;
+      btn.hidden = false;
+      btn.addEventListener("click", () => {
+        const open = box.classList.toggle("is-open");
+        box.closest(".note")?.classList.toggle("is-open", open);
+        btn.textContent = open ? "Read less" : "… Read more";
+        btn.setAttribute("aria-expanded", String(open));
+        const card = box.closest(".note, .item, .example");
+        card?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    };
+    requestAnimationFrame(() => boxes.forEach(setup));
   };
 
   const topicLangs = (data) => {
@@ -1084,6 +1126,137 @@
   const loadJson = (key, fallback) => {
     try { return JSON.parse(localStorage.getItem(key) || "") || fallback; }
     catch { return fallback; }
+  };
+
+  const localLearnerCount = () => Object.keys(loadJson(accountsKey, {})).length;
+
+  const emptyPublicStats = () => ({
+    learners: localLearnerCount(),
+    ratingSum: 0,
+    ratingN: 0
+  });
+
+  const readPublicStats = () => {
+    const cache = loadJson(statsCacheKey, emptyPublicStats());
+    return {
+      learners: Math.max(Number(cache.learners) || 0, localLearnerCount()),
+      ratingSum: Number(cache.ratingSum) || 0,
+      ratingN: Number(cache.ratingN) || 0
+    };
+  };
+
+  const writePublicStats = (stats) => {
+    localStorage.setItem(statsCacheKey, JSON.stringify(stats));
+    return stats;
+  };
+
+  const abacusFetch = async (path) => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4000);
+    try {
+      const res = await fetch(`${ABACUS}/${path}`, { cache: "no-store", signal: ctrl.signal });
+      if (!res.ok) return 0;
+      const data = await res.json();
+      return Number(data.value ?? data.count) || 0;
+    } catch {
+      return 0;
+    } finally {
+      clearTimeout(t);
+    }
+  };
+
+  const abacusGet = (key) => abacusFetch(`get/${ABACUS_NS}/${key}`);
+  const abacusHit = (key) => abacusFetch(`hit/${ABACUS_NS}/${key}`);
+
+  const refreshPublicStats = async () => {
+    const local = readPublicStats();
+    const [learners, ratingSum, ratingN] = await Promise.all([
+      abacusGet("logins"),
+      abacusGet("ratesum"),
+      abacusGet("raten")
+    ]);
+    return writePublicStats({
+      learners: Math.max(learners, local.learners, localLearnerCount()),
+      ratingSum: Math.max(ratingSum, local.ratingSum),
+      ratingN: Math.max(ratingN, local.ratingN)
+    });
+  };
+
+  const countLearnerOnce = async (email) => {
+    const key = String(email || "").trim().toLowerCase();
+    if (!key) return;
+    const counted = loadJson(countedEmailsKey, {});
+    if (counted[key]) return;
+    counted[key] = Date.now();
+    localStorage.setItem(countedEmailsKey, JSON.stringify(counted));
+    const remote = await abacusHit("logins");
+    const stats = readPublicStats();
+    stats.learners = Math.max(remote, localLearnerCount(), stats.learners);
+    writePublicStats(stats);
+  };
+
+  const ratingAverage = (stats) => (stats.ratingN ? stats.ratingSum / stats.ratingN : 0);
+
+  const ratingLabel = (stats) => (stats.ratingN ? ratingAverage(stats).toFixed(1) : "—");
+
+  const starGlyphs = (avg) => {
+    const n = Math.round(Number(avg) || 0);
+    return "★".repeat(Math.min(5, Math.max(0, n))) + "☆".repeat(Math.max(0, 5 - n));
+  };
+
+  const mySiteRating = () => Number(localStorage.getItem(myRatingKey) || 0) || 0;
+
+  const saveSiteRating = async (stars) => {
+    const n = Math.min(5, Math.max(1, Number(stars) || 0));
+    localStorage.setItem(myRatingKey, String(n));
+    if (localStorage.getItem(ratedPublicKey) === "1") return readPublicStats();
+    localStorage.setItem(ratedPublicKey, "1");
+    const stats = readPublicStats();
+    stats.ratingSum += n;
+    stats.ratingN += 1;
+    writePublicStats(stats);
+    await abacusHit("raten");
+    for (let i = 0; i < n; i += 1) await abacusHit("ratesum");
+    const remoteN = await abacusGet("raten");
+    const remoteSum = await abacusGet("ratesum");
+    if (remoteN) {
+      writePublicStats({
+        ...readPublicStats(),
+        ratingN: Math.max(remoteN, stats.ratingN),
+        ratingSum: Math.max(remoteSum, stats.ratingSum)
+      });
+    }
+    return readPublicStats();
+  };
+
+  const paintHomeSocial = (stats) => {
+    const learners = Math.max(stats.learners, localLearnerCount());
+    const avg = ratingAverage(stats);
+    const learnerEl = document.getElementById("statLearners");
+    const ratingEl = document.getElementById("statRatingVal");
+    const ratingMeta = document.getElementById("statRatingMeta");
+    const glyphs = document.getElementById("statRatingStars");
+    const homeMeta = document.getElementById("homeRatingMeta");
+    if (learnerEl) learnerEl.textContent = learners.toLocaleString();
+    if (ratingEl) ratingEl.textContent = ratingLabel(stats);
+    if (ratingMeta) {
+      ratingMeta.textContent = stats.ratingN
+        ? `${stats.ratingN.toLocaleString()} rating${stats.ratingN === 1 ? "" : "s"}`
+        : "no ratings yet";
+    }
+    if (glyphs) glyphs.textContent = stats.ratingN ? starGlyphs(avg) : "☆☆☆☆☆";
+    const mine = mySiteRating();
+    document.querySelectorAll("[data-home-rate]").forEach((btn) => {
+      const v = Number(btn.dataset.homeRate);
+      btn.classList.toggle("on", mine ? v <= mine : stats.ratingN > 0 && v <= Math.round(avg));
+    });
+    if (homeMeta) {
+      homeMeta.textContent = mine
+        ? `You rated ${mine} / 5. Site average ${ratingLabel(stats)}${stats.ratingN ? ` from ${stats.ratingN.toLocaleString()} rating${stats.ratingN === 1 ? "" : "s"}` : ""}.`
+        : stats.ratingN
+          ? `${ratingLabel(stats)} / 5 from ${stats.ratingN.toLocaleString()} rating${stats.ratingN === 1 ? "" : "s"}. Tap a star to rate.`
+          : "Be the first to rate PrepPlace. Tap a star.";
+    }
   };
 
   const emptyBundle = () => ({ progress: {}, stars: {}, notes: {}, streak: { count: 0, last: "" } });
@@ -1392,6 +1565,7 @@
         };
         writeStore(store);
         localStorage.setItem(sessionKey, email);
+        countLearnerOnce(email);
         location.hash = "#/";
         return;
       }
@@ -1407,6 +1581,7 @@
         return;
       }
       localStorage.setItem(sessionKey, email);
+      countLearnerOnce(email);
       location.hash = "#/";
     });
   };
@@ -1590,6 +1765,7 @@
         feedback,
         _subject: `PrepPlace feedback from ${name}`
       });
+      if (rating) saveSiteRating(rating);
       feedbackForm.reset();
       ratingInput.value = "";
       paintStars(0);
@@ -1630,6 +1806,7 @@
     else if (page === "login") renderAuth("login");
     else if (page === "signup") renderAuth("signup");
     else if (page === "contact") renderContact(id);
+    else if (page === "about") renderHome("", true);
     else renderHome();
   };
 
@@ -1648,7 +1825,7 @@
       </a>`;
   };
 
-  const renderHome = (filter = "") => {
+  const renderHome = (filter = "", scrollAuthor = false) => {
     const q = (filter || searchInput.value || "").trim().toLowerCase();
     const sections = window.PREP_CAREER_SECTIONS || [];
     const careers = (window.PREP_CAREERS || []).filter((c) => {
@@ -1694,6 +1871,7 @@
     }, { questions: 0, done: 0 });
 
     const user = currentUser();
+    const publicStats = readPublicStats();
     const pathPills = sections.map((sec) => {
       const items = (window.PREP_CAREERS || []).filter((c) => c.section === sec.id);
       if (!items.length) return "";
@@ -1734,11 +1912,22 @@
             </a>
             ${pathPills}
           </aside>
+          <div class="hero-stats">
           <div class="stats">
             <div class="stat"><b>${window.PREP_CAREERS.length}</b><span>career paths</span></div>
             <div class="stat"><b>${window.PREP_TOPICS.length}</b><span>subjects</span></div>
             <div class="stat"><b>${totals.questions}</b><span>questions</span></div>
             <div class="stat"><b>${readStreak().count}</b><span>day streak</span></div>
+          </div>
+          <p class="social-bar">
+            <span><b id="statLearners">${Math.max(publicStats.learners, localLearnerCount()).toLocaleString()}</b> signed in</span>
+            <span>
+              <b id="statRatingVal">${ratingLabel(publicStats)}</b>
+              / 5
+              <span class="social-stars" id="statRatingStars">${publicStats.ratingN ? starGlyphs(ratingAverage(publicStats)) : "☆☆☆☆☆"}</span>
+              <span id="statRatingMeta">${publicStats.ratingN ? `${publicStats.ratingN.toLocaleString()} rating${publicStats.ratingN === 1 ? "" : "s"}` : "no ratings yet"}</span>
+            </span>
+          </p>
           </div>
         </div>
       </section>
@@ -1786,6 +1975,29 @@
       <p class="example-intro" style="margin-top:22px">
         Want one subject only? <a href="#/topics">Browse all subjects</a> · <a href="#/dsa">Search every DSA problem</a>
       </p>
+      <section class="author-section" id="about-author">
+        <article class="author-card">
+          <img class="author-photo" src="assets/raj.jpg" width="148" height="148" alt="Raj Kumar" />
+          <div class="author-copy">
+            <p class="hero-kicker">About the author</p>
+            <h2>Raj Kumar</h2>
+            <p>Raj built PrepPlace so you can pick a career path and see what to learn next — notes, easy code, and interview questions in one place. He writes DSA solutions in C++, including a Raj's C++ tab on problems, and answers doubts when you send a message.</p>
+            <p>Accounts stay in this browser, so sign up to keep progress, stars, and notes. If a question is wrong or a topic is missing, tell Raj.</p>
+            <div class="author-links">
+              <a class="btn btn-primary" href="#/contact">Message Raj</a>
+              <a class="btn" href="#/contact/feedback">Send feedback</a>
+              <a class="btn btn-ghost" href="https://github.com/RAJA8112008/Preplace" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+            <div class="author-rate">
+              <p class="filter-label">Rate this website</p>
+              <div class="star-row" id="homeStars" role="group" aria-label="Rate PrepPlace">
+                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-pick" data-home-rate="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}
+              </div>
+              <p class="site-rating-meta" id="homeRatingMeta"></p>
+            </div>
+          </div>
+        </article>
+      </section>
     `;
     document.getElementById("scrollCareers")?.addEventListener("click", () => {
       document.getElementById("homeCareers")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1803,6 +2015,19 @@
       const p = randomProblem();
       if (p) goProblem(p.topicId, p.id);
     });
+    paintHomeSocial(publicStats);
+    view.querySelectorAll("[data-home-rate]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const stats = await saveSiteRating(btn.dataset.homeRate);
+        paintHomeSocial(stats);
+      });
+    });
+    refreshPublicStats().then((stats) => paintHomeSocial(stats));
+    if (scrollAuthor) {
+      requestAnimationFrame(() => {
+        document.getElementById("about-author")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
   };
 
   const renderDsaSheet = () => {
@@ -2009,6 +2234,10 @@
   };
 
   const renderTopic = (id, openQid) => {
+    if (openQid === "notes" || openQid === "examples" || openQid === "questions") {
+      window.topicTab = openQid;
+      openQid = "";
+    }
     const meta = topicById(id);
     const data = pack(id);
     if (!data) {
@@ -2104,12 +2333,25 @@
       </section>
       <div class="tabs" role="tablist">
         <button class="tab ${tab === "examples" ? "active" : ""}" data-tab="examples">${data.kind === "design" ? "Workflows" : data.kind === "practice" ? "Starter code" : "Easy code"}</button>
-        <button class="tab ${tab === "notes" ? "active" : ""}" data-tab="notes">Notes</button>
+        <button class="tab ${tab === "notes" ? "active" : ""}" data-tab="notes">Notes${notes.length ? ` · ${notes.length}` : ""}</button>
         <button class="tab ${tab === "questions" ? "active" : ""}" data-tab="questions">${allQuestions.length} ${data.kind === "practice" && !data.langBar ? "labs" : "questions"}</button>
       </div>
       ${tab === "notes" ? `
-        <section class="${data.kind === "design" ? "design-stack" : "note-grid"}">
-          ${notes.map((n) => `<article class="note${data.kind === "design" ? " note-wide" : ""}"><h3>${escapeHtml(n.title)}</h3>${renderVisuals(n)}${/^(What this is|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\b/im.test(n.body || "") ? renderTeachText(n.body, n.title) : `<p>${escapeHtml(n.body)}</p>`}</article>`).join("")}
+        <section class="notes-board">
+          <div class="notes-board-top">
+            <p>${notes.length} note${notes.length === 1 ? "" : "s"} · open a card to read the rest</p>
+            ${notes.length > 6 ? `<input class="field notes-search" id="noteSearch" type="search" placeholder="Filter notes…" />` : ""}
+          </div>
+          <div class="${data.kind === "design" ? "design-stack" : "note-grid"}">
+            ${notes.map((n, i) => `<article class="note${data.kind === "design" ? " note-wide" : ""}">
+              <div class="note-head">
+                <span class="note-num">${String(i + 1).padStart(2, "0")}</span>
+                <h3>${escapeHtml(n.title)}</h3>
+              </div>
+              ${renderVisuals(n)}
+              ${wrapReadMore(/^(What this is|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\b/im.test(n.body || "") ? renderTeachText(n.body, n.title) : `<p>${escapeHtml(n.body)}</p>`, "note")}
+            </article>`).join("") || `<p class="empty">No notes in this subject yet.</p>`}
+          </div>
         </section>` : tab === "examples" ? `
         ${useLangBar ? langBar(lang, langs) : ""}
         ${showStacks ? `<div class="control-board stack-board">${stackBar(stacks, stackF)}</div>` : ""}
@@ -2134,7 +2376,7 @@
               ${renderVisuals(ex)}
               <div class="teach">
                 <p class="answer-label">${data.kind === "design" ? "Design notes" : "Explanation"}</p>
-                ${renderTeachText(ex.desc || "", ex.title)}
+                ${wrapReadMore(renderTeachText(ex.desc || "", ex.title), "example")}
               </div>
               ${((useLangBar ? pickCode(ex, lang) : data.kind === "practice" ? practiceSrc(ex, stackF) : pickCode(ex, "javascript")) || ex.code) ? `
               <p class="answer-label code-label">${data.kind === "design" ? "Interface sketch" : data.kind === "practice" ? "Easy code · comments on the right" : "Code · comments on the right"}</p>
@@ -2218,7 +2460,7 @@
                     ${item.solutions.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.time || "")}</td><td>${escapeHtml(s.space || "")}</td></tr>`).join("")}
                   </table>` : ""}
                 <p class="answer-label">${data.kind === "dsa" ? "Explanation" : data.kind === "practice" ? (item.ask ? "Interview answer" : "What to do") : "Technical note"}</p>
-                ${data.kind === "dsa" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderTeachText(item.a, item.q)}
+                ${wrapReadMore(data.kind === "dsa" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderTeachText(item.a, item.q), "answer")}
                 ${renderVisuals(item)}
                 ${data.kind === "practice" ? renderSolutions(item) : ""}
                 ${data.kind !== "dsa" && data.kind !== "practice" && item.code ? `
@@ -2250,6 +2492,12 @@
     });
     view.querySelectorAll("[data-tab]").forEach((btn) => {
       btn.addEventListener("click", () => { window.topicTab = btn.dataset.tab; renderTopic(id, openQid); });
+    });
+    document.getElementById("noteSearch")?.addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      view.querySelectorAll(".note").forEach((el) => {
+        el.hidden = Boolean(q) && !el.textContent.toLowerCase().includes(q);
+      });
     });
     const qSearch = document.getElementById("qSearch");
     if (qSearch) {
@@ -2285,7 +2533,11 @@
       });
     });
     view.querySelectorAll(".q-row").forEach((btn) => {
-      btn.addEventListener("click", () => btn.closest(".item").classList.toggle("open"));
+      btn.addEventListener("click", () => {
+        const item = btn.closest(".item");
+        item.classList.toggle("open");
+        bindReadMore(item);
+      });
     });
     view.querySelectorAll(".done-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -2366,6 +2618,7 @@
         el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
+    bindReadMore(view);
     view.querySelectorAll("[data-ex]").forEach((btn) => {
       btn.addEventListener("click", async () => {
           const ex = examples[Number(btn.dataset.ex)];
