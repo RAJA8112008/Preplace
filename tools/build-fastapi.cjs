@@ -172,7 +172,7 @@ def add_todo(todo: TodoIn):
   q(4, "beginner", "What is FastAPI?",
     "Before you use this\nYou already know Python functions and type hints: name: str.\n\nWhat this is\nFastAPI is a Python web framework for APIs. You write functions. It turns them into HTTP routes, validates bodies, and builds /docs.\n\nWhy we use it\nLess glue than Flask for JSON APIs. Async. Automatic OpenAPI. Used for ML /predict and normal CRUD.\n\nWhat happens\napp = FastAPI(). Decorators attach routes. uvicorn runs the app.",
     `from fastapi import FastAPI
-app = FastAPI(title="PrepPlace API")
+app = FastAPI(title="Preplace API")
 
 @app.get("/ping")
 def ping():

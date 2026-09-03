@@ -1060,6 +1060,14 @@
       </section>`).join("")}</div>`;
   };
 
+  const shortenPracticeAnswer = (text) => {
+    const lines = String(text || "").split("\n");
+    const cut = lines.findIndex((line) =>
+      /^(Also know|Wrong answer|Worked example|In production|Follow-up questions|Check yourself)\.?$/i.test(line.trim())
+    );
+    return (cut === -1 ? lines : lines.slice(0, cut)).join("\n").trim();
+  };
+
   const wrapReadMore = (html, variant = "note") => `
     <div class="readmore readmore-${variant}" data-readmore>
       <div class="readmore-body">${html}</div>
@@ -1238,6 +1246,9 @@
     const glyphs = document.getElementById("statRatingStars");
     const homeMeta = document.getElementById("homeRatingMeta");
     if (learnerEl) learnerEl.textContent = learners.toLocaleString();
+    document.querySelectorAll("[data-learners]").forEach((el) => {
+      el.textContent = learners.toLocaleString();
+    });
     if (ratingEl) ratingEl.textContent = ratingLabel(stats);
     if (ratingMeta) {
       ratingMeta.textContent = stats.ratingN
@@ -1255,7 +1266,7 @@
         ? `You rated ${mine} / 5. Site average ${ratingLabel(stats)}${stats.ratingN ? ` from ${stats.ratingN.toLocaleString()} rating${stats.ratingN === 1 ? "" : "s"}` : ""}.`
         : stats.ratingN
           ? `${ratingLabel(stats)} / 5 from ${stats.ratingN.toLocaleString()} rating${stats.ratingN === 1 ? "" : "s"}. Tap a star to rate.`
-          : "Be the first to rate PrepPlace. Tap a star.";
+          : "Be the first to rate Preplace. Tap a star.";
     }
   };
 
@@ -1366,15 +1377,23 @@
   const currentPage = () => {
     const hash = location.hash.slice(2) || "";
     const parts = hash.split("/");
-    if (parts[0] === "contact" && parts[1] === "feedback") return "feedback";
+    if (parts[0] === "feedback" || (parts[0] === "contact" && parts[1] === "feedback")) return "feedback";
     return parts[0] || "home";
   };
 
   const paintChrome = () => {
     const page = currentPage();
     document.body.dataset.page = page;
+    const hash = location.hash;
+    const topicId = hash.startsWith("#/topic/") ? hash.slice(2).split("/")[1] : "";
     document.querySelectorAll("[data-nav]").forEach((a) => {
-      a.classList.toggle("active", a.dataset.nav === page);
+      const nav = a.dataset.nav;
+      const on = nav === "practice-q"
+        ? topicId === "practice-web"
+        : nav === "practice"
+          ? page === "practice" || (topicId.startsWith("practice-") && topicId !== "practice-web")
+          : nav === page;
+      a.classList.toggle("active", on);
     });
     const bar = document.getElementById("authBar");
     if (!bar) return;
@@ -1412,6 +1431,24 @@
     return list[h % list.length];
   };
 
+  const FOCUS_LINES = [
+    "One problem a day beats a week of panic.",
+    "You do not need the whole path today. You need the next step.",
+    "Brute force first. Then make it faster.",
+    "Notes you can say out loud are notes you own.",
+    "Labs teach the hands. Questions teach the interview.",
+    "A short streak is still a streak. Open today's problem.",
+    "Companies repeat the same ideas. Learn the idea, not the wording.",
+    "Write the code. Then say why each line is there."
+  ];
+
+  const dailyFocusLine = () => {
+    const day = todayStamp();
+    let h = 0;
+    for (let i = 0; i < day.length; i++) h = (h * 33 + day.charCodeAt(i)) >>> 0;
+    return FOCUS_LINES[h % FOCUS_LINES.length];
+  };
+
   const randomProblem = (topicId) => {
     const list = topicId
       ? (pack(topicId)?.questions || []).map((q) => ({ ...q, topicId }))
@@ -1436,6 +1473,8 @@
   const topicById = (id) => window.PREP_TOPICS.find((t) => t.id === id);
   const careerById = (id) => (window.PREP_CAREERS || []).find((c) => c.id === id);
   const pack = (id) => window.PREP_DATA[id];
+  const practiceTopics = () => window.PREP_TOPICS.filter((t) => t.id.startsWith("practice-"));
+  const labTopics = () => practiceTopics().filter((t) => t.id !== "practice-web");
 
   const careerProgress = (career) => {
     const ids = career.steps.map((s) => s.topic);
@@ -1525,7 +1564,7 @@
               <a class="btn btn-ghost btn-wide" href="${signup ? "#/login" : "#/signup"}">${signup ? "I already have an account" : "Create an account"}</a>
             </div>
           </form>
-          <p class="auth-note">Accounts stay in this browser. There is no PrepPlace server yet, so use the same device to see your progress.</p>
+          <p class="auth-note">Accounts stay in this browser. There is no Preplace server yet, so use the same device to see your progress.</p>
         </article>
       </section>`;
 
@@ -1628,65 +1667,52 @@
     el.className = `form-status${kind ? ` ${kind}` : ""}`;
   };
 
-  const renderContact = (section) => {
+  const bindRajPhoto = () => {
+    const dialog = document.getElementById("rajPhotoDialog");
+    const lightImg = document.getElementById("lightboxImg");
+    document.getElementById("openRajPhoto")?.addEventListener("click", () => {
+      if (lightImg) {
+        lightImg.src = "assets/raj.jpg";
+        lightImg.alt = "Raj Kumar";
+      }
+      dialog?.showModal();
+    });
+    document.getElementById("closeRajPhoto")?.addEventListener("click", () => dialog?.close());
+    dialog?.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+  };
+
+  const renderContact = () => {
     const user = currentUser();
     view.innerHTML = `
-      <section class="form-page contact-wide">
+      <section class="form-page">
         <div class="page-actions">
           <a class="btn btn-ghost" href="#/">← Home</a>
+          <a class="btn" href="#/feedback">Feedback</a>
         </div>
-        <div class="contact-layout">
-          <article class="auth-card" id="messageCard">
-            <div class="contact-head">
-              <div>
-                <h1>Message Raj Kumar</h1>
-                <p>Write your note and press <strong>Send message</strong>. It goes to <strong>${CONTACT.email}</strong>.</p>
-                <p>Any problem related to a DSA question — a wrong answer, a missing solution, or a doubt — you can message Raj here.</p>
-              </div>
-              <button type="button" class="contact-photo-btn" id="openRajPhoto" aria-label="View Raj Kumar's full photo">
-                <img class="contact-photo" src="assets/raj.jpg" width="88" height="88" alt="Raj Kumar" />
-              </button>
+        <article class="auth-card">
+          <div class="contact-head">
+            <div>
+              <p class="hero-kicker">Message</p>
+              <h1>Message Raj Kumar</h1>
+              <p>Write your note and press <strong>Send message</strong>. It goes to <strong>${CONTACT.email}</strong>.</p>
+              <p>DSA doubts, a wrong answer, or a missing solution — send it here. Site comments go on the Feedback page.</p>
             </div>
-            <form id="contactForm" class="auth-form">
-              <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
-              <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
-              <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
-              <label>Message<textarea class="auth-field" name="message" rows="6" required minlength="8" placeholder="What do you want Raj to know?"></textarea></label>
-              <p class="form-status" id="contactStatus" hidden></p>
-              <div class="form-actions">
-                <button class="btn btn-primary btn-wide" type="submit" id="contactSend">Send message</button>
-              </div>
-            </form>
-          </article>
-
-          <article class="auth-card" id="feedbackCard">
-            <h1>Feedback</h1>
-            <p>Tell Raj what to keep, what is confusing, or what to add next. This is separate from a private message.</p>
-            <form id="feedbackForm" class="auth-form">
-              <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
-              <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
-              <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
-              <p class="filter-label">How is PrepPlace?</p>
-              <div class="star-row" id="feedbackStars" role="group" aria-label="Rating">
-                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-pick" data-star="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}
-              </div>
-              <input type="hidden" name="rating" id="feedbackRating" value="" />
-              <label>Kind
-                <select class="auth-field" name="kind">
-                  <option value="general">General</option>
-                  <option value="bug">Something is broken</option>
-                  <option value="content">Content request</option>
-                  <option value="thanks">Thank you</option>
-                </select>
-              </label>
-              <label>Your feedback<textarea class="auth-field" name="feedback" rows="5" required minlength="8" placeholder="What should Raj know about the site?"></textarea></label>
-              <p class="form-status" id="feedbackStatus" hidden></p>
-              <div class="form-actions">
-                <button class="btn btn-primary btn-wide" type="submit" id="feedbackSend">Send feedback</button>
-              </div>
-            </form>
-          </article>
-        </div>
+            <button type="button" class="contact-photo-btn" id="openRajPhoto" aria-label="View Raj Kumar's full photo">
+              <img class="contact-photo" src="assets/raj.jpg" width="88" height="88" alt="Raj Kumar" />
+            </button>
+          </div>
+          <form id="contactForm" class="auth-form">
+            <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+            <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
+            <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
+            <label>Message<textarea class="auth-field" name="message" rows="8" required minlength="8" placeholder="What do you want Raj to know?"></textarea></label>
+            <p class="form-status" id="contactStatus" hidden></p>
+            <div class="form-actions">
+              <button class="btn btn-primary btn-wide" type="submit" id="contactSend">Send message</button>
+            </div>
+          </form>
+          <p class="auth-switch">Want to rate the site? <a href="#/feedback">Send feedback</a></p>
+        </article>
         <dialog class="photo-lightbox" id="rajPhotoDialog" aria-label="Photo">
           <button type="button" class="photo-lightbox-close" id="closeRajPhoto">Close</button>
           <img class="photo-lightbox-img" id="lightboxImg" src="assets/raj.jpg" alt="" />
@@ -1710,7 +1736,7 @@
         name,
         email,
         message,
-        _subject: `PrepPlace message from ${name}`
+        _subject: `Preplace message from ${name}`
       });
       form.reset();
       if (user) {
@@ -1720,6 +1746,47 @@
       setContactStatus("Sent. Thank you — Raj will read this.", "is-ok");
       sendBtn.textContent = "Send another";
     });
+    bindRajPhoto();
+  };
+
+  const renderFeedback = () => {
+    const user = currentUser();
+    view.innerHTML = `
+      <section class="form-page">
+        <div class="page-actions">
+          <a class="btn btn-ghost" href="#/">← Home</a>
+          <a class="btn" href="#/contact">Message Raj</a>
+        </div>
+        <article class="auth-card">
+          <p class="hero-kicker">Feedback</p>
+          <h1>Site feedback</h1>
+          <p>Tell Raj what to keep, what is confusing, or what to add next. Private doubts belong on Message Raj.</p>
+          <form id="feedbackForm" class="auth-form">
+            <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+            <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
+            <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
+            <p class="filter-label">How is Preplace?</p>
+            <div class="star-row" id="feedbackStars" role="group" aria-label="Rating">
+              ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-pick" data-star="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}
+            </div>
+            <input type="hidden" name="rating" id="feedbackRating" value="" />
+            <label>Kind
+              <select class="auth-field" name="kind">
+                <option value="general">General</option>
+                <option value="bug">Something is broken</option>
+                <option value="content">Content request</option>
+                <option value="thanks">Thank you</option>
+              </select>
+            </label>
+            <label>Your feedback<textarea class="auth-field" name="feedback" rows="8" required minlength="8" placeholder="What should Raj know about the site?"></textarea></label>
+            <p class="form-status" id="feedbackStatus" hidden></p>
+            <div class="form-actions">
+              <button class="btn btn-primary btn-wide" type="submit" id="feedbackSend">Send feedback</button>
+            </div>
+          </form>
+          <p class="auth-switch">Need help with a question? <a href="#/contact">Message Raj</a></p>
+        </article>
+      </section>`;
 
     const setFeedbackStatus = (text, kind) => {
       const el = document.getElementById("feedbackStatus");
@@ -1763,11 +1830,11 @@
         kind,
         rating: rating || "not rated",
         feedback,
-        _subject: `PrepPlace feedback from ${name}`
+        _subject: `Preplace feedback from ${name}`
       });
       if (rating) saveSiteRating(rating);
       feedbackForm.reset();
-      ratingInput.value = "";
+      if (ratingInput) ratingInput.value = "";
       paintStars(0);
       if (user) {
         feedbackForm.elements.name.value = user.name || "";
@@ -1776,23 +1843,6 @@
       setFeedbackStatus("Sent. Thank you — Raj will read this.", "is-ok");
       feedbackBtn.textContent = "Send more feedback";
     });
-
-    const dialog = document.getElementById("rajPhotoDialog");
-    const lightImg = document.getElementById("lightboxImg");
-    const openLight = (src, alt) => {
-      if (lightImg) {
-        lightImg.src = src;
-        lightImg.alt = alt;
-      }
-      dialog?.showModal();
-    };
-    document.getElementById("openRajPhoto")?.addEventListener("click", () => openLight("assets/raj.jpg", "Raj Kumar"));
-    document.getElementById("closeRajPhoto")?.addEventListener("click", () => dialog?.close());
-    dialog?.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
-
-    if (section === "feedback") {
-      document.getElementById("feedbackCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
   };
 
   const route = () => {
@@ -1802,16 +1852,22 @@
     if (page === "topic" && id && topicById(id)) renderTopic(id, extra);
     else if (page === "career" && id && careerById(id)) renderCareer(id);
     else if (page === "topics") renderTopics(searchInput.value);
+    else if (page === "practice") renderPracticeHub();
     else if (page === "dsa") renderDsaSheet();
     else if (page === "login") renderAuth("login");
     else if (page === "signup") renderAuth("signup");
-    else if (page === "contact") renderContact(id);
+    else if (page === "feedback" || (page === "contact" && id === "feedback")) renderFeedback();
+    else if (page === "contact") renderContact();
     else if (page === "about") renderHome("", true);
     else renderHome();
   };
 
   const topicCard = (t) => {
     const p = progressFor(t.id);
+    const data = pack(t.id);
+    const kind = data?.kind;
+    const count = kind === "practice" ? (data?.questions || []).length : (data?.examples || []).length;
+    const unit = kind === "design" ? "workflows" : kind === "practice" ? "questions" : "code examples";
     return `
       <a class="card" href="#/topic/${t.id}">
         <div class="card-top">
@@ -1820,7 +1876,7 @@
         </div>
         <h2>${t.title}</h2>
         <p>${t.blurb}</p>
-        <p>${(pack(t.id)?.examples || []).length} ${(pack(t.id)?.kind === "design" ? "workflows" : "code examples")} · ${p.done}/${p.total} done</p>
+        <p>${count} ${unit} · ${p.done}/${p.total} done</p>
         <div class="progress"><span style="width:${p.pct}%"></span></div>
       </a>`;
   };
@@ -1833,12 +1889,11 @@
       const hay = `${c.title} ${c.blurb} ${c.builds} ${sec?.title || ""} ${sec?.blurb || ""} ${c.steps.map((s) => s.learn).join(" ")}`.toLowerCase();
       return !q || hay.includes(q);
     });
-    const careerLabel = (c) => c.title
-      .replace(" Developer", "")
-      .replace(" Engineer", "")
-      .replace("SDE / FAANG Interview", "FAANG DSA")
-      .replace("Databases & Data Stores", "Data stores")
-      .replace("MERN Stack", "MERN");
+    const askedTopic = topicById("practice-web");
+    const askedQs = (pack("practice-web")?.questions || []).slice(0, 6);
+    const showAsked = Boolean(askedTopic) && (!q
+      || `${askedTopic.title} ${askedTopic.blurb} companies asked questions`.toLowerCase().includes(q)
+      || askedQs.some((item) => item.q.toLowerCase().includes(q)));
     const careerCard = (c) => {
       const p = careerProgress(c);
       const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
@@ -1872,15 +1927,10 @@
 
     const user = currentUser();
     const publicStats = readPublicStats();
-    const pathPills = sections.map((sec) => {
-      const items = (window.PREP_CAREERS || []).filter((c) => c.section === sec.id);
-      if (!items.length) return "";
-      return `
-        <div class="hero-path-group">
-          <p>${escapeHtml(sec.title)}</p>
-          <ul class="hero-paths">${items.map((c) => `<li><a href="#/career/${c.id}">${c.icon} ${escapeHtml(careerLabel(c))}</a></li>`).join("")}</ul>
-        </div>`;
-    }).join("");
+    const daily = dailyProblem();
+    const dsaDone = dsaTopics().reduce((n, t) => n + progressFor(t.id).done, 0);
+    const dsaTotal = dsaTopics().reduce((n, t) => n + progressFor(t.id).total, 0);
+    const focusLine = dailyFocusLine();
 
     view.innerHTML = `
       <section class="hero">
@@ -1898,19 +1948,36 @@
             }</p>
             <div class="hero-cta">
               <button class="btn btn-primary" type="button" id="scrollCareers">Browse paths</button>
-              <a class="btn" href="#/dsa">Problem sheet</a>
-              ${user ? `<a class="btn btn-ghost" href="#/contact">Message Raj</a>` : `<a class="btn btn-ghost" href="#/signup">Sign up</a>`}
+              <a class="btn" href="#/topic/practice-web">Practice questions</a>
+              <a class="btn" href="#/practice">Labs</a>
+              <a class="btn btn-ghost" href="#/dsa">Problem sheet</a>
             </div>
           </div>
-          <aside class="hero-panel">
-            <a class="hero-portrait" href="#/contact">
-              <img src="assets/raj.jpg" width="84" height="84" alt="Raj Kumar" />
-              <span>
-                <strong>Raj Kumar</strong>
-                <span>Message anytime — DSA doubts welcome</span>
-              </span>
-            </a>
-            ${pathPills}
+          <aside class="hero-panel" id="heroFocus">
+            <p class="hero-kicker">Today's focus</p>
+            <blockquote class="hero-quote">
+              <p>${escapeHtml(focusLine)}</p>
+            </blockquote>
+            <div class="hero-cta hero-cta-stack">
+              <a class="btn btn-primary" href="#/topic/practice-web">Practice questions</a>
+              <a class="btn" href="#/practice">Labs</a>
+              <a class="btn btn-ghost" href="#/contact">Message Raj</a>
+            </div>
+            <div class="hero-today">
+              <p class="hero-kicker">Today's problem</p>
+              <p>${daily ? `${daily.topicIcon} ${escapeHtml(daily.q)} · ${escapeHtml(daily.topicTitle)}` : "DSA topics are still loading."}</p>
+              ${daily ? `<button class="btn btn-primary" type="button" id="openDailyHero">Open</button>` : ""}
+            </div>
+            <div class="hero-panel-meta">
+              <p><b data-learners>${Math.max(publicStats.learners, localLearnerCount()).toLocaleString()}</b> signed in</p>
+              <div class="author-rate">
+                <p class="filter-label">Rate this website</p>
+                <div class="star-row" role="group" aria-label="Rate Preplace">
+                  ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-pick" data-home-rate="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}
+                </div>
+                <p class="site-rating-meta" id="homeRatingMeta"></p>
+              </div>
+            </div>
           </aside>
           <div class="hero-stats">
           <div class="stats">
@@ -1931,11 +1998,6 @@
           </div>
         </div>
       </section>
-      ${(() => {
-        const daily = dailyProblem();
-        const dsaDone = dsaTopics().reduce((n, t) => n + progressFor(t.id).done, 0);
-        const dsaTotal = dsaTopics().reduce((n, t) => n + progressFor(t.id).total, 0);
-        return `
       <div class="quick-row">
         <article class="quick-card">
           <h3>Today's problem</h3>
@@ -1951,8 +2013,21 @@
           <p>${dsaDone} / ${dsaTotal} interview problems done. Star a problem to revise it later.</p>
           <div class="progress"><span style="width:${dsaTotal ? Math.round((dsaDone / dsaTotal) * 100) : 0}%"></span></div>
         </article>
-      </div>`;
-      })()}
+      </div>
+      ${showAsked ? `
+      <section class="home-practice" id="homePractice">
+        <div class="home-paths-top">
+          <h2 class="section-title">Companies asked questions</h2>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="#/topic/practice-web">Practice questions</a>
+            <a class="btn" href="#/practice">Labs</a>
+          </div>
+        </div>
+        <p class="example-intro">A short list of questions companies repeat. Open the full sheet for the rest.</p>
+        <ol class="asked-list">
+          ${askedQs.map((item) => `<li><a href="#/topic/practice-web/${item.id}">${escapeHtml(item.q)}</a></li>`).join("")}
+        </ol>
+      </section>` : ""}
       <div class="home-paths" id="homeCareers">
         <div class="home-paths-top">
           <h2 class="section-title">Choose a career path</h2>
@@ -1975,29 +2050,6 @@
       <p class="example-intro" style="margin-top:22px">
         Want one subject only? <a href="#/topics">Browse all subjects</a> · <a href="#/dsa">Search every DSA problem</a>
       </p>
-      <section class="author-section" id="about-author">
-        <article class="author-card">
-          <img class="author-photo" src="assets/raj.jpg" width="148" height="148" alt="Raj Kumar" />
-          <div class="author-copy">
-            <p class="hero-kicker">About the author</p>
-            <h2>Raj Kumar</h2>
-            <p>Raj built PrepPlace so you can pick a career path and see what to learn next — notes, easy code, and interview questions in one place. He writes DSA solutions in C++, including a Raj's C++ tab on problems, and answers doubts when you send a message.</p>
-            <p>Accounts stay in this browser, so sign up to keep progress, stars, and notes. If a question is wrong or a topic is missing, tell Raj.</p>
-            <div class="author-links">
-              <a class="btn btn-primary" href="#/contact">Message Raj</a>
-              <a class="btn" href="#/contact/feedback">Send feedback</a>
-              <a class="btn btn-ghost" href="https://github.com/RAJA8112008/Preplace" target="_blank" rel="noopener noreferrer">GitHub</a>
-            </div>
-            <div class="author-rate">
-              <p class="filter-label">Rate this website</p>
-              <div class="star-row" id="homeStars" role="group" aria-label="Rate PrepPlace">
-                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-pick" data-home-rate="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}
-              </div>
-              <p class="site-rating-meta" id="homeRatingMeta"></p>
-            </div>
-          </div>
-        </article>
-      </section>
     `;
     document.getElementById("scrollCareers")?.addEventListener("click", () => {
       document.getElementById("homeCareers")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2007,10 +2059,13 @@
         document.getElementById(`sec-${btn.dataset.sec}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
-    document.getElementById("openDaily")?.addEventListener("click", () => {
+    const openToday = () => {
       const p = dailyProblem();
       if (p) goProblem(p.topicId, p.id);
-    });
+    };
+    document.getElementById("openDaily")?.addEventListener("click", openToday);
+    document.getElementById("openDailyHero")?.addEventListener("click", openToday);
+    bindReadMore(view);
     document.getElementById("openRandom")?.addEventListener("click", () => {
       const p = randomProblem();
       if (p) goProblem(p.topicId, p.id);
@@ -2025,9 +2080,33 @@
     refreshPublicStats().then((stats) => paintHomeSocial(stats));
     if (scrollAuthor) {
       requestAnimationFrame(() => {
-        document.getElementById("about-author")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        document.getElementById("heroFocus")?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
+  };
+
+  const renderPracticeHub = () => {
+    const q = (searchInput.value || "").trim().toLowerCase();
+    const labs = labTopics().filter((t) => {
+      const data = pack(t.id);
+      const hay = `${t.title} ${t.blurb} ${(data?.questions || []).map((x) => x.q).join(" ")}`.toLowerCase();
+      return !q || hay.includes(q);
+    });
+    view.innerHTML = `
+      <section class="topic-head">
+        <button class="back-btn" type="button" id="backHome">← Career paths</button>
+        <h1>Labs</h1>
+        <p class="example-intro">Small complete jobs you can code: cards, APIs, Docker, SQL, cloud, ML. Most-asked interview Q&amp;A is on Practice questions.</p>
+        <div class="topic-meta">
+          <span class="badge">${labs.length} lab${labs.length === 1 ? "" : "s"}</span>
+          <a class="btn" href="#/topic/practice-web">Practice questions</a>
+        </div>
+      </section>
+      <div class="career-grid">
+        ${labs.map(topicCard).join("") || `<p class="empty">No labs match that search.</p>`}
+      </div>
+    `;
+    document.getElementById("backHome").addEventListener("click", () => { location.hash = "#/"; });
   };
 
   const renderDsaSheet = () => {
@@ -2460,7 +2539,7 @@
                     ${item.solutions.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.time || "")}</td><td>${escapeHtml(s.space || "")}</td></tr>`).join("")}
                   </table>` : ""}
                 <p class="answer-label">${data.kind === "dsa" ? "Explanation" : data.kind === "practice" ? (item.ask ? "Interview answer" : "What to do") : "Technical note"}</p>
-                ${wrapReadMore(data.kind === "dsa" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderTeachText(item.a, item.q), "answer")}
+                ${wrapReadMore(data.kind === "dsa" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderTeachText(data.kind === "practice" ? shortenPracticeAnswer(item.a) : item.a, item.q), "answer")}
                 ${renderVisuals(item)}
                 ${data.kind === "practice" ? renderSolutions(item) : ""}
                 ${data.kind !== "dsa" && data.kind !== "practice" && item.code ? `
@@ -2671,8 +2750,9 @@
       renderTopic(hash.split("/")[2]);
     }     else if (hash.startsWith("#/career/")) renderCareer(hash.split("/")[2]);
     else if (hash.startsWith("#/topics")) renderTopics(searchInput.value);
+    else if (hash.startsWith("#/practice")) renderPracticeHub();
     else if (hash.startsWith("#/dsa")) renderDsaSheet();
-    else if (hash.startsWith("#/login") || hash.startsWith("#/signup") || hash.startsWith("#/contact")) return;
+    else if (hash.startsWith("#/login") || hash.startsWith("#/signup") || hash.startsWith("#/contact") || hash.startsWith("#/feedback")) return;
     else renderHome(searchInput.value);
   });
 

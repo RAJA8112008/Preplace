@@ -391,7 +391,7 @@ window.PREP_DATA["hosting"] = {
       "id": 16,
       "level": "beginner",
       "q": "What is a custom domain?",
-      "a": "Definition. Your name (prepplace.dev) pointed at the platform.\n\nHow it works. DNS CNAME or A, then a managed certificate.\n\nOperational risk. TTL so high that a host change takes a day."
+      "a": "Definition. Your name (preplace.dev) pointed at the platform.\n\nHow it works. DNS CNAME or A, then a managed certificate.\n\nOperational risk. TTL so high that a host change takes a day."
     },
     {
       "id": 17,

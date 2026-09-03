@@ -128,7 +128,7 @@ ${indexRows.join("\n")}
 
 Open a topic, then a problem folder. Read the methods first, then pick a language file.
 
-This repo is generated from the PrepPlace study site.
+This repo is generated from the Preplace study site.
 `;
 
 fs.writeFileSync(path.join(OUT, "README.md"), rootReadme);

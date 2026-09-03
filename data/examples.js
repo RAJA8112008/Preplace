@@ -107,12 +107,12 @@ for (const fruit of fruits) {
     {
       lang: "js",
       title: "7. Change a heading on the page",
-      desc: "What this is\nThe DOM is the page as JavaScript sees it.\nquerySelector finds an element that matches a CSS selector.\ntextContent is the visible text inside that element.\n\nWhat the code is doing\nThe first line looks for the first h1 on the page.\ntitle holds that heading element.\nThe next line replaces its text with Welcome to PrepPlace.\nThe heading on the screen changes as soon as this runs.\n\nWatch out\nIf there is no h1, title is null and the next line crashes.\nThis code belongs in a browser page, not in a Node terminal.",
+      desc: "What this is\nThe DOM is the page as JavaScript sees it.\nquerySelector finds an element that matches a CSS selector.\ntextContent is the visible text inside that element.\n\nWhat the code is doing\nThe first line looks for the first h1 on the page.\ntitle holds that heading element.\nThe next line replaces its text with Welcome to Preplace.\nThe heading on the screen changes as soon as this runs.\n\nWatch out\nIf there is no h1, title is null and the next line crashes.\nThis code belongs in a browser page, not in a Node terminal.",
       code: `// find the first <h1> on the page
 const title = document.querySelector("h1");
 
 // change the text the user sees
-title.textContent = "Welcome to PrepPlace";`
+title.textContent = "Welcome to Preplace";`
     },
     {
       lang: "js",

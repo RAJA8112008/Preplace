@@ -902,8 +902,8 @@ function readConfig() {
   return { place: "node", hasFs: Boolean(fs) };
 }` },
     { id: 86, level: "beginner", q: "global vs globalThis?",
-      a: "In Node, people used global for that object. globalThis is the standard name that also works in browsers.\n\nIn shared libraries, prefer globalThis so the same file can run in more places. Putting lots of data on global is like leaving toys in the hallway. People trip. Your app state should be a module you import, not a mystery global.\n\nIn the code: globalThis.appName PrepPlace. title() returns it. console.log title().\n\nA common mistake is stuffing the database pool on global.",
-      code: `globalThis.appName = "PrepPlace";
+      a: "In Node, people used global for that object. globalThis is the standard name that also works in browsers.\n\nIn shared libraries, prefer globalThis so the same file can run in more places. Putting lots of data on global is like leaving toys in the hallway. People trip. Your app state should be a module you import, not a mystery global.\n\nIn the code: globalThis.appName Preplace. title() returns it. console.log title().\n\nA common mistake is stuffing the database pool on global.",
+      code: `globalThis.appName = "Preplace";
 
 function title() {
   return globalThis.appName;
