@@ -1,75 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9TYYL4RC32"></script>
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag("js", new Date());
+
+    gtag("config", "G-9TYYL4RC32");
+  </script>
+
   <meta name="color-scheme" content="light dark" />
   <meta name="theme-color" content="#f4efe6" id="themeColor" />
+
   <title>Preplace — Learn by career path</title>
-  <meta name="description" content="Choose Frontend, Backend, MERN, Full Stack, ML, DevOps, or a FAANG DSA path. Notes, easy code, and interview questions with brute, optimal, and more optimal solutions." />
+
+  <meta name="description"
+    content="Choose Frontend, Backend, MERN, Full Stack, ML, DevOps, or a FAANG DSA path. Notes, easy code, and interview questions with brute, optimal, and more optimal solutions." />
+
+  <!-- Theme initialization -->
   <script>
     (function () {
       try {
         var key = "prepplace-theme";
         var t = localStorage.getItem(key);
+
         if (t !== "dark" && t !== "light") {
-          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          t = matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
         }
+
         document.documentElement.dataset.theme = t;
         document.documentElement.style.colorScheme = t;
-      } catch (e) {}
+      } catch (e) { }
     })();
   </script>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <!-- Styles -->
   <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- Icons -->
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
   <link rel="apple-touch-icon" href="assets/logo.png" />
 </head>
+
 <body>
   <div class="app">
+
     <header class="topbar">
+
       <div class="topbar-main">
+
         <a class="brand" href="#/">
           <img class="brand-logo" src="assets/logo.svg" width="42" height="42" alt="" />
+
           <span>
             <strong>Preplace</strong>
             <small>Pick a career. See what to learn.</small>
           </span>
         </a>
+
         <div class="topbar-tools">
+
           <label class="search-wrap" data-home-search>
             <span class="sr-only">Search topics</span>
-            <input id="globalSearch" type="search" placeholder="Search careers, topics, or questions…" autocomplete="off" />
+
+            <input id="globalSearch" type="search" placeholder="Search careers, topics, or questions…"
+              autocomplete="off" />
           </label>
-          <button id="themeToggle" class="icon-btn" type="button" aria-label="Switch to dark mode" aria-pressed="false">☾</button>
+
+          <button id="themeToggle" class="icon-btn" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+            ☾
+          </button>
+
         </div>
       </div>
+
       <div class="topbar-row">
+
         <nav class="top-nav" aria-label="Main">
-          <a href="#/" data-nav="home">Home</a>
-          <a href="#/topic/practice-web" data-nav="practice-q">Practice questions</a>
-          <a href="#/practice" data-nav="practice">Labs</a>
-          <a href="#/dsa" data-nav="dsa">Problem sheet</a>
-          <a href="#/topics" data-nav="topics">Subjects</a>
-          <a href="#/contact" data-nav="contact">Message Raj</a>
-          <a href="#/feedback" data-nav="feedback">Feedback</a>
+
+          <a href="#/" data-nav="home">
+            Home
+          </a>
+
+          <a href="#/topic/practice-web" data-nav="practice-q">
+            Practice questions
+          </a>
+
+          <a href="#/practice" data-nav="practice">
+            Labs
+          </a>
+
+          <a href="#/dsa" data-nav="dsa">
+            Problem sheet
+          </a>
+
+          <a href="#/topics" data-nav="topics">
+            Subjects
+          </a>
+
+          <a href="#/contact" data-nav="contact">
+            Message Raj
+          </a>
+
+          <a href="#/feedback" data-nav="feedback">
+            Feedback
+          </a>
+
         </nav>
+
         <div id="authBar" class="auth-bar"></div>
+
       </div>
+
     </header>
 
     <main id="view" class="view"></main>
 
     <footer class="site-foot">
-      <p>Preplace by <strong>Raj Kumar</strong> · <a href="#/about">About Raj</a> · <a href="mailto:kraj9380286@gmail.com">kraj9380286@gmail.com</a> · <a href="#/contact">Send a message</a> · <a href="#/feedback">Feedback</a></p>
-      <p>Sign up to keep your progress, stars, and notes on this device. Guest progress is used until you create an account.</p>
+
+      <p>
+        Preplace by <strong>Raj Kumar</strong>
+        · <a href="#/about">About Raj</a>
+        · <a href="mailto:kraj9380286@gmail.com">
+          kraj9380286@gmail.com
+        </a>
+        · <a href="#/contact">Send a message</a>
+        · <a href="#/feedback">Feedback</a>
+      </p>
+
+      <p>
+        Sign up to keep your progress, stars, and notes on this device.
+        Guest progress is used until you create an account.
+      </p>
+
     </footer>
+
   </div>
+
+  <!-- JavaScript files -->
 
   <script src="js/topics.js"></script>
   <script src="js/careers.js"></script>
+
   <script src="data/javascript.js"></script>
   <script src="data/oops.js"></script>
   <script src="data/react.js"></script>
@@ -94,6 +187,7 @@
   <script src="data/aws.js"></script>
   <script src="data/python.js"></script>
   <script src="data/machinelearning.js"></script>
+
   <script src="data/dsa-arrays.js"></script>
   <script src="data/dsa-strings.js"></script>
   <script src="data/dsa-linkedlist.js"></script>
@@ -105,6 +199,7 @@
   <script src="data/dsa-graph.js"></script>
   <script src="data/dsa-stackheap.js"></script>
   <script src="data/dsa-dp.js"></script>
+
   <script src="data/raj-solutions.js"></script>
   <script src="data/sys-blocks.js"></script>
   <script src="data/sys-cases.js"></script>
@@ -112,6 +207,7 @@
   <script src="data/nginx.js"></script>
   <script src="data/hosting.js"></script>
   <script src="data/messaging.js"></script>
+
   <script src="data/practice-web.js"></script>
   <script src="data/practice-dom.js"></script>
   <script src="data/practice-frontend.js"></script>
@@ -124,7 +220,12 @@
   <script src="data/practice-data.js"></script>
   <script src="data/practice-datastores.js"></script>
   <script src="data/practice-sysdesign.js"></script>
+
   <script src="data/examples.js"></script>
+
+  <!-- Main application -->
   <script src="js/app.js"></script>
+
 </body>
+
 </html>
