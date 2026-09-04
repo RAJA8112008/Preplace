@@ -1,0 +1,10 @@
+{
+  "name": "preplaced",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Preplace — Learn by career path",
+  "scripts": {
+    "dev": "node tools/dev-server.cjs",
+    "start": "node tools/dev-server.cjs"
+  }
+}
