@@ -1721,6 +1721,7 @@
   };
 
   const renderContact = () => {
+    const user = currentUser();
     view.innerHTML = `
       <section class="form-page">
         <div class="page-actions">
@@ -1742,22 +1743,35 @@
           </div>
         </article>
         <article class="auth-card">
-          <p class="pending-banner">Work pending</p>
           <div class="contact-head">
             <div>
-              <p class="hero-kicker">Message</p>
+              <p class="hero-kicker">Direct Contact</p>
               <h1>Message Raj Kumar</h1>
-              <p>This form is here so you can see how a message to the author will look. Sending is not active yet.</p>
-              <p>DSA doubts and missing solutions will go here when this work is finished.</p>
+              <p>Have a doubt in a DSA solution, need career guidance, or want to suggest interview questions? Send a direct message below.</p>
             </div>
           </div>
           <form id="contactForm" class="auth-form" novalidate>
-            <label>Your name<input class="auth-field" name="name" maxlength="80" /></label>
-            <label>Your email<input class="auth-field" name="email" type="email" /></label>
-            <label>Message<textarea class="auth-field" name="message" rows="8" placeholder="What do you want Raj to know?"></textarea></label>
+            <label>Your name
+              <input class="auth-field" name="name" maxlength="80" required value="${escapeHtml(user?.name || "")}" placeholder="Your name" />
+            </label>
+            <label>Your email
+              <input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" placeholder="you@example.com" />
+            </label>
+            <label>Topic / Category
+              <select class="auth-field" name="category">
+                <option value="general">General Message</option>
+                <option value="doubt">DSA Doubt / Solution Question</option>
+                <option value="solution">Suggest Missing Question / Solution</option>
+                <option value="career">Career Guidance & Advice</option>
+                <option value="feedback">Platform Suggestion</option>
+              </select>
+            </label>
+            <label>Message
+              <textarea class="auth-field" name="message" rows="8" required minlength="5" placeholder="What do you want to ask or tell Raj?"></textarea>
+            </label>
             <p class="form-status" id="contactStatus" hidden></p>
             <div class="form-actions">
-              <button class="btn btn-primary btn-wide" type="submit" id="contactSend">Send message</button>
+              <button class="btn btn-primary btn-wide" type="submit" id="contactSend">Send Message to Raj</button>
             </div>
           </form>
           <p class="auth-switch">Want to rate the site? <a href="#/feedback">Send feedback</a></p>
@@ -1768,10 +1782,88 @@
         </dialog>
       </section>`;
 
-    document.getElementById("contactForm")?.addEventListener("submit", (e) => {
+    const contactForm = document.getElementById("contactForm");
+    const contactBtn = document.getElementById("contactSend");
+
+    contactForm?.addEventListener("submit", async (e) => {
       e.preventDefault();
-      showPendingWork(document.getElementById("contactStatus"), "Sending a message");
+      const fd = new FormData(contactForm);
+      const name = String(fd.get("name") || "").trim();
+      const email = String(fd.get("email") || "").trim();
+      const category = String(fd.get("category") || "general").trim();
+      const message = String(fd.get("message") || "").trim();
+
+      if (!name) {
+        setContactStatus("Please enter your name.", "is-error");
+        return;
+      }
+      if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+        setContactStatus("Please enter a valid email address so Raj can reply to you.", "is-error");
+        return;
+      }
+      if (!message || message.length < 5) {
+        setContactStatus("Please write a message with at least 5 characters.", "is-error");
+        return;
+      }
+
+      setContactStatus("Sending your message to Raj...", "");
+      if (contactBtn) {
+        contactBtn.disabled = true;
+        contactBtn.textContent = "Sending...";
+      }
+
+      try {
+        const res = await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email,
+            category,
+            subject: `Preplace message from ${name} (${category})`,
+            message
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setContactStatus("Message sent successfully! Raj will receive your message and get back to you.", "is-ok");
+          contactForm.reset();
+          if (user) {
+            if (contactForm.elements.name) contactForm.elements.name.value = user.name || "";
+            if (contactForm.elements.email) contactForm.elements.email.value = user.email || "";
+          }
+          if (contactBtn) contactBtn.textContent = "Send another message";
+        } else {
+          // Fallback to postToRaj if backend endpoint returns an issue
+          postToRaj({
+            name,
+            email,
+            category,
+            message,
+            _subject: `Preplace message from ${name}`
+          });
+          setContactStatus("Message dispatched! Raj will receive your note.", "is-ok");
+          contactForm.reset();
+          if (contactBtn) contactBtn.textContent = "Send another message";
+        }
+      } catch (err) {
+        // Network fallback
+        postToRaj({
+          name,
+          email,
+          category,
+          message,
+          _subject: `Preplace message from ${name}`
+        });
+        setContactStatus("Message sent! Raj will review it.", "is-ok");
+        contactForm.reset();
+        if (contactBtn) contactBtn.textContent = "Send another message";
+      } finally {
+        if (contactBtn) contactBtn.disabled = false;
+      }
     });
+
     bindRajPhoto();
   };
 

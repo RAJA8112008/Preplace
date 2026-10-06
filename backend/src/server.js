@@ -8,6 +8,7 @@ const cors = require("cors");
 const { connectDB } = require("./db");
 const authRoutes = require("./routes/authRoutes");
 const progressRoutes = require("./routes/progressRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 // Initialize Database Connection
 connectDB();
@@ -27,6 +28,7 @@ app.use(express.json());
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/progress", progressRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
