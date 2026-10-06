@@ -1063,9 +1063,44 @@
     return t;
   };
 
+  const simplifyLabText = (text) => {
+    if (!text) return "";
+    let clean = String(text || "").trim();
+    // Remove lengthy storytelling metaphors
+    clean = clean.replace(/A hotel:.*?(?=\n\n|$)/gi, "");
+    clean = clean.replace(/Think of a print shop.*?(?=\n\n|$)/gi, "");
+    clean = clean.replace(/A class notebook.*?(?=\n\n|$)/gi, "");
+    clean = clean.replace(/A restaurant counter.*?(?=\n\n|$)/gi, "");
+    clean = clean.replace(/A factory:.*?(?=\n\n|$)/gi, "");
+    clean = clean.replace(/A tiffin dabba.*?(?=\n\n|$)/gi, "");
+
+    // Retain clean, punchy sections: What this is, How it works, Key takeaways
+    const lines = clean.split("\n");
+    const filtered = [];
+    let skipSection = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (/^(Follow-up questions|Check yourself|Wrong answer|The problem before|Real-life example)\b/i.test(trimmed)) {
+        skipSection = true;
+        continue;
+      }
+      if (/^(What this is|Summary|What happens|How the code works|In the code|Why we use it|Watch out|Key points|What it solves|Definition)\b/i.test(trimmed)) {
+        skipSection = false;
+      }
+      if (!skipSection) {
+        filtered.push(line);
+      }
+    }
+
+    return filtered.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  };
+
   const renderTeachText = (text, q) => {
-    const src = autoTeach(text, q);
-    const lines = src.replace(/\r/g, "").split("\n");
+    const raw = simplifyLabText(text);
+    const src = autoTeach(raw, q);
+    const simplifiedSrc = simplifyLabText(src);
+    const lines = simplifiedSrc.replace(/\r/g, "").split("\n");
     const sections = [];
     let title = "";
     let buf = [];
@@ -1092,7 +1127,9 @@
   };
 
   const shortenPracticeAnswer = (text) => {
-    const lines = String(text || "").split("\n");
+    if (!text) return "";
+    const clean = simplifyLabText(text);
+    const lines = clean.split("\n");
     const cut = lines.findIndex((line) =>
       /^(Also know|Wrong answer|Worked example|In production|Follow-up questions|Check yourself)\.?$/i.test(line.trim())
     );
@@ -1459,19 +1496,9 @@
           : nav === page;
       a.classList.toggle("active", on);
     });
-    const bar = document.getElementById("authBar");
-    if (!bar) return;
-    const user = currentUser();
-    bar.innerHTML = user
-      ? `<span class="auth-hello">Hi, ${escapeHtml(user.name)}</span>
-         <button class="btn" type="button" id="logoutBtn">Log out</button>`
-      : `<a class="btn btn-ghost${page === "login" ? " active" : ""}" href="#/login">Log in</a>
-         <a class="btn btn-primary${page === "signup" ? " active" : ""}" href="#/signup">Sign up</a>`;
-    document.getElementById("logoutBtn")?.addEventListener("click", () => {
-      localStorage.removeItem(sessionKey);
-      paintChrome();
-      route();
-    });
+    if (window.PreplaceAuth && typeof window.PreplaceAuth.renderAuthBar === "function") {
+      window.PreplaceAuth.renderAuthBar();
+    }
   };
 
   const dsaTopics = () => window.PREP_TOPICS.filter((t) => t.id.startsWith("dsa-"));
@@ -1844,6 +1871,15 @@
     });
   };
 
+  const renderDashboard = () => {
+    if (window.PreplaceProgress && typeof window.PreplaceProgress.renderDashboardView === "function") {
+      view.innerHTML = window.PreplaceProgress.renderDashboardView();
+      if (window.PreplaceProgress.updateUIElements) window.PreplaceProgress.updateUIElements();
+    } else {
+      view.innerHTML = `<div class="dashboard-container"><p>Loading dashboard...</p></div>`;
+    }
+  };
+
   const route = () => {
     paintChrome();
     const hash = location.hash.slice(2) || "";
@@ -1853,8 +1889,15 @@
     else if (page === "topics") renderTopics(searchInput.value);
     else if (page === "practice") renderPracticeHub();
     else if (page === "dsa") renderDsaSheet();
-    else if (page === "login") renderAuth("login");
-    else if (page === "signup") renderAuth("signup");
+    else if (page === "dashboard") renderDashboard();
+    else if (page === "login") {
+      if (window.PreplaceAuth) window.PreplaceAuth.openModal("login");
+      renderHome();
+    }
+    else if (page === "signup") {
+      if (window.PreplaceAuth) window.PreplaceAuth.openModal("signup");
+      renderHome();
+    }
     else if (page === "feedback" || (page === "contact" && id === "feedback")) renderFeedback();
     else if (page === "contact") renderContact();
     else if (page === "about") renderHome("", true);

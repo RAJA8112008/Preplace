@@ -107,6 +107,12 @@
     renderAuthBar();
     closeModal();
     showToast(`Welcome, ${user.name}!`, "success");
+
+    // Synchronize latest MongoDB progress & navigate directly to Dashboard
+    if (window.PreplaceProgress && typeof window.PreplaceProgress.fetchProgress === "function") {
+      window.PreplaceProgress.fetchProgress();
+    }
+    window.location.hash = "#/dashboard";
   }
 
   // Logout
@@ -117,6 +123,7 @@
     localStorage.removeItem(USER_KEY);
     renderAuthBar();
     showToast("Signed out successfully", "info");
+    window.location.hash = "#/";
   }
 
   // Validate session on load
@@ -159,6 +166,9 @@
               <strong style="font-size: 13px; color: var(--fg);">${escapeHtml(state.user.name)}</strong>
               <div class="user-dropdown-email">${escapeHtml(state.user.email)}</div>
             </div>
+            <a href="#/dashboard" class="user-dropdown-item" style="text-decoration: none;" id="userDashLink">
+              <span>📊</span> My Dashboard
+            </a>
             <button id="logoutBtn" class="user-dropdown-item danger" type="button">
               <span>🚪</span> Sign Out
             </button>
