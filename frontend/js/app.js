@@ -12,6 +12,13 @@
   const accountsKey = "prepplace-accounts-v1";
   const sessionKey = "prepplace-session-v1";
   const userDataKey = "prepplace-user-data-v1";
+  const currentUser = () => {
+    try {
+      const raw = localStorage.getItem("preplace_user_data");
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return null;
+  };
   const CONTACT = {
     name: "Raj Kumar",
     email: "kraj9380286@gmail.com",

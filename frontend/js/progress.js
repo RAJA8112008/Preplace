@@ -275,19 +275,25 @@
     return `
       <div class="dashboard-container">
         
-        <!-- Header -->
+        <!-- Header / User Profile Banner -->
         <div class="dashboard-header">
           <div class="dashboard-user-hero">
-            <div class="dashboard-user-avatar" style="background-color: ${user?.avatar_color || '#4f46e5'}">
+            <div class="dashboard-user-avatar" style="background-color: ${user?.avatar_color || '#b4532a'}">
               ${initials}
             </div>
             <div>
-              <h1 class="dashboard-title">${user ? escapeHtml(user.name) : "My Learning Dashboard"}</h1>
-              <p class="dashboard-subtitle">${user ? escapeHtml(user.email) : "Sign in to keep your progress synced across devices"}</p>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <h1 class="dashboard-title">${user ? escapeHtml(user.name) : "Guest Learner"}</h1>
+                ${user ? `<span style="background: rgba(180, 83, 42, 0.15); color: var(--accent, #b4532a); border: 1px solid var(--accent, #b4532a); padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase;">✓ Verified</span>` : `<span style="background: var(--bg-2, #ebe3d4); color: var(--fg-muted, #5c564c); padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;">Guest Session</span>`}
+              </div>
+              <p class="dashboard-subtitle" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
+                <span>📧 ${user ? escapeHtml(user.email) : "Progress stored locally on this device"}</span>
+                ${user ? `<span style="color: #10b981; font-weight: 600;">● Cloud Synced (MongoDB Atlas)</span>` : `<button onclick="document.getElementById('signupOpenBtn')?.click()" style="background:none; border:none; color:var(--accent,#b4532a); cursor:pointer; padding:0; font-weight:600; text-decoration:underline;">Sign in to sync across devices →</button>`}
+              </p>
             </div>
           </div>
 
-          <div class="streak-hero-badge">
+          <div class="streak-hero-badge" title="Daily study streak">
             <span class="streak-flame">🔥</span>
             <span>${streakDays} Day${streakDays === 1 ? "" : "s"} Streak</span>
           </div>

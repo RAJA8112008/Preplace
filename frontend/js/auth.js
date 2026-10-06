@@ -157,18 +157,29 @@
 
       authBar.innerHTML = `
         <div class="user-menu-wrap">
-          <button id="userMenuBtn" class="user-badge-btn" type="button" aria-expanded="false">
-            <div class="user-avatar" style="background-color: ${state.user.avatar_color || "#4f46e5"}">${initials}</div>
+          <button id="userMenuBtn" class="user-badge-btn" type="button" aria-expanded="false" title="Account: ${escapeHtml(state.user.name)} (${escapeHtml(state.user.email)})">
+            <div class="user-avatar" style="background-color: ${state.user.avatar_color || "#b4532a"}">${initials}</div>
             <span class="user-name-label">${escapeHtml(state.user.name)}</span>
+            <span style="font-size: 10px; opacity: 0.7;">▼</span>
           </button>
           <div id="userDropdown" class="user-dropdown">
             <div class="user-dropdown-header">
-              <strong style="font-size: 13px; color: var(--fg);">${escapeHtml(state.user.name)}</strong>
-              <div class="user-dropdown-email">${escapeHtml(state.user.email)}</div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 14px; background-color: ${state.user.avatar_color || "#b4532a"}">${initials}</div>
+                <div>
+                  <strong style="font-size: 14px; color: var(--ink, #1c1914); display: block;">${escapeHtml(state.user.name)}</strong>
+                  <span style="font-size: 11px; color: var(--accent, #b4532a); font-weight: 600;">✓ Verified Member</span>
+                </div>
+              </div>
+              <div class="user-dropdown-email" style="margin-top: 4px;">${escapeHtml(state.user.email)}</div>
             </div>
             <a href="#/dashboard" class="user-dropdown-item" style="text-decoration: none;" id="userDashLink">
               <span>📊</span> My Dashboard
             </a>
+            <a href="#/contact" class="user-dropdown-item" style="text-decoration: none;">
+              <span>✉️</span> Message Raj
+            </a>
+            <div style="height: 1px; background: var(--line, #d8cfc0); margin: 4px 0;"></div>
             <button id="logoutBtn" class="user-dropdown-item danger" type="button">
               <span>🚪</span> Sign Out
             </button>
