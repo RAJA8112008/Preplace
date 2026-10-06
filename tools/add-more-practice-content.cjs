@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 
-const ROOT = path.join(__dirname, "..");
+const ROOT = path.join(__dirname, "..", "frontend");
 const DATA = path.join(ROOT, "data");
 
 const hasHead = (a, h) => new RegExp(`(?:^|\\n)${h}\\n`).test(String(a || ""));

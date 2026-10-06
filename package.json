@@ -4,7 +4,9 @@
   "private": true,
   "description": "Preplace — Learn by career path",
   "scripts": {
-    "dev": "node tools/dev-server.cjs",
-    "start": "node tools/dev-server.cjs"
+    "dev": "node backend/src/server.js",
+    "start": "node backend/src/server.js",
+    "server": "node backend/src/server.js",
+    "dev:frontend": "node tools/dev-server.cjs"
   }
 }

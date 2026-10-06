@@ -655,7 +655,7 @@ const dump = (id, data) => {
     data.questions = (data.questions || []).concat(ASKED[id]);
   }
   fs.writeFileSync(
-    path.join(__dirname, "..", "data", `${id}.js`),
+    path.join(__dirname, "..", "frontend", "data", `${id}.js`),
     `window.PREP_DATA = window.PREP_DATA || {};\nwindow.PREP_DATA[${JSON.stringify(id)}] = ${JSON.stringify(data, null, 2)};\n`
   );
 };

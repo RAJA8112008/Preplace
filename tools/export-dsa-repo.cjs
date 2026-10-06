@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 
-const PREP = path.join(__dirname, "..");
+const PREP = path.join(__dirname, "..", "frontend");
 const OUT = path.join(PREP, "..", "DSA");
 
 const TOPICS = [

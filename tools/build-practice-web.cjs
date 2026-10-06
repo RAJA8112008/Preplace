@@ -751,7 +751,7 @@ ws.onmessage = (e) => console.log(e.data);  // server pushed
 ws.send(JSON.stringify({ text: "hi" }));`);
 
 fs.writeFileSync(
-  path.join(__dirname, "..", "data", "practice-web.js"),
+  path.join(__dirname, "..", "frontend", "data", "practice-web.js"),
   `window.PREP_DATA = window.PREP_DATA || {};\nwindow.PREP_DATA["practice-web"] = ${JSON.stringify(data, null, 2)};\n`
 );
 console.log("wrote practice-web", data.questions.length, "questions");

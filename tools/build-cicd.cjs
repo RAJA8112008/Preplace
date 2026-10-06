@@ -908,7 +908,7 @@ on:
 ];
 
 const data = { kind: "practice", notes, examples, questions };
-const out = path.join(__dirname, "..", "data", "cicd.js");
+const out = path.join(__dirname, "..", "frontend", "data", "cicd.js");
 fs.writeFileSync(
   out,
   "window.PREP_DATA = window.PREP_DATA || {};\n" +

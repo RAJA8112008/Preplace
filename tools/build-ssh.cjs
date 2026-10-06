@@ -570,7 +570,7 @@ const data = {
   questions
 };
 
-const out = path.join(__dirname, "..", "data", "ssh.js");
+const out = path.join(__dirname, "..", "frontend", "data", "ssh.js");
 fs.writeFileSync(
   out,
   "window.PREP_DATA = window.PREP_DATA || {};\n" +

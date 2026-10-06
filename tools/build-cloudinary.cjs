@@ -582,7 +582,7 @@ const data = {
   questions
 };
 
-const out = path.join(__dirname, "..", "data", "cloudinary.js");
+const out = path.join(__dirname, "..", "frontend", "data", "cloudinary.js");
 fs.writeFileSync(
   out,
   "window.PREP_DATA = window.PREP_DATA || {};\n" +

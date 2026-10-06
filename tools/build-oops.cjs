@@ -1473,7 +1473,7 @@ const data = {
   questions
 };
 
-const out = path.join(__dirname, "..", "data", "oops.js");
+const out = path.join(__dirname, "..", "frontend", "data", "oops.js");
 fs.writeFileSync(
   out,
   "window.PREP_DATA = window.PREP_DATA || {};\n" +

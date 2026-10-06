@@ -346,7 +346,7 @@ grid.addEventListener("drop", function (e) {
 };
 
 fs.writeFileSync(
-  path.join(__dirname, "..", "data", "practice-dom.js"),
+  path.join(__dirname, "..", "frontend", "data", "practice-dom.js"),
   `window.PREP_DATA = window.PREP_DATA || {};\nwindow.PREP_DATA["practice-dom"] = ${JSON.stringify(data, null, 2)};\n`
 );
 console.log("wrote practice-dom", data.questions.length, "labs");

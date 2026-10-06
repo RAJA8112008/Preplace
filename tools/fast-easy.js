@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
-const root = path.join(__dirname, "..");
+const root = path.join(__dirname, "..", "frontend");
 
 function load(file) {
   const ctx = { window: { PREP_DATA: {} } };

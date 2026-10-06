@@ -1014,7 +1014,7 @@ const data = {
   questions
 };
 
-const out = path.join(__dirname, "..", "data", "postman.js");
+const out = path.join(__dirname, "..", "frontend", "data", "postman.js");
 const body =
   "window.PREP_DATA = window.PREP_DATA || {};\n" +
   'window.PREP_DATA["postman"] = ' +

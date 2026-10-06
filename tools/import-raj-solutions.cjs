@@ -4,7 +4,7 @@ const vm = require("vm");
 
 const LC_ROOT = "C:/Users/Nitin kumar/OneDrive/Desktop/_repos/Leetcode";
 const GFG_ROOT = "C:/Users/Nitin kumar/OneDrive/Desktop/_repos/gfg-solutions";
-const PREP = path.join(__dirname, "..");
+const PREP = path.join(__dirname, "..", "frontend");
 const OUT = path.join(PREP, "data", "raj-solutions.js");
 
 const commentFor = (raw) => {

@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const file = path.join(__dirname, "..", "data", "git.js");
+const file = path.join(__dirname, "..", "frontend", "data", "git.js");
 let src = fs.readFileSync(file, "utf8");
 
 const story = (a) =>

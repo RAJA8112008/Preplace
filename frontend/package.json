@@ -1,0 +1,10 @@
+{
+  "name": "preplace-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Preplace Frontend static assets and UI",
+  "scripts": {
+    "dev": "node ../tools/dev-server.cjs",
+    "start": "node ../tools/dev-server.cjs"
+  }
+}

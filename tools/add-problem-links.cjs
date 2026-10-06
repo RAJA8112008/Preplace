@@ -166,7 +166,7 @@ const files = [
   "dsa-dp.js"
 ];
 
-const root = path.join(__dirname, "..", "data");
+const root = path.join(__dirname, "..", "frontend", "data");
 let added = 0;
 let missing = [];
 

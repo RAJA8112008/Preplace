@@ -3,7 +3,7 @@ const path = require("path");
 
 const dump = (id, data) => {
   const out = `window.PREP_DATA = window.PREP_DATA || {};\nwindow.PREP_DATA[${JSON.stringify(id)}] = ${JSON.stringify(data, null, 2)};\n`;
-  fs.writeFileSync(path.join(__dirname, "..", "data", `${id}.js`), out);
+  fs.writeFileSync(path.join(__dirname, "..", "frontend", "data", `${id}.js`), out);
 };
 
 const Q = (id, level, q, a, extra = {}) => ({ id, level, q, a, ...extra });

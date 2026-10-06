@@ -665,7 +665,7 @@ def remove(todo_id: int):
 
 function dump(id, data) {
   const out = "window.PREP_DATA = window.PREP_DATA || {};\nwindow.PREP_DATA[" + JSON.stringify(id) + "] = " + JSON.stringify(data, null, 2) + ";\n";
-  fs.writeFileSync(path.join(__dirname, "..", "data", id + ".js"), out);
+  fs.writeFileSync(path.join(__dirname, "..", "frontend", "data", id + ".js"), out);
   console.log(id, (data.questions || []).length, "questions");
 }
 
