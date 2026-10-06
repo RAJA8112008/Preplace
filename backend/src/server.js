@@ -9,6 +9,8 @@ const { connectDB } = require("./db");
 const authRoutes = require("./routes/authRoutes");
 const progressRoutes = require("./routes/progressRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const topicRoutes = require("./routes/topicRoutes");
+const dataRoutes = require("./routes/dataRoutes");
 
 // Initialize Database Connection
 connectDB();
@@ -29,6 +31,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/topics", topicRoutes);
+app.use("/api/data", dataRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
