@@ -7,12 +7,12 @@ const Otp = require("../models/Otp");
 // Dynamic transporter helper
 function getTransporter() {
   const host = process.env.SMTP_HOST || "smtp-relay.brevo.com";
-  const user = process.env.SMTP_USER || "b0a57b001@smtp-brevo.com";
+  const user = process.env.SMTP_USER;
   const pass =
     process.env.SMTP_PASS ||
     (process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.startsWith("xsmtpsib-")
       ? process.env.BREVO_API_KEY
-      : "xsmtpsib-9a930911e94d09a471036080951102cf0af3600bd957f8ab3f84d6e26f929d34-dy9GSG6VbjLTsPWb");
+      : null);
 
   if (host && user && pass) {
     return nodemailer.createTransport({
