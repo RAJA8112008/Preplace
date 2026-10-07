@@ -1417,20 +1417,29 @@
   const toggleDone = (topicId, qid) => {
     const all = loadProgress();
     const set = new Set(all[topicId] || []);
+    const willBeDone = !set.has(qid);
     if (set.has(qid)) set.delete(qid); else set.add(qid);
     all[topicId] = [...set];
     saveProgress(all);
-    if (set.has(qid)) bumpStreak();
+    if (willBeDone) {
+      bumpStreak();
+      showToast("Question marked as completed! 🎉", "success");
+    } else {
+      showToast("Question marked as unsolved", "accent");
+    }
   };
 
   const starSet = (topicId) => new Set((userData().stars || {})[topicId] || []);
   const toggleStar = (topicId, qid) => {
+    let willBeStar = false;
     patchUser((u) => {
       const set = new Set((u.stars || {})[topicId] || []);
+      willBeStar = !set.has(qid);
       if (set.has(qid)) set.delete(qid); else set.add(qid);
       u.stars = u.stars || {};
       u.stars[topicId] = [...set];
     });
+    showToast(willBeStar ? "Saved to revision list! ⭐" : "Removed from revision list", "star");
   };
 
   const noteId = (topicId, qid) => `${topicId}:${qid}`;
@@ -1493,7 +1502,9 @@
         ? topicId === "practice-web"
         : nav === "practice"
           ? page === "practice" || (topicId.startsWith("practice-") && topicId !== "practice-web")
-          : nav === page;
+          : nav === "quantum"
+            ? page === "quantum"
+            : nav === page;
       a.classList.toggle("active", on);
     });
     if (window.PreplaceAuth && typeof window.PreplaceAuth.renderAuthBar === "function") {
@@ -1548,28 +1559,50 @@
     return list[Math.floor(Math.random() * list.length)];
   };
 
-  const goProblem = (topicId, qid) => { location.hash = `#/topic/${topicId}/${qid}`; };
+  const showToast = (message, type = "accent") => {
+    const container = document.getElementById("toastContainer");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    const icon = type === "success" ? "✓" : type === "star" ? "★" : "✦";
+    toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${escapeHtml(message)}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add("hiding");
+      setTimeout(() => toast.remove(), 260);
+    }, 2800);
+  };
+  window.showToast = showToast;
 
-  const applyTheme = (theme) => {
+  const escapeHtml = (value) => String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+
+  const applyTheme = (theme, notify = false) => {
     const next = theme === "dark" ? "dark" : "light";
     document.documentElement.dataset.theme = next;
     document.documentElement.style.colorScheme = next;
     const colorMeta = document.getElementById("themeColor");
-    if (colorMeta) colorMeta.setAttribute("content", next === "dark" ? "#12110f" : "#f4efe6");
+    if (colorMeta) colorMeta.setAttribute("content", next === "dark" ? "#0d0f14" : "#f8f6f0");
     if (themeToggle) {
       themeToggle.textContent = next === "dark" ? "☀" : "☾";
       themeToggle.setAttribute("aria-pressed", String(next === "dark"));
       themeToggle.setAttribute("aria-label", next === "dark" ? "Switch to light mode" : "Switch to dark mode");
     }
     localStorage.setItem(themeKey, next);
+    if (notify) {
+      showToast(`Switched to ${next === "dark" ? "Dark Mode 🌙" : "Light Mode ☀️"}`, "accent");
+    }
   };
 
   const savedTheme = localStorage.getItem(themeKey);
   applyTheme(savedTheme === "dark" || savedTheme === "light"
     ? savedTheme
-    : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+    : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"), false);
   themeToggle?.addEventListener("click", () => {
-    applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+    applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true);
   });
 
   const topicById = (id) => window.PREP_TOPICS.find((t) => t.id === id);
@@ -1594,12 +1627,6 @@
     return { done, total, pct: Math.round((done / total) * 100) };
   };
 
-  const escapeHtml = (value) => String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-
   const copyText = async (code, btn) => {
     try { await navigator.clipboard.writeText(code); }
     catch {
@@ -1610,8 +1637,10 @@
       document.execCommand("copy");
       ta.remove();
     }
-    btn.textContent = "Copied";
-    setTimeout(() => { btn.textContent = "Copy"; }, 1200);
+    const origText = btn.textContent;
+    btn.textContent = "Copied! ✓";
+    showToast("Code copied to clipboard! 📋", "success");
+    setTimeout(() => { btn.textContent = origText; }, 1400);
   };
 
   const showAuthError = (msg) => {
@@ -1963,12 +1992,226 @@
     });
   };
 
-  const renderDashboard = () => {
-    if (window.PreplaceProgress && typeof window.PreplaceProgress.renderDashboardView === "function") {
-      view.innerHTML = window.PreplaceProgress.renderDashboardView();
-      if (window.PreplaceProgress.updateUIElements) window.PreplaceProgress.updateUIElements();
+  const quantumKey = "prepplace-quantum-ready-v1";
+  const readQuantumReady = () => {
+    try { return JSON.parse(localStorage.getItem(quantumKey) || "{}"); } catch { return {}; }
+  };
+  const toggleQuantumReady = (skillId) => {
+    const ready = readQuantumReady();
+    ready[skillId] = !ready[skillId];
+    localStorage.setItem(quantumKey, JSON.stringify(ready));
+    return ready[skillId];
+  };
+
+  const renderQuantum = (skillId) => {
+    const quantumList = window.PREP_QUANTUM || [];
+    const readyMap = readQuantumReady();
+    const readyCount = quantumList.filter((s) => readyMap[s.id]).length;
+    const qSkill = skillId ? quantumList.find((s) => s.id === skillId) : null;
+
+    if (qSkill) {
+      const isReady = Boolean(readyMap[qSkill.id]);
+      const currentIndex = quantumList.findIndex((s) => s.id === qSkill.id);
+      const prevSkill = quantumList[currentIndex - 1];
+      const nextSkill = quantumList[currentIndex + 1];
+
+      view.innerHTML = `
+        <section class="topic-head">
+          <button class="back-btn" type="button" id="backQuantum">← All Quantum Skills</button>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+            <span style="font-size:2.4rem;">${qSkill.icon}</span>
+            <div>
+              <span class="quantum-badge-pill">⚡ 1-Night Placement Quantum</span>
+              <h1 style="margin:2px 0;">${escapeHtml(qSkill.title)}</h1>
+            </div>
+          </div>
+          <p class="example-intro">${escapeHtml(qSkill.summary)}</p>
+          <div class="topic-meta">
+            <span class="badge">⏱️ Est. ${escapeHtml(qSkill.duration)}</span>
+            <span class="badge">${escapeHtml(qSkill.badge)}</span>
+            ${isReady ? `<span class="quantum-ready-badge">✓ Interview Ready</span>` : ""}
+          </div>
+        </section>
+
+        <div class="quantum-detail-actions">
+          <button class="btn ${isReady ? "btn-ghost" : "btn-primary"}" type="button" id="toggleReadyBtn">
+            ${isReady ? "✓ Marked as Ready (Tap to Undo)" : "Mark as Interview-Ready 🔥"}
+          </button>
+          <button class="btn" type="button" id="copyCheatBtn">📋 Copy Cheat Sheet</button>
+          <button class="btn btn-ghost" type="button" id="toggleFlashcardsBtn">⚡ Rapid Self-Test Cards</button>
+        </div>
+
+        <!-- Section 1: High-Yield Cheat Sheet -->
+        <article class="quantum-section" id="cheatSheetSection">
+          <h2 class="quantum-section-title">⚡ 1-Night High-Yield Cheat Sheet</h2>
+          <div class="quantum-cheat-grid">
+            ${qSkill.cheatSheet.map((item) => `
+              <div class="quantum-cheat-box">
+                <h4>✦ ${escapeHtml(item.topic)}</h4>
+                <ul class="quantum-cheat-list">
+                  ${item.points.map((pt) => `<li>${escapeHtml(pt)}</li>`).join("")}
+                </ul>
+              </div>
+            `).join("")}
+          </div>
+        </article>
+
+        <!-- Section 2: Top Must-Crack Questions -->
+        <article class="quantum-section" id="questionsSection">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <h2 class="quantum-section-title" style="margin:0;">🎯 Top Must-Crack Placement Questions</h2>
+            <button class="btn btn-ghost" type="button" id="toggleAllQsBtn">Expand all answers</button>
+          </div>
+          <div class="qa">
+            ${qSkill.topQuestions.map((item, idx) => `
+              <article class="item" data-qid="q-${idx}">
+                <div class="q-bar">
+                  <button class="q-row" type="button">
+                    <span class="num">${String(idx + 1).padStart(2, "0")}</span>
+                    <span class="q-main">
+                      <span class="q-title">${escapeHtml(item.q)}</span>
+                    </span>
+                    <span class="level lv-beginner">Model Answer</span>
+                  </button>
+                </div>
+                <div class="answer-wrap">
+                  <p class="answer-label">One-Night Placement Answer</p>
+                  <p class="teach-body" style="font-size:1rem;line-height:1.75;color:var(--ink);">${escapeHtml(item.a)}</p>
+                </div>
+              </article>
+            `).join("")}
+          </div>
+        </article>
+
+        <!-- Section 3: Interview Traps -->
+        <article class="quantum-section" id="trapsSection">
+          <h2 class="quantum-section-title">⚠️ Common Interview Traps & Pitfalls</h2>
+          <p class="example-intro" style="margin-bottom:14px;">The exact tricky questions interviewers ask to filter candidates who memorize without understanding.</p>
+          <div class="quantum-trap-box">
+            ${qSkill.traps.map((t) => `
+              <div class="quantum-trap-item">
+                <strong>⚠️ Pitfall: ${escapeHtml(t.trap)}</strong>
+                <p><strong>Correct Placement Response:</strong> ${escapeHtml(t.fix)}</p>
+              </div>
+            `).join("")}
+          </div>
+        </article>
+
+        <!-- Section 4: Rapid Flashcards -->
+        <article class="quantum-section" id="flashcardSection">
+          <h2 class="quantum-section-title">⏱️ 5-Minute Rapid Self-Test Flashcards</h2>
+          <p class="example-intro" style="margin-bottom:14px;">Tap any card to instantly check if you know the answer cold before stepping into the interview.</p>
+          <div class="quantum-flash-grid">
+            ${qSkill.topQuestions.map((q) => `
+              <div class="quantum-flashcard">
+                <p class="quantum-flash-q">${escapeHtml(q.q)}</p>
+                <span class="quantum-flash-hint">Tap to reveal answer ▾</span>
+                <p class="quantum-flash-a">${escapeHtml(q.a)}</p>
+              </div>
+            `).join("")}
+          </div>
+        </article>
+
+        <!-- Navigation Next/Prev -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px;gap:12px;flex-wrap:wrap;">
+          ${prevSkill ? `<a class="btn" href="#/quantum/${prevSkill.id}">← ${prevSkill.icon} ${escapeHtml(prevSkill.title)}</a>` : `<span></span>`}
+          <a class="btn btn-primary" href="#/quantum">All Quantum Skills ⚡</a>
+          ${nextSkill ? `<a class="btn" href="#/quantum/${nextSkill.id}">${nextSkill.icon} ${escapeHtml(nextSkill.title)} →</a>` : `<span></span>`}
+        </div>
+      `;
+
+      document.getElementById("backQuantum")?.addEventListener("click", () => { location.hash = "#/quantum"; });
+
+      document.getElementById("toggleReadyBtn")?.addEventListener("click", () => {
+        const readyNow = toggleQuantumReady(qSkill.id);
+        showToast(readyNow ? `Marked ${qSkill.title} as Interview Ready! 🔥` : `Unmarked ${qSkill.title}`, readyNow ? "success" : "accent");
+        renderQuantum(qSkill.id);
+      });
+
+      document.getElementById("copyCheatBtn")?.addEventListener("click", async () => {
+        const text = `${qSkill.title} — 1-Night Placement Quantum Cheat Sheet\n\n` +
+          qSkill.cheatSheet.map((c) => `[${c.topic}]\n` + c.points.map((p) => `• ${p}`).join("\n")).join("\n\n") +
+          `\n\n[TOP QUESTIONS]\n` +
+          qSkill.topQuestions.map((q, i) => `${i + 1}. ${q.q}\nAnswer: ${q.a}`).join("\n\n");
+        await copyText(text, document.getElementById("copyCheatBtn"));
+      });
+
+      document.getElementById("toggleFlashcardsBtn")?.addEventListener("click", () => {
+        document.getElementById("flashcardSection")?.scrollIntoView({ behavior: "smooth" });
+      });
+
+      let allQsOpen = false;
+      document.getElementById("toggleAllQsBtn")?.addEventListener("click", () => {
+        allQsOpen = !allQsOpen;
+        view.querySelectorAll("#questionsSection .item").forEach((it) => it.classList.toggle("open", allQsOpen));
+        document.getElementById("toggleAllQsBtn").textContent = allQsOpen ? "Collapse all answers" : "Expand all answers";
+      });
+
+      view.querySelectorAll("#questionsSection .q-row").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          btn.closest(".item")?.classList.toggle("open");
+        });
+      });
+
+      view.querySelectorAll(".quantum-flashcard").forEach((card) => {
+        card.addEventListener("click", () => {
+          card.classList.toggle("revealed");
+        });
+      });
+
     } else {
-      view.innerHTML = `<div class="dashboard-container"><p>Loading dashboard...</p></div>`;
+      // Render Quantum Hub Overview
+      const pct = Math.round((readyCount / Math.max(1, quantumList.length)) * 100);
+
+      view.innerHTML = `
+        <section class="quantum-hero">
+          <span class="quantum-badge-pill">⚡ 1-Night Crash Series</span>
+          <h1 style="margin:0 0 10px;font-family:Fraunces, Georgia, serif;font-size:clamp(2rem, 4.5vw, 2.9rem);">
+            Quantum for Placement Prep
+          </h1>
+          <p class="example-intro" style="max-width:58ch;margin:0 0 18px;">
+            Short on time? Revise the highest-yield interview cheat sheets, top 10 repeat questions, and tricky trap answers for every core placement skill in one sitting.
+          </p>
+          <div class="topic-meta" style="margin-bottom:14px;">
+            <span class="badge">⚡ ${quantumList.length} Core Skills</span>
+            <span class="badge">🔥 ${readyCount} / ${quantumList.length} Ready</span>
+            <span class="badge">⏱️ ~40 mins per skill</span>
+          </div>
+          <div class="progress" style="max-width:480px;height:9px;"><span style="width:${pct}%"></span></div>
+        </section>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:28px 0 14px;flex-wrap:wrap;gap:10px;">
+          <h2 class="section-title" style="margin:0;">Choose a skill to crash tonight</h2>
+          <span style="font-size:0.9rem;font-weight:600;color:var(--muted);">${readyCount} of ${quantumList.length} skills ready</span>
+        </div>
+
+        <div class="quantum-grid">
+          ${quantumList.map((skill) => {
+            const isReady = Boolean(readyMap[skill.id]);
+            return `
+              <a class="quantum-card" href="#/quantum/${skill.id}">
+                <div class="quantum-card-header">
+                  <div class="quantum-card-title">
+                    <span style="font-size:1.85rem;">${skill.icon}</span>
+                    <div>
+                      <h3>${escapeHtml(skill.title)}</h3>
+                      <span style="font-size:0.75rem;color:var(--accent);font-weight:700;text-transform:uppercase;">${escapeHtml(skill.badge)}</span>
+                    </div>
+                  </div>
+                  ${isReady ? `<span class="quantum-ready-badge">✓ Ready</span>` : ""}
+                </div>
+                <p style="margin:0;color:var(--muted);font-size:0.94rem;line-height:1.55;">
+                  ${escapeHtml(skill.summary)}
+                </p>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;border-top:1px solid var(--line);">
+                  <span class="quantum-card-meta">⏱️ ${escapeHtml(skill.duration)}</span>
+                  <span class="btn btn-primary" style="padding:5px 14px;font-size:0.8rem;">Revise ⚡</span>
+                </div>
+              </a>
+            `;
+          }).join("")}
+        </div>
+      `;
     }
   };
 
@@ -1982,6 +2225,7 @@
     else if (page === "practice") renderPracticeHub();
     else if (page === "dsa") renderDsaSheet();
     else if (page === "dashboard") renderDashboard();
+    else if (page === "quantum") renderQuantum(id);
     else if (page === "login") {
       if (window.PreplaceAuth) window.PreplaceAuth.openModal("login");
       renderHome();
@@ -2084,6 +2328,7 @@
             -->
             <div class="hero-cta">
               <button class="btn btn-primary" type="button" id="scrollCareers">Browse paths</button>
+              <a class="btn" href="#/quantum" style="border-color:rgba(245,158,11,0.4);color:var(--accent);">⚡ 1-Night Quantum</a>
               <a class="btn" href="#/topic/practice-web">Practice questions</a>
               <a class="btn" href="#/practice">Labs</a>
               <a class="btn btn-ghost" href="#/dsa">Problem sheet</a>
@@ -2095,7 +2340,8 @@
               <p>${escapeHtml(focusLine)}</p>
             </blockquote>
             <div class="hero-cta hero-cta-stack">
-              <a class="btn btn-primary" href="#/topic/practice-web">Practice questions</a>
+              <a class="btn btn-primary" href="#/quantum" style="background:linear-gradient(135deg,#f59e0b,#d9531e);border:none;color:#fff;">⚡ 1-Night Quantum</a>
+              <a class="btn" href="#/topic/practice-web">Practice questions</a>
               <a class="btn" href="#/practice">Labs</a>
               <a class="btn btn-ghost" href="#/contact">Message Raj</a>
             </div>
@@ -2892,12 +3138,42 @@
     else renderHome(searchInput.value);
   });
 
+  // Back to Top button handler
+  const backToTopBtn = document.getElementById("backToTop");
+  if (backToTopBtn) {
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.add("visible");
+      } else {
+        backToTopBtn.classList.remove("visible");
+      }
+    }, { passive: true });
+
+    backToTopBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  // Global keyboard shortcuts (Ctrl+K / Cmd+K / Slash to focus search)
+  window.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      searchInput?.focus();
+      searchInput?.select();
+    } else if (e.key === "/" && document.activeElement !== searchInput && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+      e.preventDefault();
+      searchInput?.focus();
+      searchInput?.select();
+    }
+  });
+
   window.addEventListener("hashchange", () => {
     window.topicTab = undefined;
     window.topicQuery = "";
     window.topicLevel = "all";
     window.topicCompany = "all";
     window.topicBag = "all";
+    window.scrollTo({ top: 0, behavior: "smooth" });
     route();
   });
 
