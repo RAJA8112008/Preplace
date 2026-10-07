@@ -147,6 +147,11 @@
     const authBar = document.getElementById("authBar");
     if (!authBar) return;
 
+    const dashNav = document.querySelector('[data-nav="dashboard"]');
+    if (dashNav) {
+      dashNav.style.display = state.user ? "inline-flex" : "none";
+    }
+
     if (state.user) {
       const initials = (state.user.name || "U")
         .split(" ")

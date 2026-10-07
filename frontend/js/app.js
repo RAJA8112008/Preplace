@@ -548,7 +548,19 @@
     return sols;
   };
 
+  const LEETCODE_SVG = `<svg class="lc-svg" viewBox="0 0 24 24" width="15" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .666-1.78l3.76-4.026 4.908-5.263a1.396 1.396 0 0 0 .034-1.91 1.394 1.394 0 0 0-.978-.457z" fill="#B3B1B0"/><path d="M9.833 13.916a1.375 1.375 0 0 0-.012 1.944l2.678 2.678c1.346 1.346 3.535 1.346 4.881 0l4.281-4.281a3.456 3.456 0 0 0 0-4.881l-4.281-4.281a1.375 1.375 0 0 0-1.944 1.944l4.281 4.281a.706.706 0 0 1 0 .993l-4.281 4.281a.706.706 0 0 1-.993 0l-2.678-2.678a1.375 1.375 0 0 0-1.932-.28z" fill="#FFA116"/><path d="M8.11 12.001a1.375 1.375 0 0 1 1.375-1.375h9.625a1.375 1.375 0 1 1 0 2.75H9.485A1.375 1.375 0 0 1 8.11 12.001z" fill="#FFA116"/></svg>`;
+
+  const GFG_SVG = `<svg class="gfg-svg" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill="#2E8B57" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>`;
+
   const dsaLinks = (item) => (item.links || []).slice();
+
+  const renderProblemLink = (link) => {
+    const isLc = link.name?.toLowerCase().includes("leetcode") || link.url?.includes("leetcode.com");
+    const isGfg = link.name?.toLowerCase().includes("gfg") || link.url?.includes("geeksforgeeks.org");
+    const icon = isLc ? LEETCODE_SVG : isGfg ? GFG_SVG : "↗";
+    const cls = isLc ? "plink plink-lc" : isGfg ? "plink plink-gfg" : "plink";
+    return `<a class="${cls}" href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" data-site="${isLc ? "leetcode" : isGfg ? "gfg" : "web"}">${icon} <span>${escapeHtml(link.name)}</span> ↗</a>`;
+  };
 
   const prettyLabel = (s) => (s === "all" ? "All" : String(s).charAt(0).toUpperCase() + String(s).slice(1));
 
@@ -1491,13 +1503,29 @@
     return parts[0] || "home";
   };
 
+  const isUserAuthenticated = () => {
+    try {
+      if (window.PreplaceAuth && window.PreplaceAuth.getUser && window.PreplaceAuth.getUser()) return true;
+      const user = localStorage.getItem("preplace_user_data");
+      const token = localStorage.getItem("preplace_auth_token");
+      return Boolean(user && token);
+    } catch {
+      return false;
+    }
+  };
+
   const paintChrome = () => {
     const page = currentPage();
     document.body.dataset.page = page;
     const hash = location.hash;
     const topicId = hash.startsWith("#/topic/") ? hash.slice(2).split("/")[1] : "";
+    const isAuth = isUserAuthenticated();
+
     document.querySelectorAll("[data-nav]").forEach((a) => {
       const nav = a.dataset.nav;
+      if (nav === "dashboard") {
+        a.style.display = isAuth ? "inline-flex" : "none";
+      }
       const on = nav === "practice-q"
         ? topicId === "practice-web"
         : nav === "practice"
@@ -1557,6 +1585,10 @@
       : allDsaProblems();
     if (!list.length) return null;
     return list[Math.floor(Math.random() * list.length)];
+  };
+
+  const goProblem = (topicId, qid) => {
+    location.hash = `#/topic/${topicId}/${qid}`;
   };
 
   const showToast = (message, type = "accent") => {
@@ -1751,65 +1783,175 @@
 
   const renderContact = () => {
     const user = currentUser();
+    const categories = [
+      { id: "doubt", label: "🧩 DSA Doubt / Solution", desc: "Ask about a brute or optimal solution" },
+      { id: "career", label: "🚀 Career Guidance", desc: "Resume review or interview strategy" },
+      { id: "solution", label: "💡 Suggest Question", desc: "Add a new company-asked problem" },
+      { id: "feedback", label: "⚡ Platform Suggestion", desc: "Feature request or UI idea" },
+      { id: "general", label: "💬 General Chat", desc: "Say hi or collaborate with Raj" }
+    ];
+
     view.innerHTML = `
-      <section class="form-page">
+      <section class="form-page" style="max-width:1040px;margin:0 auto;">
         <div class="page-actions">
           <a class="btn btn-ghost" href="#/">← Home</a>
-          <a class="btn" href="#/feedback">Feedback</a>
+          <a class="btn" href="#/feedback">Site Feedback 🌟</a>
         </div>
-        <article class="author-card">
-          <button type="button" class="contact-photo-btn" id="openRajPhoto" aria-label="View Raj Kumar's full photo">
-            <img class="contact-photo" src="assets/raj.jpg" width="88" height="88" alt="Raj Kumar" />
-          </button>
-          <div>
-            <p class="hero-kicker">Author</p>
-            <h2>Raj Kumar</h2>
-            <p>I built Preplace so interview prep stays in one place: notes, DSA, labs, and the questions companies repeat.</p>
-            <p class="contact-links">
-              Email: <a href="mailto:${CONTACT.email}">${CONTACT.email}</a><br />
-              LinkedIn: <a href="${CONTACT.linkedin}" target="_blank" rel="noopener noreferrer">linkedin.com/in/raja-o</a>
+
+        <div class="contact-grid-layout">
+          <!-- Left Column: Mentor / Author Profile -->
+          <aside class="mentor-profile-card">
+            <div class="mentor-header">
+              <button type="button" class="mentor-avatar-btn" id="openRajPhoto" title="Click to view full photo">
+                <img class="mentor-avatar-img" src="assets/raj.jpg" width="80" height="80" alt="Raj Kumar" />
+                <span class="mentor-zoom-hint">🔍</span>
+              </button>
+              <div class="mentor-title-area">
+                <span class="hero-kicker">Platform Creator</span>
+                <h2>Raj Kumar</h2>
+                <p class="mentor-role">Full Stack &amp; DSA Mentor</p>
+              </div>
+            </div>
+
+            <div class="mentor-status-badge">
+              <span>🟢</span>
+              <span>Typically replies within 24 hours</span>
+            </div>
+
+            <p style="margin:0;color:var(--muted);font-size:0.92rem;line-height:1.6;">
+              I created Preplace to help engineers master placements with clear, intuitive analogies instead of dry theory. Send your doubt or question below!
             </p>
-          </div>
-        </article>
-        <article class="auth-card">
-          <div class="contact-head">
-            <div>
-              <p class="hero-kicker">Direct Contact</p>
-              <h1>Message Raj Kumar</h1>
-              <p>Have a doubt in a DSA solution, need career guidance, or want to suggest interview questions? Send a direct message below.</p>
+
+            <div class="mentor-channels">
+              <div class="channel-row">
+                <span class="channel-label">📧 Direct Email:</span>
+                <span style="display:flex;align-items:center;gap:6px;">
+                  <a class="channel-val" href="mailto:${CONTACT.email}">${CONTACT.email}</a>
+                  <button class="copy-mini-btn" type="button" id="copyEmailBtn" title="Copy email">Copy</button>
+                </span>
+              </div>
+              <div class="channel-row">
+                <span class="channel-label">💼 LinkedIn:</span>
+                <a class="channel-val" href="${CONTACT.linkedin}" target="_blank" rel="noopener noreferrer">linkedin.com/in/raja-o ↗</a>
+              </div>
+              <div class="channel-row">
+                <span class="channel-label">🎓 Preplace:</span>
+                <span class="channel-val">100% Free Placement Mentorship</span>
+              </div>
             </div>
-          </div>
-          <form id="contactForm" class="auth-form" novalidate>
-            <label>Your name
-              <input class="auth-field" name="name" maxlength="80" required value="${escapeHtml(user?.name || "")}" placeholder="Your name" />
-            </label>
-            <label>Your email
-              <input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" placeholder="you@example.com" />
-            </label>
-            <label>Topic / Category
-              <select class="auth-field" name="category">
-                <option value="general">General Message</option>
-                <option value="doubt">DSA Doubt / Solution Question</option>
-                <option value="solution">Suggest Missing Question / Solution</option>
-                <option value="career">Career Guidance & Advice</option>
-                <option value="feedback">Platform Suggestion</option>
-              </select>
-            </label>
-            <label>Message
-              <textarea class="auth-field" name="message" rows="8" required minlength="5" placeholder="What do you want to ask or tell Raj?"></textarea>
-            </label>
-            <p class="form-status" id="contactStatus" hidden></p>
-            <div class="form-actions">
-              <button class="btn btn-primary btn-wide" type="submit" id="contactSend">Send Message to Raj</button>
+
+            <div class="mentor-tips-box">
+              <h4>⚡ Tips for Fast Replies:</h4>
+              <ul class="mentor-tips-list">
+                <li>Include the exact problem name &amp; topic.</li>
+                <li>Mention your approach or where testcases failed.</li>
+                <li>Share your LinkedIn/GitHub if you'd like resume advice.</li>
+              </ul>
             </div>
-          </form>
-          <p class="auth-switch">Want to rate the site? <a href="#/feedback">Send feedback</a></p>
-        </article>
+          </aside>
+
+          <!-- Right Column: Interactive Direct Message Form -->
+          <article class="form-box-card">
+            <div class="form-box-head">
+              <span class="hero-kicker">Direct Contact</span>
+              <h1>Send a Message to Raj</h1>
+              <p>Have a question or request? Fill out the details below and it goes directly to Raj's inbox.</p>
+            </div>
+
+            <form id="contactForm" class="auth-form" novalidate>
+              <div class="field-group">
+                <label class="form-label">
+                  <span>Your Name <strong style="color:var(--accent)">*</strong></span>
+                  <input class="form-input" name="name" maxlength="80" required value="${escapeHtml(user?.name || "")}" placeholder="e.g. John Doe" autocomplete="name" />
+                </label>
+
+                <label class="form-label">
+                  <span>Your Email <strong style="color:var(--accent)">*</strong></span>
+                  <input class="form-input" name="email" type="email" required value="${escapeHtml(user?.email || "")}" placeholder="e.g. john@example.com" autocomplete="email" />
+                </label>
+              </div>
+
+              <div class="form-label">
+                <span>Select Category <strong style="color:var(--accent)">*</strong></span>
+                <div class="category-chip-grid" id="categoryChips">
+                  ${categories.map((c, i) => `
+                    <button type="button" class="category-chip-btn ${i === 0 ? "active" : ""}" data-cat="${c.id}">
+                      ${c.label}
+                    </button>
+                  `).join("")}
+                </div>
+                <input type="hidden" name="category" id="contactCategory" value="doubt" />
+              </div>
+
+              <label class="form-label">
+                <span>Your Message <strong style="color:var(--accent)">*</strong></span>
+                <textarea class="form-textarea" name="message" id="contactMessageInput" rows="7" required minlength="5" maxlength="1500" placeholder="Write your doubt, interview question, or feedback in detail..."></textarea>
+                <div class="char-counter-bar">
+                  <span>Min 5 characters</span>
+                  <span id="contactCharCount">0 / 1500</span>
+                </div>
+              </label>
+
+              <div id="contactStatusAlert" hidden></div>
+
+              <div class="form-actions" style="margin-top:10px;">
+                <button class="btn btn-primary btn-wide" type="submit" id="contactSend" style="padding:12px 24px;font-size:1rem;">
+                  Send Message to Raj 🚀
+                </button>
+              </div>
+            </form>
+          </article>
+        </div>
+
         <dialog class="photo-lightbox" id="rajPhotoDialog" aria-label="Photo">
-          <button type="button" class="photo-lightbox-close" id="closeRajPhoto">Close</button>
-          <img class="photo-lightbox-img" id="lightboxImg" src="assets/raj.jpg" alt="" />
+          <button type="button" class="photo-lightbox-close" id="closeRajPhoto">Close ✕</button>
+          <img class="photo-lightbox-img" id="lightboxImg" src="assets/raj.jpg" alt="Raj Kumar" />
         </dialog>
-      </section>`;
+      </section>
+    `;
+
+    // Category chips selection
+    const categoryHidden = document.getElementById("contactCategory");
+    view.querySelectorAll("#categoryChips .category-chip-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        view.querySelectorAll("#categoryChips .category-chip-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (categoryHidden) categoryHidden.value = btn.dataset.cat;
+      });
+    });
+
+    // Character counter
+    const messageInput = document.getElementById("contactMessageInput");
+    const charCounter = document.getElementById("contactCharCount");
+    messageInput?.addEventListener("input", () => {
+      const len = messageInput.value.length;
+      if (charCounter) charCounter.textContent = `${len} / 1500`;
+    });
+
+    // Copy Email button
+    document.getElementById("copyEmailBtn")?.addEventListener("click", async () => {
+      const copyBtn = document.getElementById("copyEmailBtn");
+      try {
+        await navigator.clipboard.writeText(CONTACT.email);
+        if (copyBtn) copyBtn.textContent = "Copied! ✓";
+        showToast("Email address copied to clipboard! 📋", "success");
+        setTimeout(() => { if (copyBtn) copyBtn.textContent = "Copy"; }, 1600);
+      } catch {
+        showToast("Email: " + CONTACT.email, "accent");
+      }
+    });
+
+    const setStatusAlert = (text, type = "is-ok") => {
+      const alert = document.getElementById("contactStatusAlert");
+      if (!alert) return;
+      if (!text) {
+        alert.hidden = true;
+        return;
+      }
+      alert.hidden = false;
+      alert.className = `form-status-alert ${type}`;
+      alert.innerHTML = `<span>${type === "is-ok" ? "✓" : "⚠️"}</span><span>${escapeHtml(text)}</span>`;
+    };
 
     const contactForm = document.getElementById("contactForm");
     const contactBtn = document.getElementById("contactSend");
@@ -1819,23 +1961,23 @@
       const fd = new FormData(contactForm);
       const name = String(fd.get("name") || "").trim();
       const email = String(fd.get("email") || "").trim();
-      const category = String(fd.get("category") || "general").trim();
+      const category = String(fd.get("category") || "doubt").trim();
       const message = String(fd.get("message") || "").trim();
 
       if (!name) {
-        setContactStatus("Please enter your name.", "is-error");
+        setStatusAlert("Please enter your name.", "is-error");
         return;
       }
       if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-        setContactStatus("Please enter a valid email address so Raj can reply to you.", "is-error");
+        setStatusAlert("Please provide a valid email address so Raj can reply.", "is-error");
         return;
       }
       if (!message || message.length < 5) {
-        setContactStatus("Please write a message with at least 5 characters.", "is-error");
+        setStatusAlert("Please write a message with at least 5 characters.", "is-error");
         return;
       }
 
-      setContactStatus("Sending your message to Raj...", "");
+      setStatusAlert("Sending your message to Raj...", "is-ok");
       if (contactBtn) {
         contactBtn.disabled = true;
         contactBtn.textContent = "Sending...";
@@ -1855,39 +1997,31 @@
         });
 
         const data = await res.json();
-        if (res.ok && data.success) {
-          setContactStatus("Message sent successfully! Raj will receive your message and get back to you.", "is-ok");
+        if (res.ok && (data.success || data.message || data.data)) {
+          setStatusAlert("Message sent successfully! Raj will receive your note and get back to you soon.", "is-ok");
+          showToast("Message sent to Raj Kumar! 🚀", "success");
           contactForm.reset();
+          if (charCounter) charCounter.textContent = "0 / 1500";
           if (user) {
             if (contactForm.elements.name) contactForm.elements.name.value = user.name || "";
             if (contactForm.elements.email) contactForm.elements.email.value = user.email || "";
           }
-          if (contactBtn) contactBtn.textContent = "Send another message";
+          if (contactBtn) contactBtn.textContent = "Send Another Message";
         } else {
-          // Fallback to postToRaj if backend endpoint returns an issue
-          postToRaj({
-            name,
-            email,
-            category,
-            message,
-            _subject: `Preplace message from ${name}`
-          });
-          setContactStatus("Message dispatched! Raj will receive your note.", "is-ok");
+          postToRaj({ name, email, category, message, _subject: `Preplace message from ${name}` });
+          setStatusAlert("Message dispatched! Raj will review it shortly.", "is-ok");
+          showToast("Message sent! 🚀", "success");
           contactForm.reset();
-          if (contactBtn) contactBtn.textContent = "Send another message";
+          if (charCounter) charCounter.textContent = "0 / 1500";
+          if (contactBtn) contactBtn.textContent = "Send Another Message";
         }
       } catch (err) {
-        // Network fallback
-        postToRaj({
-          name,
-          email,
-          category,
-          message,
-          _subject: `Preplace message from ${name}`
-        });
-        setContactStatus("Message sent! Raj will review it.", "is-ok");
+        postToRaj({ name, email, category, message, _subject: `Preplace message from ${name}` });
+        setStatusAlert("Message dispatched! Raj will review your note.", "is-ok");
+        showToast("Message sent! 🚀", "success");
         contactForm.reset();
-        if (contactBtn) contactBtn.textContent = "Send another message";
+        if (charCounter) charCounter.textContent = "0 / 1500";
+        if (contactBtn) contactBtn.textContent = "Send Another Message";
       } finally {
         if (contactBtn) contactBtn.disabled = false;
       }
@@ -1898,67 +2032,189 @@
 
   const renderFeedback = () => {
     const user = currentUser();
+    const publicStats = readPublicStats();
+    const currentRating = mySiteRating();
+
+    const sentimentLabels = [
+      "",
+      "Needs Improvement 😕",
+      "Fair / Decent 🙂",
+      "Good Platform 👍",
+      "Very Helpful! 🚀",
+      "Exceptional / 100% Recommended 🔥"
+    ];
+
+    const feedbackKinds = [
+      { id: "general", label: "🌟 Overall Experience" },
+      { id: "feature", label: "💡 Feature Request" },
+      { id: "content", label: "📚 Content Request" },
+      { id: "bug", label: "🐛 Bug Report" },
+      { id: "thanks", label: "❤️ Appreciation" }
+    ];
+
     view.innerHTML = `
-      <section class="form-page">
+      <section class="form-page" style="max-width:1040px;margin:0 auto;">
         <div class="page-actions">
           <a class="btn btn-ghost" href="#/">← Home</a>
-          <a class="btn" href="#/contact">Message Raj</a>
+          <a class="btn" href="#/contact">Message Raj ✉️</a>
         </div>
-        <article class="auth-card">
-          <p class="hero-kicker">Feedback</p>
-          <h1>Site feedback</h1>
-          <p>Tell Raj what to keep, what is confusing, or what to add next. Private doubts belong on Message Raj.</p>
-          <form id="feedbackForm" class="auth-form">
-            <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
-            <label>Your name<input class="auth-field" name="name" required maxlength="80" value="${escapeHtml(user?.name || "")}" /></label>
-            <label>Your email<input class="auth-field" name="email" type="email" required value="${escapeHtml(user?.email || "")}" /></label>
-            <p class="filter-label">How is Preplace?</p>
-            <div class="star-row" id="feedbackStars" role="group" aria-label="Rating">
-              ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-pick" data-star="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}
-            </div>
-            <input type="hidden" name="rating" id="feedbackRating" value="" />
-            <label>Kind
-              <select class="auth-field" name="kind">
-                <option value="general">General</option>
-                <option value="bug">Something is broken</option>
-                <option value="content">Content request</option>
-                <option value="thanks">Thank you</option>
-              </select>
-            </label>
-            <label>Your feedback<textarea class="auth-field" name="feedback" rows="8" required minlength="8" placeholder="What should Raj know about the site?"></textarea></label>
-            <p class="form-status" id="feedbackStatus" hidden></p>
-            <div class="form-actions">
-              <button class="btn btn-primary btn-wide" type="submit" id="feedbackSend">Send feedback</button>
-            </div>
-          </form>
-          <p class="auth-switch">Need help with a question? <a href="#/contact">Message Raj</a></p>
-        </article>
-      </section>`;
 
-    const setFeedbackStatus = (text, kind) => {
-      const el = document.getElementById("feedbackStatus");
-      if (!el) return;
-      el.hidden = !text;
-      el.textContent = text;
-      el.className = `form-status${kind ? ` ${kind}` : ""}`;
-    };
+        <div class="contact-grid-layout">
+          <!-- Left Column: Site Rating & Social Proof -->
+          <aside class="mentor-profile-card">
+            <span class="hero-kicker">Community Rating</span>
+            <h2>How is Preplace?</h2>
+            <p style="margin:0;color:var(--muted);font-size:0.92rem;line-height:1.6;">
+              Preplace is 100% free and open for all learners. Your ratings help us prioritize what to build next.
+            </p>
 
-    const stars = view.querySelectorAll("[data-star]");
-    const ratingInput = document.getElementById("feedbackRating");
-    const paintStars = (n) => {
+            <div class="sentiment-display" style="flex-direction:column;align-items:center;text-align:center;padding:18px;">
+              <span style="font-size:3rem;font-weight:800;font-family:Fraunces,serif;color:var(--ink);line-height:1;" id="liveRatingAvg">
+                ${ratingLabel(publicStats)}
+              </span>
+              <div class="star-row" style="margin:8px 0;" id="communityStars">
+                ${starGlyphs(ratingAverage(publicStats))}
+              </div>
+              <span style="font-size:0.85rem;color:var(--muted);font-weight:600;" id="liveRatingCount">
+                Based on ${publicStats.ratingN ? publicStats.ratingN.toLocaleString() : 0} learner ratings
+              </span>
+            </div>
+
+            <div class="mentor-tips-box">
+              <h4>🎯 What happens with your feedback:</h4>
+              <ul class="mentor-tips-list">
+                <li>Reviewed every week by Raj Kumar.</li>
+                <li>Used to improve code explanations in DSA &amp; Quantum.</li>
+                <li>Guides upcoming career roadmaps and labs.</li>
+              </ul>
+            </div>
+          </aside>
+
+          <!-- Right Column: Interactive Rating & Feedback Form -->
+          <article class="form-box-card">
+            <div class="form-box-head">
+              <span class="hero-kicker">Feedback &amp; Review</span>
+              <h1>Share Your Thoughts</h1>
+              <p>Rate the platform and tell us what you love or what needs fixing.</p>
+            </div>
+
+            <form id="feedbackForm" class="auth-form" novalidate>
+              <input class="honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+
+              <div class="form-label" style="margin-bottom:20px;">
+                <span>Tap a Star to Rate Preplace <strong style="color:var(--accent)">*</strong></span>
+                <div class="star-row" id="feedbackStarPicker" style="gap:10px;margin-top:6px;">
+                  ${[1, 2, 3, 4, 5].map((n) => `
+                    <button type="button" class="star-pick ${currentRating >= n ? "on" : ""}" data-star="${n}" aria-label="${n} star${n > 1 ? "s" : ""}" style="font-size:1.9rem;padding:6px 8px;">★</button>
+                  `).join("")}
+                </div>
+                <div class="sentiment-display" id="sentimentBanner" style="margin-top:10px;">
+                  <span class="sentiment-emoji" id="sentimentEmoji">${currentRating ? "⭐" : "✨"}</span>
+                  <span class="sentiment-text" id="sentimentText">${currentRating ? sentimentLabels[currentRating] : "Select your rating above"}</span>
+                </div>
+                <input type="hidden" name="rating" id="feedbackRatingInput" value="${currentRating || ""}" />
+              </div>
+
+              <div class="field-group">
+                <label class="form-label">
+                  <span>Your Name <strong style="color:var(--accent)">*</strong></span>
+                  <input class="form-input" name="name" maxlength="80" required value="${escapeHtml(user?.name || "")}" placeholder="e.g. Alex" />
+                </label>
+
+                <label class="form-label">
+                  <span>Your Email <strong style="color:var(--accent)">*</strong></span>
+                  <input class="form-input" name="email" type="email" required value="${escapeHtml(user?.email || "")}" placeholder="e.g. alex@example.com" />
+                </label>
+              </div>
+
+              <div class="form-label">
+                <span>Feedback Topic</span>
+                <div class="category-chip-grid" id="feedbackCategoryChips">
+                  ${feedbackKinds.map((k, i) => `
+                    <button type="button" class="category-chip-btn ${i === 0 ? "active" : ""}" data-kind="${k.id}">
+                      ${k.label}
+                    </button>
+                  `).join("")}
+                </div>
+                <input type="hidden" name="kind" id="feedbackKindInput" value="general" />
+              </div>
+
+              <label class="form-label">
+                <span>Your Detailed Feedback <strong style="color:var(--accent)">*</strong></span>
+                <textarea class="form-textarea" name="feedback" id="feedbackTextInput" rows="6" required minlength="5" maxlength="1500" placeholder="What is working well? What subjects, questions, or features would make Preplace 10x better for your placement prep?"></textarea>
+                <div class="char-counter-bar">
+                  <span>Min 5 characters</span>
+                  <span id="feedbackCharCount">0 / 1500</span>
+                </div>
+              </label>
+
+              <div id="feedbackStatusAlert" hidden></div>
+
+              <div class="form-actions" style="margin-top:10px;">
+                <button class="btn btn-primary btn-wide" type="submit" id="feedbackSend" style="padding:12px 24px;font-size:1rem;">
+                  Submit Feedback 🌟
+                </button>
+              </div>
+            </form>
+          </article>
+        </div>
+      </section>
+    `;
+
+    // Star Picker Handlers
+    const stars = view.querySelectorAll("#feedbackStarPicker [data-star]");
+    const ratingInput = document.getElementById("feedbackRatingInput");
+    const sentimentEmoji = document.getElementById("sentimentEmoji");
+    const sentimentText = document.getElementById("sentimentText");
+
+    const updateStarUI = (n) => {
       stars.forEach((btn) => btn.classList.toggle("on", Number(btn.dataset.star) <= n));
+      if (sentimentEmoji) sentimentEmoji.textContent = n >= 4 ? "🔥" : n >= 3 ? "👍" : n >= 1 ? "🙂" : "✨";
+      if (sentimentText) sentimentText.textContent = sentimentLabels[n] || "Select your rating above";
     };
+
     stars.forEach((btn) => {
       btn.addEventListener("click", () => {
         const n = Number(btn.dataset.star);
-        ratingInput.value = String(n);
-        paintStars(n);
+        if (ratingInput) ratingInput.value = String(n);
+        updateStarUI(n);
       });
     });
 
+    // Feedback Kind Chips
+    const kindHidden = document.getElementById("feedbackKindInput");
+    view.querySelectorAll("#feedbackCategoryChips .category-chip-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        view.querySelectorAll("#feedbackCategoryChips .category-chip-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (kindHidden) kindHidden.value = btn.dataset.kind;
+      });
+    });
+
+    // Character Counter
+    const feedbackInput = document.getElementById("feedbackTextInput");
+    const feedbackCharCount = document.getElementById("feedbackCharCount");
+    feedbackInput?.addEventListener("input", () => {
+      const len = feedbackInput.value.length;
+      if (feedbackCharCount) feedbackCharCount.textContent = `${len} / 1500`;
+    });
+
+    const setFeedbackStatusAlert = (text, type = "is-ok") => {
+      const alert = document.getElementById("feedbackStatusAlert");
+      if (!alert) return;
+      if (!text) {
+        alert.hidden = true;
+        return;
+      }
+      alert.hidden = false;
+      alert.className = `form-status-alert ${type}`;
+      alert.innerHTML = `<span>${type === "is-ok" ? "✓" : "⚠️"}</span><span>${escapeHtml(text)}</span>`;
+    };
+
     const feedbackForm = document.getElementById("feedbackForm");
     const feedbackBtn = document.getElementById("feedbackSend");
-    feedbackForm?.addEventListener("submit", (e) => {
+
+    feedbackForm?.addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(feedbackForm);
       if (String(fd.get("_gotcha") || "").trim()) return;
@@ -1967,28 +2223,64 @@
       const kind = String(fd.get("kind") || "general").trim();
       const rating = String(fd.get("rating") || "").trim();
       const feedback = String(fd.get("feedback") || "").trim();
-      if (!name || !email || feedback.length < 8) {
-        setFeedbackStatus("Please add your name, email, and a short note.", "is-error");
+
+      if (!name || !email || feedback.length < 5) {
+        setFeedbackStatusAlert("Please provide your name, email, and at least 5 characters of feedback.", "is-error");
         return;
       }
-      postToRaj({
-        name,
-        email,
-        kind,
-        rating: rating || "not rated",
-        feedback,
-        _subject: `Preplace feedback from ${name}`
-      });
-      if (rating) saveSiteRating(rating);
-      feedbackForm.reset();
-      if (ratingInput) ratingInput.value = "";
-      paintStars(0);
-      if (user) {
-        feedbackForm.elements.name.value = user.name || "";
-        feedbackForm.elements.email.value = user.email || "";
+
+      if (rating) {
+        await saveSiteRating(rating);
       }
-      setFeedbackStatus("Sent. Thank you — Raj will read this.", "is-ok");
-      feedbackBtn.textContent = "Send more feedback";
+
+      setFeedbackStatusAlert("Submitting your feedback...", "is-ok");
+      if (feedbackBtn) {
+        feedbackBtn.disabled = true;
+        feedbackBtn.textContent = "Submitting...";
+      }
+
+      try {
+        const res = await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email,
+            category: `feedback-${kind}`,
+            subject: `Preplace Feedback from ${name} (${rating ? `${rating} Stars` : "No rating"})`,
+            message: `Rating: ${rating || "Unrated"}\nKind: ${kind}\n\nFeedback:\n${feedback}`
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && (data.success || data.message || data.data)) {
+          setFeedbackStatusAlert("Feedback submitted! Thank you for helping us improve Preplace.", "is-ok");
+          showToast("Thank you for your feedback! ⭐", "success");
+          feedbackForm.reset();
+          if (feedbackCharCount) feedbackCharCount.textContent = "0 / 1500";
+          if (user) {
+            if (feedbackForm.elements.name) feedbackForm.elements.name.value = user.name || "";
+            if (feedbackForm.elements.email) feedbackForm.elements.email.value = user.email || "";
+          }
+          if (feedbackBtn) feedbackBtn.textContent = "Submit More Feedback";
+        } else {
+          postToRaj({ name, email, kind, rating: rating || "not rated", feedback, _subject: `Preplace feedback from ${name}` });
+          setFeedbackStatusAlert("Feedback received! Thank you for helping Preplace grow.", "is-ok");
+          showToast("Thank you for your feedback! ⭐", "success");
+          feedbackForm.reset();
+          if (feedbackCharCount) feedbackCharCount.textContent = "0 / 1500";
+          if (feedbackBtn) feedbackBtn.textContent = "Submit More Feedback";
+        }
+      } catch (err) {
+        postToRaj({ name, email, kind, rating: rating || "not rated", feedback, _subject: `Preplace feedback from ${name}` });
+        setFeedbackStatusAlert("Feedback recorded! Thank you for your review.", "is-ok");
+        showToast("Thank you for your feedback! ⭐", "success");
+        feedbackForm.reset();
+        if (feedbackCharCount) feedbackCharCount.textContent = "0 / 1500";
+        if (feedbackBtn) feedbackBtn.textContent = "Submit More Feedback";
+      } finally {
+        if (feedbackBtn) feedbackBtn.disabled = false;
+      }
     });
   };
 
@@ -2041,13 +2333,22 @@
           <button class="btn btn-ghost" type="button" id="toggleFlashcardsBtn">⚡ Rapid Self-Test Cards</button>
         </div>
 
-        <!-- Section 1: High-Yield Cheat Sheet -->
+        <!-- Section 1: High-Yield Cheat Sheet with Code Snippets & Info -->
         <article class="quantum-section" id="cheatSheetSection">
           <h2 class="quantum-section-title">⚡ 1-Night High-Yield Cheat Sheet</h2>
+          <p class="example-intro" style="margin-bottom:18px;">
+            Essential interview concepts with clean, copyable code patterns and direct explanations.
+          </p>
           <div class="quantum-cheat-grid">
-            ${qSkill.cheatSheet.map((item) => `
+            ${qSkill.cheatSheet.map((item, idx) => `
               <div class="quantum-cheat-box">
                 <h4>✦ ${escapeHtml(item.topic)}</h4>
+                ${item.desc ? `<p style="margin:0 0 10px;color:var(--muted);font-size:0.88rem;line-height:1.5;">${escapeHtml(item.desc)}</p>` : ""}
+                ${item.code ? `
+                  <div class="code-wrap" style="margin:10px 0 12px;">
+                    <button class="copy-btn" type="button" data-cheat-code="${idx}">Copy</button>
+                    <pre class="dsa-pre"><code>${showCode(item.code, item.lang || "javascript")}</code></pre>
+                  </div>` : ""}
                 <ul class="quantum-cheat-list">
                   ${item.points.map((pt) => `<li>${escapeHtml(pt)}</li>`).join("")}
                 </ul>
@@ -2076,7 +2377,7 @@
                 </div>
                 <div class="answer-wrap">
                   <p class="answer-label">One-Night Placement Answer</p>
-                  <p class="teach-body" style="font-size:1rem;line-height:1.75;color:var(--ink);">${escapeHtml(item.a)}</p>
+                  <p class="teach-body" style="font-size:1rem;line-height:1.75;color:var(--ink);white-space:pre-line;">${escapeHtml(item.a)}</p>
                 </div>
               </article>
             `).join("")}
@@ -2085,7 +2386,7 @@
 
         <!-- Section 3: Interview Traps -->
         <article class="quantum-section" id="trapsSection">
-          <h2 class="quantum-section-title">⚠️ Common Interview Traps & Pitfalls</h2>
+          <h2 class="quantum-section-title">⚠️ Common Interview Traps &amp; Pitfalls</h2>
           <p class="example-intro" style="margin-bottom:14px;">The exact tricky questions interviewers ask to filter candidates who memorize without understanding.</p>
           <div class="quantum-trap-box">
             ${qSkill.traps.map((t) => `
@@ -2130,10 +2431,19 @@
 
       document.getElementById("copyCheatBtn")?.addEventListener("click", async () => {
         const text = `${qSkill.title} — 1-Night Placement Quantum Cheat Sheet\n\n` +
-          qSkill.cheatSheet.map((c) => `[${c.topic}]\n` + c.points.map((p) => `• ${p}`).join("\n")).join("\n\n") +
+          qSkill.cheatSheet.map((c) => `[${c.topic}]\n${c.desc ? `${c.desc}\n` : ""}${c.code ? `Code:\n${c.code}\n` : ""}` + c.points.map((p) => `• ${p}`).join("\n")).join("\n\n") +
           `\n\n[TOP QUESTIONS]\n` +
           qSkill.topQuestions.map((q, i) => `${i + 1}. ${q.q}\nAnswer: ${q.a}`).join("\n\n");
         await copyText(text, document.getElementById("copyCheatBtn"));
+      });
+
+      // Individual cheat code snippet copy buttons
+      view.querySelectorAll("[data-cheat-code]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const idx = Number(btn.dataset.cheatCode);
+          const code = qSkill.cheatSheet[idx]?.code || "";
+          await copyText(code, btn);
+        });
       });
 
       document.getElementById("toggleFlashcardsBtn")?.addEventListener("click", () => {
@@ -2141,10 +2451,11 @@
       });
 
       let allQsOpen = false;
-      document.getElementById("toggleAllQsBtn")?.addEventListener("click", () => {
+      const toggleAllBtn = document.getElementById("toggleAllQsBtn");
+      toggleAllBtn?.addEventListener("click", () => {
         allQsOpen = !allQsOpen;
         view.querySelectorAll("#questionsSection .item").forEach((it) => it.classList.toggle("open", allQsOpen));
-        document.getElementById("toggleAllQsBtn").textContent = allQsOpen ? "Collapse all answers" : "Expand all answers";
+        toggleAllBtn.textContent = allQsOpen ? "Collapse all answers" : "Expand all answers";
       });
 
       view.querySelectorAll("#questionsSection .q-row").forEach((btn) => {
@@ -2170,7 +2481,7 @@
             Quantum for Placement Prep
           </h1>
           <p class="example-intro" style="max-width:58ch;margin:0 0 18px;">
-            Short on time? Revise the highest-yield interview cheat sheets, top 10 repeat questions, and tricky trap answers for every core placement skill in one sitting.
+            Short on time? Revise the highest-yield interview cheat sheets with code, top repeat questions, and tricky trap answers for every core placement skill in one sitting.
           </p>
           <div class="topic-meta" style="margin-bottom:14px;">
             <span class="badge">⚡ ${quantumList.length} Core Skills</span>
@@ -2215,6 +2526,368 @@
     }
   };
 
+  const renderDashboard = () => {
+    const user = (window.PreplaceAuth && window.PreplaceAuth.getUser ? window.PreplaceAuth.getUser() : null) || currentUser();
+    const streak = readStreak();
+    const streakCount = streak.count || 0;
+    const isStreakActiveToday = streak.last === todayStamp();
+
+    const allTopics = window.PREP_TOPICS || [];
+    const allQuestionsList = allTopics.flatMap((t) => {
+      const data = pack(t.id);
+      const qs = data?.questions || [];
+      return qs.map((q) => ({
+        ...q,
+        topicId: t.id,
+        topicTitle: t.title,
+        topicIcon: t.icon,
+        category: t.category
+      }));
+    });
+
+    const progressMap = loadProgress();
+    const solvedList = [];
+    allQuestionsList.forEach((q) => {
+      const doneIds = progressMap[q.topicId] || [];
+      if (doneIds.includes(q.id)) {
+        solvedList.push(q);
+      }
+    });
+
+    const easySolved = solvedList.filter((q) => {
+      const lv = (q.level || "").toLowerCase();
+      return lv === "beginner" || lv === "easy";
+    });
+    const mediumSolved = solvedList.filter((q) => {
+      const lv = (q.level || "").toLowerCase();
+      return lv === "intermediate" || lv === "medium";
+    });
+    const hardSolved = solvedList.filter((q) => {
+      const lv = (q.level || "").toLowerCase();
+      return lv === "advanced" || lv === "hard";
+    });
+
+    const totalSolved = solvedList.length;
+    const totalQuestionsCount = allQuestionsList.length;
+    const overallPct = totalQuestionsCount ? Math.round((totalSolved / totalQuestionsCount) * 100) : 0;
+
+    const easyPct = totalSolved ? Math.round((easySolved.length / totalSolved) * 100) : 33;
+    const medPct = totalSolved ? Math.round((mediumSolved.length / totalSolved) * 100) : 33;
+    const hardPct = totalSolved ? Math.max(0, 100 - easyPct - medPct) : 34;
+
+    const quantumList = window.PREP_QUANTUM || [];
+    const readyMap = readQuantumReady();
+    const quantumReadyCount = quantumList.filter((s) => readyMap[s.id]).length;
+    const quantumPct = quantumList.length ? Math.round((quantumReadyCount / quantumList.length) * 100) : 0;
+
+    const starsMap = userData().stars || {};
+    const starredList = [];
+    allQuestionsList.forEach((q) => {
+      const starIds = starsMap[q.topicId] || [];
+      if (starIds.includes(q.id)) {
+        starredList.push(q);
+      }
+    });
+
+    const notesMap = userData().notes || {};
+    const notesList = Object.entries(notesMap)
+      .filter(([_, text]) => text && text.trim().length > 0)
+      .map(([key, text]) => {
+        const [topicId, qid] = key.split(":");
+        const topic = topicById(topicId);
+        const question = (pack(topicId)?.questions || []).find((q) => String(q.id) === String(qid));
+        return {
+          key,
+          topicId,
+          qid,
+          topicTitle: topic?.title || topicId,
+          topicIcon: topic?.icon || "📝",
+          questionTitle: question?.q || `Problem #${qid}`,
+          text
+        };
+      });
+
+    const careers = window.PREP_CAREERS || [];
+    const careerProgressList = careers.map((c) => {
+      const p = careerProgress(c);
+      const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+      return { ...c, done: p.done, total: p.total, pct };
+    });
+
+    const initials = (user?.name || "Learner")
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+
+    const daily = dailyProblem();
+
+    view.innerHTML = `
+      <div class="dashboard-container">
+        
+        <!-- Header & Profile Bar -->
+        <div class="dashboard-header">
+          <div class="dashboard-user-hero">
+            <div class="dashboard-user-avatar" style="background-color: ${user?.avatar_color || '#4f46e5'}">
+              ${initials}
+            </div>
+            <div>
+              <h1 class="dashboard-title">${user ? escapeHtml(user.name) : "My Learning Dashboard"}</h1>
+              <p class="dashboard-subtitle">${user ? escapeHtml(user.email) : "Progress & streaks automatically saved to your profile"}</p>
+            </div>
+          </div>
+
+          <div class="streak-hero-badge" title="${isStreakActiveToday ? "You have solved questions today! Streak active." : "Solve a problem today to extend your streak!"}">
+            <span class="streak-flame">🔥</span>
+            <span>${streakCount} Day${streakCount === 1 ? "" : "s"} Streak</span>
+          </div>
+        </div>
+
+        <!-- Quick Jump Bar -->
+        <div class="dashboard-quick-actions">
+          ${daily ? `<button class="btn btn-primary" type="button" id="dashDailyBtn">🎯 Daily Problem: ${escapeHtml(daily.q.slice(0, 32))}...</button>` : ""}
+          <button class="btn" type="button" id="dashRandomBtn">🎲 Random DSA Problem</button>
+          <a class="btn" href="#/quantum">⚡ 1-Night Quantum Cheat Sheets</a>
+          <a class="btn btn-ghost" href="#/dsa">📊 Full Problem Sheet (${allDsaProblems().length})</a>
+        </div>
+
+        <!-- Metric Stat Cards -->
+        <div class="dashboard-stats-grid">
+          
+          <!-- Card 1: Problems Solved -->
+          <div class="stat-metric-card">
+            <div class="stat-metric-top">
+              <span class="stat-metric-label">Questions Solved</span>
+              <div class="stat-metric-icon">🎯</div>
+            </div>
+            <div class="stat-metric-value">${totalSolved} <span style="font-size:16px;font-weight:600;color:var(--muted);">/ ${totalQuestionsCount}</span></div>
+            
+            <div class="diff-multi-bar" title="Easy: ${easySolved.length}, Medium: ${mediumSolved.length}, Hard: ${hardSolved.length}">
+              <div class="diff-multi-bar-seg easy" style="width: ${easyPct}%"></div>
+              <div class="diff-multi-bar-seg medium" style="width: ${medPct}%"></div>
+              <div class="diff-multi-bar-seg hard" style="width: ${hardPct}%"></div>
+            </div>
+
+            <div class="diff-pills-wrap">
+              <span class="diff-pill easy">Easy: ${easySolved.length}</span>
+              <span class="diff-pill medium">Med: ${mediumSolved.length}</span>
+              <span class="diff-pill hard">Hard: ${hardSolved.length}</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Streak & Activity -->
+          <div class="stat-metric-card">
+            <div class="stat-metric-top">
+              <span class="stat-metric-label">Daily Streak</span>
+              <div class="stat-metric-icon">🔥</div>
+            </div>
+            <div class="stat-metric-value">${streakCount} <span style="font-size:16px;font-weight:600;color:var(--muted);">days</span></div>
+            <p class="stat-metric-label" style="margin:12px 0 0;line-height:1.4;">
+              ${isStreakActiveToday ? "✓ Active today! Great job staying consistent." : "⏳ Solve a question today to extend your streak!"}
+            </p>
+          </div>
+
+          <!-- Card 3: Quantum Interview Readiness -->
+          <div class="stat-metric-card">
+            <div class="stat-metric-top">
+              <span class="stat-metric-label">1-Night Quantum Ready</span>
+              <div class="stat-metric-icon">⚡</div>
+            </div>
+            <div class="stat-metric-value">${quantumReadyCount} <span style="font-size:16px;font-weight:600;color:var(--muted);">/ ${quantumList.length}</span></div>
+            <div class="career-progress-bar-bg" style="margin-top:14px;">
+              <div class="career-progress-bar-fill" style="width:${quantumPct}%;"></div>
+            </div>
+            <div class="stat-metric-label" style="margin-top:8px;">${quantumPct}% Core Skills Mastered</div>
+          </div>
+
+          <!-- Card 4: Starred Revision Bookmarks -->
+          <div class="stat-metric-card">
+            <div class="stat-metric-top">
+              <span class="stat-metric-label">Starred Revision</span>
+              <div class="stat-metric-icon">⭐</div>
+            </div>
+            <div class="stat-metric-value">${starredList.length} <span style="font-size:16px;font-weight:600;color:var(--muted);">saved</span></div>
+            <div class="stat-metric-label" style="margin-top:12px;">Saved for high-yield interview revision</div>
+          </div>
+
+          <!-- Card 5: Study Notes -->
+          <div class="stat-metric-card">
+            <div class="stat-metric-top">
+              <span class="stat-metric-label">Personal Notes</span>
+              <div class="stat-metric-icon">📝</div>
+            </div>
+            <div class="stat-metric-value">${notesList.length} <span style="font-size:16px;font-weight:600;color:var(--muted);">notes</span></div>
+            <div class="stat-metric-label" style="margin-top:12px;">Custom learnings, tricks, and interview traps</div>
+          </div>
+
+        </div>
+
+        <!-- Career Path Completion Trackers -->
+        <div class="dashboard-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <h2 class="dashboard-section-title" style="margin:0;"><span>🚀</span> Career Path Completion</h2>
+            <a href="#/" class="auth-sublink">View all paths →</a>
+          </div>
+          <div class="career-cards-grid">
+            ${careerProgressList.map((c) => `
+              <a class="career-progress-card" href="#/career/${c.id}">
+                <div class="career-card-top">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:1.3rem;">${c.icon}</span>
+                    <span class="career-card-name">${escapeHtml(c.title)}</span>
+                  </div>
+                  <span style="font-weight:700;font-size:13px;font-family:'IBM Plex Mono', monospace;">${c.pct}%</span>
+                </div>
+                <div class="career-progress-bar-bg">
+                  <div class="career-progress-bar-fill" style="width: ${c.pct}%;"></div>
+                </div>
+                <div style="font-size:12px;color:var(--muted);">
+                  ${c.done} of ${c.total} questions completed
+                </div>
+              </a>
+            `).join("")}
+          </div>
+        </div>
+
+        <!-- 3-Panel Split View: Solved Problems, Starred Revision, & Study Notes -->
+        <div class="dashboard-3col-grid">
+          
+          <!-- Panel 1: Recently Solved Problems -->
+          <div class="dashboard-panel-card">
+            <div class="dashboard-panel-header">
+              <h3 class="dashboard-panel-title"><span>✅</span> Solved Questions</h3>
+              <span style="font-size:12px;color:var(--muted);font-weight:600;">${totalSolved} Done</span>
+            </div>
+            ${solvedList.length === 0
+              ? `<div class="dashboard-empty">
+                  <div class="dashboard-empty-icon">🎯</div>
+                  <p>No questions solved yet.</p>
+                  <a class="btn btn-primary" href="#/dsa" style="margin-top:8px;font-size:13px;padding:6px 14px;">Open Problem Sheet</a>
+                </div>`
+              : `<div class="dashboard-items-list">
+                  ${solvedList.slice(-20).reverse().map((p) => {
+                    const hasLc = (p.links || []).some((l) => l.url?.includes("leetcode.com") || l.name === "LeetCode");
+                    return `
+                      <div class="dashboard-item-row">
+                        <div style="display:flex;align-items:center;gap:8px;overflow:hidden;flex:1;">
+                          <span class="diff-pill ${(p.level || "medium").toLowerCase() === "beginner" ? "easy" : (p.level || "medium").toLowerCase() === "advanced" ? "hard" : "medium"}" style="flex:none;padding:2px 6px;font-size:10px;">${p.level || "Med"}</span>
+                          <a href="#/topic/${p.topicId}/${p.id}" style="color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none;" title="${escapeHtml(p.q)}">
+                            ${escapeHtml(p.q)}
+                          </a>
+                          ${hasLc ? `<span style="display:inline-flex;vertical-align:-2px;" title="LeetCode">${LEETCODE_SVG}</span>` : ""}
+                        </div>
+                        <button class="prep-check-btn checked" data-dash-solve="${p.topicId}:${p.id}" title="Toggle solved status" type="button">
+                          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        </button>
+                      </div>
+                    `;
+                  }).join("")}
+                </div>`
+            }
+          </div>
+
+          <!-- Panel 2: Starred Revision Questions -->
+          <div class="dashboard-panel-card">
+            <div class="dashboard-panel-header">
+              <h3 class="dashboard-panel-title"><span>⭐</span> Starred Revision</h3>
+              <span style="font-size:12px;color:var(--muted);font-weight:600;">${starredList.length} Saved</span>
+            </div>
+            ${starredList.length === 0
+              ? `<div class="dashboard-empty">
+                  <div class="dashboard-empty-icon">⭐</div>
+                  <p>No questions starred for revision yet.</p>
+                  <p style="font-size:12px;color:var(--muted);">Click the ★ on any question while practicing to bookmark it here.</p>
+                </div>`
+              : `<div class="dashboard-items-list">
+                  ${starredList.slice(-20).reverse().map((p) => `
+                    <div class="dashboard-item-row">
+                      <div style="display:flex;align-items:center;gap:8px;overflow:hidden;flex:1;">
+                        <span class="diff-pill ${(p.level || "medium").toLowerCase() === "beginner" ? "easy" : (p.level || "medium").toLowerCase() === "advanced" ? "hard" : "medium"}" style="flex:none;padding:2px 6px;font-size:10px;">${p.level || "Med"}</span>
+                        <a href="#/topic/${p.topicId}/${p.id}" style="color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none;" title="${escapeHtml(p.q)}">
+                          ${escapeHtml(p.q)}
+                        </a>
+                      </div>
+                      <button class="dash-star-btn" data-dash-star="${p.topicId}:${p.id}" title="Remove from starred" type="button" style="color:var(--accent);">★</button>
+                    </div>
+                  `).join("")}
+                </div>`
+            }
+          </div>
+
+          <!-- Panel 3: Personal Study Notes -->
+          <div class="dashboard-panel-card">
+            <div class="dashboard-panel-header">
+              <h3 class="dashboard-panel-title"><span>📝</span> Personal Study Notes</h3>
+              <span style="font-size:12px;color:var(--muted);font-weight:600;">${notesList.length} Notes</span>
+            </div>
+            ${notesList.length === 0
+              ? `<div class="dashboard-empty">
+                  <div class="dashboard-empty-icon">💡</div>
+                  <p>No study notes added yet.</p>
+                  <p style="font-size:12px;color:var(--muted);">You can jot down interview traps & thoughts inside any question card.</p>
+                </div>`
+              : `<div class="dashboard-items-list">
+                  ${notesList.slice(-15).reverse().map((n) => `
+                    <div class="dashboard-item-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+                      <div style="display:flex;width:100%;justify-content:space-between;align-items:center;">
+                        <a href="#/topic/${n.topicId}/${n.qid}" style="color:var(--accent);font-size:13px;font-weight:700;text-decoration:none;">
+                          ${escapeHtml(n.topicTitle)} · ${escapeHtml(n.questionTitle)}
+                        </a>
+                        <button class="dash-del-btn" data-dash-delnote="${n.key}" type="button">Delete</button>
+                      </div>
+                      <p style="margin:0;font-size:12px;color:var(--ink);line-height:1.45;white-space:pre-wrap;">${escapeHtml(n.text)}</p>
+                    </div>
+                  `).join("")}
+                </div>`
+            }
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+    // Event listeners
+    document.getElementById("dashDailyBtn")?.addEventListener("click", () => {
+      const p = dailyProblem();
+      if (p) goProblem(p.topicId, p.id);
+    });
+
+    document.getElementById("dashRandomBtn")?.addEventListener("click", () => {
+      const p = randomProblem();
+      if (p) goProblem(p.topicId, p.id);
+    });
+
+    view.querySelectorAll("[data-dash-solve]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const [topicId, qid] = btn.dataset.dashSolve.split(":");
+        toggleDone(topicId, Number(qid));
+        renderDashboard();
+      });
+    });
+
+    view.querySelectorAll("[data-dash-star]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const [topicId, qid] = btn.dataset.dashStar.split(":");
+        toggleStar(topicId, Number(qid));
+        renderDashboard();
+      });
+    });
+
+    view.querySelectorAll("[data-dash-delnote]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const [topicId, qid] = btn.dataset.dashDelnote.split(":");
+        saveNote(topicId, Number(qid), "");
+        showToast("Note removed", "accent");
+        renderDashboard();
+      });
+    });
+  };
+
   const route = () => {
     paintChrome();
     const hash = location.hash.slice(2) || "";
@@ -2224,7 +2897,15 @@
     else if (page === "topics") renderTopics(searchInput.value);
     else if (page === "practice") renderPracticeHub();
     else if (page === "dsa") renderDsaSheet();
-    else if (page === "dashboard") renderDashboard();
+    else if (page === "dashboard") {
+      if (isUserAuthenticated()) {
+        renderDashboard();
+      } else {
+        if (window.PreplaceAuth) window.PreplaceAuth.openModal("login");
+        renderHome();
+        showToast("Please sign in or create an account to view your dashboard 🔒", "accent");
+      }
+    }
     else if (page === "quantum") renderQuantum(id);
     else if (page === "login") {
       if (window.PreplaceAuth) window.PreplaceAuth.openModal("login");
@@ -2310,6 +2991,24 @@
     const dsaTotal = dsaTopics().reduce((n, t) => n + progressFor(t.id).total, 0);
     const focusLine = dailyFocusLine();
 
+    const MARQUEE_COMPANIES = [
+      { name: "Google", logo: "🔍", count: "120+ Qs" },
+      { name: "Microsoft", logo: "🪟", count: "95+ Qs" },
+      { name: "Amazon", logo: "📦", count: "140+ Qs" },
+      { name: "Meta", logo: "♾️", count: "110+ Qs" },
+      { name: "Apple", logo: "🍎", count: "80+ Qs" },
+      { name: "Netflix", logo: "🍿", count: "65+ Qs" },
+      { name: "Uber", logo: "🚗", count: "75+ Qs" },
+      { name: "Adobe", logo: "🎨", count: "70+ Qs" },
+      { name: "Atlassian", logo: "🔷", count: "55+ Qs" },
+      { name: "Goldman Sachs", logo: "📈", count: "60+ Qs" },
+      { name: "NVIDIA", logo: "⚡", count: "50+ Qs" },
+      { name: "Salesforce", logo: "☁️", count: "45+ Qs" },
+      { name: "Flipkart", logo: "🛍️", count: "60+ Qs" },
+      { name: "Oracle", logo: "🔴", count: "55+ Qs" }
+    ];
+    const tickerItems = [...MARQUEE_COMPANIES, ...MARQUEE_COMPANIES];
+
     view.innerHTML = `
       <section class="hero">
         <div class="hero-stage">
@@ -2320,18 +3019,9 @@
             </div>
             <h1>Pick a career.<br />See what to learn.</h1>
             <p class="hero-lead">Frontend, backend, MERN, full stack, ML, DevOps, and a FAANG DSA path. Each path shows the order, then opens notes, easy code, and practice questions.</p>
-            <!-- Work pending: signed-in / guest paragraph
-            <p class="account-line">${user
-              ? `Signed in as <strong>${escapeHtml(user.name)}</strong> · ${escapeHtml(user.email)}. Done questions, stars, and notes stay with this account.`
-              : `You are a guest. <a href="#/signup">Sign up</a> to keep progress under your name, or <a href="#/login">log in</a>. Message <a href="#/contact">Raj Kumar</a> anytime.`
-            }</p>
-            -->
             <div class="hero-cta">
-              <button class="btn btn-primary" type="button" id="scrollCareers">Browse paths</button>
+              <button class="btn btn-primary" type="button" id="scrollCareers">Browse paths ↓</button>
               <a class="btn" href="#/quantum" style="border-color:rgba(245,158,11,0.4);color:var(--accent);">⚡ 1-Night Quantum</a>
-              <a class="btn" href="#/topic/practice-web">Practice questions</a>
-              <a class="btn" href="#/practice">Labs</a>
-              <a class="btn btn-ghost" href="#/dsa">Problem sheet</a>
             </div>
           </div>
           <aside class="hero-panel" id="heroFocus">
@@ -2339,16 +3029,13 @@
             <blockquote class="hero-quote">
               <p>${escapeHtml(focusLine)}</p>
             </blockquote>
-            <div class="hero-cta hero-cta-stack">
-              <a class="btn btn-primary" href="#/quantum" style="background:linear-gradient(135deg,#f59e0b,#d9531e);border:none;color:#fff;">⚡ 1-Night Quantum</a>
-              <a class="btn" href="#/topic/practice-web">Practice questions</a>
-              <a class="btn" href="#/practice">Labs</a>
-              <a class="btn btn-ghost" href="#/contact">Message Raj</a>
-            </div>
             <div class="hero-today">
-              <p class="hero-kicker">Today's problem</p>
-              <p>${daily ? `${daily.topicIcon} ${escapeHtml(daily.q)} · ${escapeHtml(daily.topicTitle)}` : "DSA topics are still loading."}</p>
-              ${daily ? `<button class="btn btn-primary" type="button" id="openDailyHero">Open</button>` : ""}
+              <p class="hero-kicker">Today's DSA Problem</p>
+              <p style="margin:0 0 10px;font-weight:600;">${daily ? `${daily.topicIcon} ${escapeHtml(daily.q)} · ${escapeHtml(daily.topicTitle)}` : "DSA topics are loading."}</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                ${daily ? `<button class="btn btn-primary" type="button" id="openDailyHero">Solve now ↗</button>` : ""}
+                <button class="btn btn-ghost" type="button" id="openRandom">Random 🎲</button>
+              </div>
             </div>
             <div class="hero-panel-meta">
               <div class="author-rate">
@@ -2378,30 +3065,32 @@
           </div>
         </div>
       </section>
-      <div class="quick-row">
-        <article class="quick-card">
-          <h3>Today's problem</h3>
-          <p>${daily ? `${daily.topicIcon} ${escapeHtml(daily.q)} · ${escapeHtml(daily.topicTitle)} · ${escapeHtml(daily.level || "")}` : "DSA topics are still loading."}</p>
-          <div class="quick-actions">
-            ${daily ? `<button class="btn btn-primary" type="button" id="openDaily">Open today's problem</button>` : ""}
-            <button class="btn" type="button" id="openRandom">Random problem</button>
-            <a class="btn btn-ghost" href="#/dsa">Full problem sheet</a>
+
+      <!-- 🏢 Continuous Right-to-Left Companies Ticker -->
+      <section class="company-ticker-section">
+        <div class="ticker-header">
+          <span class="ticker-dot"></span>
+          <span class="ticker-title">Top Companies Hiring · Click any company to solve repeated questions</span>
+          <span class="ticker-badge">Live Company Ticker</span>
+        </div>
+        <div class="company-ticker-wrap" title="Tap a company to filter problems">
+          <div class="company-ticker-track">
+            ${tickerItems.map((co) => `
+              <button class="company-pill" type="button" data-ticker-co="${escapeHtml(co.name)}">
+                <span class="company-pill-logo">${co.logo}</span>
+                <span>${escapeHtml(co.name)}</span>
+                <span class="company-pill-count">${co.count}</span>
+              </button>
+            `).join("")}
           </div>
-        </article>
-        <article class="quick-card">
-          <h3>Your DSA progress</h3>
-          <p>${dsaDone} / ${dsaTotal} interview problems done. Star a problem to revise it later.</p>
-          <div class="progress"><span style="width:${dsaTotal ? Math.round((dsaDone / dsaTotal) * 100) : 0}%"></span></div>
-        </article>
-      </div>
+        </div>
+      </section>
+
       ${showAsked ? `
       <section class="home-practice" id="homePractice">
         <div class="home-paths-top">
           <h2 class="section-title">Companies asked questions</h2>
-          <div class="hero-cta">
-            <a class="btn btn-primary" href="#/topic/practice-web">Practice questions</a>
-            <a class="btn" href="#/practice">Labs</a>
-          </div>
+          <a class="inline-link" href="#/topic/practice-web">View all questions →</a>
         </div>
         <p class="example-intro">A short list of questions companies repeat. Open the full sheet for the rest.</p>
         <ol class="asked-list">
@@ -2431,6 +3120,7 @@
         Want one subject only? <a href="#/topics">Browse all subjects</a> · <a href="#/dsa">Search every DSA problem</a>
       </p>
     `;
+
     document.getElementById("scrollCareers")?.addEventListener("click", () => {
       document.getElementById("homeCareers")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -2439,11 +3129,18 @@
         document.getElementById(`sec-${btn.dataset.sec}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
+    view.querySelectorAll("[data-ticker-co]").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const co = pill.dataset.tickerCo;
+        window.dsaCompany = co;
+        window.topicCompany = co;
+        location.hash = "#/dsa";
+      });
+    });
     const openToday = () => {
       const p = dailyProblem();
       if (p) goProblem(p.topicId, p.id);
     };
-    document.getElementById("openDaily")?.addEventListener("click", openToday);
     document.getElementById("openDailyHero")?.addEventListener("click", openToday);
     bindReadMore(view);
     document.getElementById("openRandom")?.addEventListener("click", () => {
@@ -2565,9 +3262,13 @@
           ${list.map((item, i) => {
             const done = doneSet(item.topicId).has(item.id);
             const starred = starSet(item.topicId).has(item.id);
+            const hasLc = (item.links || []).some((l) => l.url?.includes("leetcode.com") || l.name === "LeetCode");
             return `<tr>
               <td>${i + 1}</td>
-              <td><a href="#/topic/${item.topicId}/${item.id}">${escapeHtml(item.q)}</a></td>
+              <td>
+                <a href="#/topic/${item.topicId}/${item.id}">${escapeHtml(item.q)}</a>
+                ${hasLc ? `<span style="display:inline-flex;vertical-align:-2px;margin-left:6px;" title="Includes LeetCode practice link">${LEETCODE_SVG}</span>` : ""}
+              </td>
               <td>${item.topicIcon} ${escapeHtml(item.topicTitle)}</td>
               <td>${escapeHtml(item.level || "")}</td>
               <td>${escapeHtml(item.ask || "")}</td>
@@ -2902,7 +3603,10 @@
                     <span class="q-meta">
                       ${(item.ask ? companyList(item.ask) : []).map((c) => `<span class="meta-chip">${escapeHtml(c)}</span>`).join("")}
                       ${data.kind === "dsa" && rajTabFor(item) ? `<span class="meta-chip src">Raj's C++</span>` : ""}
-                      ${(data.kind === "dsa" ? dsaLinks(item) : (item.links || [])).map((l) => `<span class="meta-chip src">${escapeHtml(l.name)}</span>`).join("")}
+                      ${(data.kind === "dsa" ? dsaLinks(item) : (item.links || [])).map((l) => {
+                        const isLc = l.name?.toLowerCase().includes("leetcode") || l.url?.includes("leetcode.com");
+                        return `<span class="meta-chip src" style="display:inline-flex;align-items:center;gap:4px;">${isLc ? LEETCODE_SVG : ""} ${escapeHtml(l.name)}</span>`;
+                      }).join("")}
                     </span>
                   </span>
                   <span class="level lv-${item.level || "all"}">${prettyLabel(item.level || "")}</span>
@@ -2912,7 +3616,7 @@
                 ${(data.kind === "dsa" ? dsaLinks(item) : (item.links || [])).length ? `
                   <p class="answer-label">Solve on</p>
                   <p class="plink-row">
-                    ${(data.kind === "dsa" ? dsaLinks(item) : item.links).map((l) => `<a class="plink" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.name)} ↗</a>`).join("")}
+                    ${(data.kind === "dsa" ? dsaLinks(item) : item.links).map(renderProblemLink).join("")}
                   </p>` : ""}
                 ${item.solutions && item.solutions.length ? `
                   <p class="answer-label">Complexity</p>
