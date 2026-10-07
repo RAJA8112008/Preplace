@@ -166,6 +166,80 @@
 
     </footer>
 
+    <!-- 80% Screen Interactive Code Playground & Execution Runner Modal -->
+    <dialog id="codeRunnerModal" class="code-runner-modal" aria-label="Interactive Code Runner and Playground">
+      <div class="runner-card">
+        
+        <!-- Runner Top Navigation -->
+        <div class="runner-header">
+          <div class="runner-title-group">
+            <div class="runner-badge-dots" aria-hidden="true">
+              <span class="runner-dot dot-red"></span>
+              <span class="runner-dot dot-yellow"></span>
+              <span class="runner-dot dot-green"></span>
+            </div>
+            <div class="runner-heading-wrap">
+              <h3 id="runnerTitle" class="runner-title">Code Playground &amp; Runner</h3>
+              <span id="runnerSubtitle" class="runner-subtitle">Live Interactive Sandbox (80% Screen)</span>
+            </div>
+            <span id="runnerLangBadge" class="runner-lang-badge">JavaScript</span>
+          </div>
+
+          <div class="runner-actions">
+            <button id="runnerRunBtn" class="runner-btn runner-btn-run" type="button" title="Run Code (Ctrl + Enter)">
+              <span>▶</span> Run Code
+            </button>
+            <button id="runnerCopyBtn" class="runner-btn" type="button" title="Copy code to clipboard">
+              <span>📋</span> Copy
+            </button>
+            <button id="runnerResetBtn" class="runner-btn" type="button" title="Reset to original snippet">
+              <span>↺</span> Reset
+            </button>
+            <button id="runnerClearConsoleBtn" class="runner-btn" type="button" title="Clear console output">
+              <span>🧹</span> Clear
+            </button>
+            <button id="runnerCloseBtn" class="runner-btn runner-btn-close" type="button" title="Close (Esc)" aria-label="Close modal">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- 2-Column Split: Code Editor & Console Output -->
+        <div class="runner-body">
+          
+          <!-- Editor Panel -->
+          <div class="runner-panel runner-editor-panel">
+            <div class="runner-panel-bar">
+              <span class="runner-panel-label">📝 Editor (Editable &amp; Runnable)</span>
+              <span class="runner-shortcut-hint">Shortcuts: <strong>Ctrl + Enter</strong> to Run · <strong>Tab</strong> to indent</span>
+            </div>
+            <div class="runner-editor-wrap">
+              <textarea id="runnerEditor" class="runner-textarea" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="// Type or edit code here..."></textarea>
+            </div>
+          </div>
+
+          <!-- Output Console Panel -->
+          <div class="runner-panel runner-output-panel">
+            <div class="runner-panel-bar">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="runner-panel-label">💻 Console Output</span>
+                <span id="runnerStatusPill" class="runner-status-pill pill-ready">Ready</span>
+              </div>
+              <span id="runnerExecTime" class="runner-exec-time"></span>
+            </div>
+            <div id="runnerConsole" class="runner-console-logs" tabindex="0">
+              <div class="console-placeholder">
+                <p>Click <strong>▶ Run Code</strong> or press <strong>Ctrl+Enter</strong> to execute this snippet.</p>
+                <p class="console-hint">Captures <code>console.log()</code>, return statements, promises, timers, and errors in real-time.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </dialog>
+
     <!-- Back to top floating button -->
     <button id="backToTop" class="back-to-top" aria-label="Back to top" title="Scroll to top">↑</button>
 
