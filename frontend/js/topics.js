@@ -51,7 +51,10 @@ window.PREP_TOPICS = [
   { id: "practice-ml", title: "ML practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: overfit, precision/recall, bias/variance, leakage." },
   { id: "practice-data", title: "Data practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: WHERE vs HAVING, JOINs, GROUP BY, OLTP vs warehouse." },
   { id: "practice-datastores", title: "Data stores practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: SQL vs NoSQL, Redis, CAP, replica vs shard, vectors." },
-  { id: "practice-sysdesign", title: "System design practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: shortener, rate limiter, CAP, cache, CDN, queues." }
+  { id: "practice-sysdesign", title: "System design practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: shortener, rate limiter, CAP, cache, CDN, queues." },
+  { id: "os", title: "Operating Systems (OS)", category: "Core CS", icon: "⚙️", blurb: "Processes, threads, CPU scheduling, deadlocks, paging, virtual memory, and OS interview staples." },
+  { id: "cn", title: "Computer Networks (CN)", category: "Core CS", icon: "🌐", blurb: "OSI & TCP/IP models, 3-way handshake, TCP vs UDP, DNS, routing, sockets, and network protocols." },
+  { id: "dbms", title: "DBMS (Academic)", category: "Core CS", icon: "🗄️", blurb: "Keys, 1NF/2NF/3NF/BCNF normalization, ER diagrams, serializability, 2PL, and ACID." }
 ];
 
 window.PREP_DATA = window.PREP_DATA || {};

@@ -1,4 +1,5 @@
 window.PREP_CAREER_SECTIONS = [
+  { id: "core", title: "Core CS & Campus Placements", blurb: "The 4 academic subjects every company asks: OS, DBMS, CN, and OOP." },
   { id: "web", title: "Web", blurb: "Frontend, backend, MERN, and full stack." },
   { id: "dsa", title: "DSA", blurb: "FAANG problem sheet and system design." },
   { id: "data", title: "Data & ML", blurb: "SQL, stores, analyst work, and machine learning." },
@@ -344,6 +345,71 @@ window.PREP_CAREERS = [
       "Speak the request flow out loud: client → edge → app → store",
       "State consistency, failover, and what you would measure",
       "Finish the Practice labs: create short link → redirect → 429 → cache"
+    ]
+  },
+  {
+    id: "core-cs",
+    section: "core",
+    title: "Core CS Placement",
+    icon: "🎓",
+    blurb: "The 4 core subjects for campus rounds: OS, DBMS, CN, and OOP.",
+    builds: "Answers for technical campus rounds and company screenings.",
+    time: "2–4 months",
+    steps: [
+      { topic: "oops", learn: "OOP", why: "Classes, four pillars (Encapsulation, Abstraction, Inheritance, Polymorphism), and SOLID." },
+      { topic: "os", learn: "Operating Systems (OS)", why: "Processes vs threads, CPU scheduling, deadlocks, mutex/semaphores, and paging." },
+      { topic: "dbms", learn: "DBMS (Academic)", why: "Keys, 1NF/2NF/3NF normalization, ER modeling, ACID, serializability, and B+ trees." },
+      { topic: "cn", learn: "Computer Networks (CN)", why: "OSI vs TCP/IP layers, 3-way handshake, TCP vs UDP, DNS, subnetting, and HTTPS." },
+      { topic: "linux", learn: "Linux", why: "Terminal commands, processes, permissions, and shell basics." },
+      { topic: "sql", learn: "SQL & Databases", why: "Writing joins, aggregate queries, group by, and indexes on tables." }
+    ],
+    extra: [
+      "Explain concepts with real-life analogies before diving into technical details",
+      "Always draw the diagram on whiteboard (Process layout, 3-way handshake, Precedence graph)",
+      "Know how to calculate Subnet hosts and Page frame offsets",
+      "Memorize the 4 Coffman conditions and the 4 Normal Forms with concrete counterexamples"
+    ]
+  },
+  {
+    id: "systems-core",
+    section: "core",
+    title: "Systems & OS Engineer",
+    icon: "⚙️",
+    blurb: "Operating systems, Linux internals, threads, IPC, and sockets.",
+    builds: "Understand low-level systems, kernel basics, and processes.",
+    time: "3–5 months",
+    steps: [
+      { topic: "os", learn: "Operating Systems (OS)", why: "Process memory layout, scheduling algorithms, deadlocks, and virtual memory." },
+      { topic: "linux", learn: "Linux", why: "Shell commands, processes, pipes, signals, and file descriptors." },
+      { topic: "ssh", learn: "SSH", why: "Keys, remote login, tunnels, and secure shell configuration." },
+      { topic: "cn", learn: "Computer Networks (CN)", why: "Sockets, TCP/UDP streams, routing, and network packet analysis." },
+      { topic: "docker", learn: "Docker", why: "Namespaces, cgroups, and container process isolation." }
+    ],
+    extra: [
+      "Understand kernel space vs user space dual-mode operation",
+      "Learn how fork, exec, and wait work in C",
+      "Practice debugging with top, ps, netstat, and strace"
+    ]
+  },
+  {
+    id: "db-core",
+    section: "core",
+    title: "DBMS & Data Modeling",
+    icon: "🗄️",
+    blurb: "Relational theory, 3NF, B+ trees, ACID transactions, and SQL.",
+    builds: "Model databases, write fast queries, and explain internals.",
+    time: "2–3 months",
+    steps: [
+      { topic: "dbms", learn: "DBMS (Academic)", why: "Normalization, relational algebra, transactions, and concurrency control." },
+      { topic: "sql", learn: "SQL & Databases", why: "Queries, joins, group by, indexes, and constraints." },
+      { topic: "database", learn: "Databases Architecture", why: "OLTP vs OLAP, ACID guarantees, replicas, and sharding." },
+      { topic: "mongodb", learn: "MongoDB", why: "Document data model, aggregations, and schema design." },
+      { topic: "redis", learn: "Redis", why: "In-memory caching, key-value stores, and TTL eviction." }
+    ],
+    extra: [
+      "Master functional dependencies and normalization algorithms",
+      "Draw ER diagrams and convert to relational tables with foreign keys",
+      "Understand 2PL concurrency control and B+ tree index range lookups"
     ]
   }
 ];
