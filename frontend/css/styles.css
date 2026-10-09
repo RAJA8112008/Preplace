@@ -1004,17 +1004,17 @@ html[data-theme="dark"] .level-btn.active {
   line-height: 1.5;
 }
 
-.career-card .time {
+.career-card .questions-stat {
   margin-top: auto;
   font-size: 0.86rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--muted);
   padding-top: 4px;
 }
 
 .career-card {
   height: 100%;
-  min-height: 270px;
+  min-height: 250px;
   display: flex;
   flex-direction: column;
 }
@@ -1880,16 +1880,99 @@ html[data-theme="dark"] .level.lv-medium {
 }
 
 .answer-block {
-  padding: 12px 16px;
+  padding: 14px 18px;
   border-left: 3px solid var(--accent);
   background: var(--bg-2);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  margin: 8px 0;
+  margin: 10px 0;
+  border: 1px solid var(--line);
+  border-left: 3.5px solid var(--accent);
 }
 
 .answer-block:first-child {
   border-left-color: var(--ok);
   background: var(--ok-soft);
+}
+
+.answer-block h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: -0.01em;
+}
+
+.answer-block p {
+  margin: 0 0 6px 0;
+  line-height: 1.7;
+  color: var(--ink-secondary);
+  font-size: 0.95rem;
+}
+
+.answer-block p:last-child {
+  margin-bottom: 0;
+}
+
+/* Keyword & Concept Highlighting (<mark>, .kw-mark, .inline-code) */
+mark,
+.kw-mark {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-weight: 600;
+  font-size: 0.93em;
+  display: inline-block;
+  line-height: 1.35;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.12);
+  margin: 0 1px;
+}
+
+html[data-theme="light"] mark,
+html[data-theme="light"] .kw-mark {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+  box-shadow: none;
+}
+
+.kw-concept {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-weight: 600;
+  display: inline-block;
+  font-size: 0.93em;
+  margin: 0 1px;
+}
+
+html[data-theme="light"] .kw-concept {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
+.inline-code {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.88em;
+  font-weight: 600;
+}
+
+html[data-theme="light"] .inline-code {
+  background: #f0f9ff;
+  color: #0369a1;
+  border-color: #bae6fd;
 }
 
 /* ==========================================================================

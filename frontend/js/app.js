@@ -1241,6 +1241,59 @@
     return filtered.join("\n").replace(/\n{3,}/g, "\n\n").trim();
   };
 
+  const formatRichText = (str) => {
+    if (!str) return "";
+    let safe = String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+
+    // Markdown bold **text** -> <strong>text</strong>
+    safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+    // Markdown inline code `code` -> <code class="inline-code">$1</code>
+    safe = safe.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+
+    // Double equal or explicit marks ==text== or <mark>text</mark>
+    safe = safe.replace(/==([^=]+)==/g, '<mark class="kw-mark">$1</mark>');
+    safe = safe.replace(/&lt;mark(?:\s+class=&quot;([^&]+)&quot;)?&gt;([\s\S]*?)&lt;\/mark&gt;/gi, (m, cls, content) => {
+      return `<mark class="${cls || 'kw-mark'}">${content}</mark>`;
+    });
+
+    // Key CS Terminology auto-highlight (word boundaries, case-preserving)
+    const highlightTerms = [
+      "Encapsulation", "Abstraction", "Inheritance", "Polymorphism",
+      "Data Hiding", "private", "public", "protected", "getter", "setter",
+      "getters and setters", "constructor", "destructor", "SOLID",
+      "Single Responsibility", "Open-Closed", "Liskov Substitution",
+      "Interface Segregation", "Dependency Inversion", "Deadlock", "Mutex",
+      "Semaphore", "Critical Section", "Race Condition", "Context Switching",
+      "Virtual Memory", "Paging", "Page Fault", "TLB", "Round Robin", "FCFS",
+      "SJF", "LRU", "Banker's Algorithm", "Thrashing", "ACID", "Atomicity",
+      "Consistency", "Isolation", "Durability", "Primary Key", "Foreign Key",
+      "Candidate Key", "1NF", "2NF", "3NF", "BCNF", "Normalization",
+      "Denormalization", "2PL", "Two-Phase Locking", "Serializability",
+      "OSI Model", "TCP/IP", "3-Way Handshake", "SYN-ACK", "TCP", "UDP",
+      "DNS", "HTTPS", "TLS", "IP Address", "MAC Address", "Port Number",
+      "Socket", "Subnetting", "CIDR", "ARP", "NAT", "Time Complexity",
+      "Space Complexity", "Sliding Window", "Two Pointers", "Binary Search",
+      "Dynamic Programming"
+    ];
+
+    const termPattern = new RegExp(`\\b(${highlightTerms.map((t) => t.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')).join("|")})\\b`, "gi");
+
+    // Replace in non-HTML chunks only
+    const parts = safe.split(/(<[^>]+>)/g);
+    for (let i = 0; i < parts.length; i++) {
+      if (!parts[i].startsWith("<")) {
+        parts[i] = parts[i].replace(termPattern, '<mark class="kw-mark">$1</mark>');
+      }
+    }
+
+    return parts.join("").replace(/\n/g, "<br />");
+  };
+
   const renderTeachText = (text, q) => {
     const raw = simplifyLabText(text);
     const src = autoTeach(raw, q);
@@ -1263,11 +1316,11 @@
       buf.push(line);
     }
     flush();
-    if (!sections.length) return `<p class="answer">${escapeHtml(text || "")}</p>`;
+    if (!sections.length) return `<p class="answer">${formatRichText(text || "")}</p>`;
     return `<div class="answer-sections">${sections.map(([head, body]) => `
       <section class="answer-block">
         ${head ? `<h4>${escapeHtml(head)}</h4>` : ""}
-        ${body.split(/\n\n+/).map((p) => `<p>${escapeHtml(p.trim()).replace(/\n/g, "<br />")}</p>`).join("")}
+        ${body.split(/\n\n+/).map((p) => `<p>${formatRichText(p.trim())}</p>`).join("")}
       </section>`).join("")}</div>`;
   };
 
@@ -1345,10 +1398,10 @@
     const extra = sections.map((sec) => `
       <section class="answer-block">
         ${sec.title ? `<h4>${escapeHtml(sec.title)}</h4>` : ""}
-        ${sec.body.split(/\n\n+/).map((p) => `<p>${escapeHtml(p.trim()).replace(/\n/g, "<br />")}</p>`).join("")}
+        ${sec.body.split(/\n\n+/).map((p) => `<p>${formatRichText(p.trim())}</p>`).join("")}
       </section>`).join("");
     return `
-      <div class="note-preview">${preview ? `<p>${escapeHtml(preview)}</p>` : ""}</div>
+      <div class="note-preview">${preview ? `<p>${formatRichText(preview)}</p>` : ""}</div>
       <div class="note-extra">
         ${renderVisuals(n)}
         ${extra ? `<div class="answer-sections">${extra}</div>` : ""}
@@ -3498,8 +3551,7 @@
           </div>
           <h2>${c.title}</h2>
           <p>${c.blurb}</p>
-          <p class="time">About ${c.time}</p>
-          <p>${p.done}/${p.total} questions done</p>
+          <p class="questions-stat">${p.done}/${p.total} questions done</p>
           <div class="progress"><span style="width:${pct}%"></span></div>
         </a>`;
     };
@@ -4233,7 +4285,7 @@
                     ${item.solutions.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.time || "")}</td><td>${escapeHtml(s.space || "")}</td></tr>`).join("")}
                   </table>` : ""}
                 <p class="answer-label">${data.kind === "dsa" ? "Explanation" : data.kind === "practice" ? (item.ask ? "Interview answer" : "What to do") : "Technical note"}</p>
-                ${wrapReadMore(data.kind === "dsa" ? `<p class="answer">${escapeHtml(item.a)}</p>` : renderTeachText(data.kind === "practice" ? shortenPracticeAnswer(item.a) : item.a, item.q), "answer")}
+                ${wrapReadMore(data.kind === "dsa" ? `<p class="answer">${formatRichText(item.a)}</p>` : renderTeachText(data.kind === "practice" ? shortenPracticeAnswer(item.a) : item.a, item.q), "answer")}
                 ${renderVisuals(item)}
                 ${data.kind === "practice" ? renderSolutions(item) : ""}
                 ${data.kind !== "dsa" && data.kind !== "practice" && item.code ? `

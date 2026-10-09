@@ -411,5 +411,26 @@ window.PREP_CAREERS = [
       "Draw ER diagrams and convert to relational tables with foreign keys",
       "Understand 2PL concurrency control and B+ tree index range lookups"
     ]
+  },
+  {
+    id: "lang-fundamentals",
+    section: "core",
+    title: "Language Fundamentals (C++, Java, C, Python, JS)",
+    icon: "⚡",
+    blurb: "Scope resolution (::), pointers (*, &), smart pointers, JVM, macros, and inline.",
+    builds: "Write clean, high-performance, idiomatically sound code in major industry languages.",
+    time: "3–4 months",
+    steps: [
+      { topic: "cpp", learn: "C++ Fundamentals", why: "Scope resolution (::), pointers, references, smart pointers, RAII, const, and templates." },
+      { topic: "java", learn: "Java Fundamentals", why: "Method references (::), JVM memory, String pool, static, interfaces, and collections." },
+      { topic: "c-lang", learn: "C Fundamentals", why: "Pointers (*, &), malloc/free, struct vs union, macros (#, ##), inline, and storage classes." },
+      { topic: "python", learn: "Python", why: "Dunders, list comprehensions, decorators, generators, and memory management." },
+      { topic: "javascript", learn: "JavaScript", why: "Closures, event loop, prototypes, hoisting, and async/await." }
+    ],
+    extra: [
+      "Explain scope resolution :: in C++ and method references :: in Java",
+      "Compare inline functions vs #define macros and stringizing (#) / concatenation (##)",
+      "Master stack vs heap memory layout across C, C++, and Java"
+    ]
   }
 ];

@@ -54,7 +54,10 @@ window.PREP_TOPICS = [
   { id: "practice-sysdesign", title: "System design practice", category: "Practice", icon: "🧪", blurb: "Labs plus most-asked: shortener, rate limiter, CAP, cache, CDN, queues." },
   { id: "os", title: "Operating Systems (OS)", category: "Core CS", icon: "⚙️", blurb: "Processes, threads, CPU scheduling, deadlocks, paging, virtual memory, and OS interview staples." },
   { id: "cn", title: "Computer Networks (CN)", category: "Core CS", icon: "🌐", blurb: "OSI & TCP/IP models, 3-way handshake, TCP vs UDP, DNS, routing, sockets, and network protocols." },
-  { id: "dbms", title: "DBMS (Academic)", category: "Core CS", icon: "🗄️", blurb: "Keys, 1NF/2NF/3NF/BCNF normalization, ER diagrams, serializability, 2PL, and ACID." }
+  { id: "dbms", title: "DBMS (Academic)", category: "Core CS", icon: "🗄️", blurb: "Keys, 1NF/2NF/3NF/BCNF normalization, ER diagrams, serializability, 2PL, and ACID." },
+  { id: "cpp", title: "C++ Fundamentals", category: "Languages", icon: "⚡", blurb: "Scope resolution (::), pointers (*), references (&), smart pointers, const, templates, and STL." },
+  { id: "java", title: "Java Fundamentals", category: "Languages", icon: "☕", blurb: "Method references (::), JVM memory, String pool, static, interfaces, exceptions, and collections." },
+  { id: "c-lang", title: "C Fundamentals", category: "Languages", icon: "🇨", blurb: "Pointers (*, &), malloc/free, struct vs union, macros (#, ##), inline, and storage classes." }
 ];
 
 window.PREP_DATA = window.PREP_DATA || {};
