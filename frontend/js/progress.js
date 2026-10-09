@@ -6,8 +6,11 @@
 (function () {
   "use strict";
 
-  const isDevPort = window.location.port === "5500" || window.location.port === "3000";
-  const API_BASE = isDevPort ? "http://127.0.0.1:5000" : window.location.origin;
+  const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const isLocalDevPort = isLocalHost && (window.location.port === "5500" || window.location.port === "3000" || window.location.port === "5173");
+  const PRODUCTION_BACKEND_URL = "https://preplace-1.onrender.com";
+  const API_BASE = window.PREPLACE_API_BASE || (isLocalDevPort ? "http://127.0.0.1:5000" : (window.location.hostname.includes("onrender.com") ? window.location.origin : PRODUCTION_BACKEND_URL));
+  window.PREPLACE_API_BASE = API_BASE;
   const GUEST_STORAGE_KEY = "preplace_guest_progress";
 
   // Progress State

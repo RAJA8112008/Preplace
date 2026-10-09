@@ -2508,7 +2508,8 @@
       }
 
       try {
-        const res = await fetch("/api/messages", {
+        const apiBase = window.PREPLACE_API_BASE || (window.location.hostname.includes("onrender.com") ? window.location.origin : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://127.0.0.1:5000" : "https://preplace-1.onrender.com"));
+        const res = await fetch(`${apiBase}/api/messages`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -2784,7 +2785,8 @@
       }
 
       try {
-        const res = await fetch("/api/messages", {
+        const apiBase = window.PREPLACE_API_BASE || (window.location.hostname.includes("onrender.com") ? window.location.origin : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://127.0.0.1:5000" : "https://preplace-1.onrender.com"));
+        const res = await fetch(`${apiBase}/api/messages`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

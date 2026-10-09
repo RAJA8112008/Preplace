@@ -19,12 +19,32 @@ const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 const frontendPath = path.resolve(__dirname, "..", "..", "frontend");
 
-// Middleware
+// Robust CORS configuration supporting Vercel frontend, Render, and Localhost
+const allowedOrigins = [
+  "https://preplace-frontend.vercel.app",
+  "https://preplace-1.onrender.com",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173"
+];
+
 app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app") || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Permissive fallback for public API access
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  credentials: true
 }));
+app.options("*", cors()); // Handle preflight for all routes
 app.use(express.json());
 
 // API Routes
