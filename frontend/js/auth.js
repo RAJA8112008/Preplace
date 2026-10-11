@@ -122,6 +122,48 @@
     formElement.prepend(banner);
   }
 
+  // Set form loading / pending state
+  function setFormPending(form, isPending, pendingText = "Processing request...", defaultHtml = null) {
+    if (!form) return;
+    const btn = form.querySelector("button[type='submit']") || form.querySelector(".auth-submit-btn");
+    const inputs = form.querySelectorAll("input, button.auth-sublink");
+    const oldBanner = form.querySelector(".auth-pending-banner");
+    const oldErr = form.querySelector(".auth-inline-error");
+
+    if (isPending) {
+      if (oldErr) oldErr.remove();
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add("is-pending");
+        btn.innerHTML = `<span class="auth-btn-spinner"></span> <span>${pendingText}</span>`;
+      }
+      inputs.forEach((el) => {
+        if (el !== btn) el.disabled = true;
+      });
+
+      if (!oldBanner) {
+        const banner = document.createElement("div");
+        banner.className = "auth-pending-banner";
+        banner.innerHTML = `<span class="auth-pending-dot"></span><span>Processing request... Please wait</span>`;
+        if (btn && btn.parentNode) {
+          btn.parentNode.insertBefore(banner, btn.nextSibling);
+        } else {
+          form.appendChild(banner);
+        }
+      }
+    } else {
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove("is-pending");
+        if (defaultHtml) btn.innerHTML = defaultHtml;
+      }
+      inputs.forEach((el) => {
+        el.disabled = false;
+      });
+      if (oldBanner) oldBanner.remove();
+    }
+  }
+
   // Save auth session
   function saveAuth(token, user) {
     state.token = token;
@@ -649,9 +691,7 @@
         state.formData.email = email;
         state.formData.password = password;
 
-        const btn = document.getElementById("signupStep1Btn");
-        btn.disabled = true;
-        btn.innerHTML = "Sending Code...";
+        setFormPending(suStep1Form, true, "Sending Code...", "<span>Send Verification OTP</span> →");
 
         try {
           const res = await apiCall("/api/auth/send-otp", "POST", { email, purpose: "signup" });
@@ -661,8 +701,7 @@
           renderModalContent();
         } catch (err) {
           showToast(err.message, "error");
-          btn.disabled = false;
-          btn.innerHTML = "<span>Send Verification OTP</span> →";
+          setFormPending(suStep1Form, false, "", "<span>Send Verification OTP</span> →");
 
           const isExisting = err.message && err.message.toLowerCase().includes("already exists");
           if (isExisting) {
@@ -688,9 +727,7 @@
           return;
         }
 
-        const btn = document.getElementById("signupCompleteBtn");
-        btn.disabled = true;
-        btn.innerHTML = "Creating Account...";
+        setFormPending(suStep2Form, true, "Creating Account...", "Verify & Create Account");
 
         try {
           const res = await apiCall("/api/auth/signup", "POST", {
@@ -702,8 +739,8 @@
           saveAuth(res.token, res.user);
         } catch (err) {
           showToast(err.message, "error");
-          btn.disabled = false;
-          btn.innerHTML = "Verify & Create Account";
+          setFormPending(suStep2Form, false, "", "Verify & Create Account");
+          showFormError(suStep2Form, err.message);
         }
       };
     }
@@ -717,18 +754,15 @@
         const password = document.getElementById("loginPassword").value;
 
         state.formData.email = email;
-        const btn = loginPwdForm.querySelector("button[type='submit']");
-        btn.disabled = true;
-        btn.innerHTML = "Signing In...";
+        setFormPending(loginPwdForm, true, "Signing In...", "Sign In");
 
         try {
           const res = await apiCall("/api/auth/login-password", "POST", { email, password });
           saveAuth(res.token, res.user);
         } catch (err) {
           showToast(err.message, "error");
+          setFormPending(loginPwdForm, false, "", "Sign In");
           showFormError(loginPwdForm, err.message);
-          btn.disabled = false;
-          btn.innerHTML = "Sign In";
         }
       };
     }
@@ -741,9 +775,7 @@
         const email = document.getElementById("loginOtpEmail").value.trim();
         state.formData.email = email;
 
-        const btn = loginOtp1Form.querySelector("button[type='submit']");
-        btn.disabled = true;
-        btn.innerHTML = "Sending Code...";
+        setFormPending(loginOtp1Form, true, "Sending Login Code...", "Send Login Code →");
 
         try {
           const res = await apiCall("/api/auth/send-otp", "POST", { email, purpose: "login" });
@@ -753,8 +785,7 @@
           renderModalContent();
         } catch (err) {
           showToast(err.message, "error");
-          btn.disabled = false;
-          btn.innerHTML = "Send Login Code →";
+          setFormPending(loginOtp1Form, false, "", "Send Login Code →");
           const notFound = err.message && err.message.toLowerCase().includes("no account");
           if (notFound) {
             showFormError(loginOtp1Form, err.message, "Create Account →", () => {
@@ -780,9 +811,7 @@
           return;
         }
 
-        const btn = loginOtp2Form.querySelector("button[type='submit']");
-        btn.disabled = true;
-        btn.innerHTML = "Verifying...";
+        setFormPending(loginOtp2Form, true, "Verifying Code...", "Verify & Sign In");
 
         try {
           const res = await apiCall("/api/auth/login-otp", "POST", {
@@ -792,8 +821,8 @@
           saveAuth(res.token, res.user);
         } catch (err) {
           showToast(err.message, "error");
-          btn.disabled = false;
-          btn.innerHTML = "Verify & Sign In";
+          setFormPending(loginOtp2Form, false, "", "Verify & Sign In");
+          showFormError(loginOtp2Form, err.message);
         }
       };
     }
@@ -806,9 +835,7 @@
         const email = document.getElementById("resetEmail").value.trim();
         state.formData.email = email;
 
-        const btn = reset1Form.querySelector("button[type='submit']");
-        btn.disabled = true;
-        btn.innerHTML = "Sending Code...";
+        setFormPending(reset1Form, true, "Sending Reset Code...", "Send Reset Code →");
 
         try {
           const res = await apiCall("/api/auth/send-otp", "POST", { email, purpose: "reset_password" });
@@ -818,8 +845,8 @@
           renderModalContent();
         } catch (err) {
           showToast(err.message, "error");
-          btn.disabled = false;
-          btn.innerHTML = "Send Reset Code →";
+          setFormPending(reset1Form, false, "", "Send Reset Code →");
+          showFormError(reset1Form, err.message);
         }
       };
     }
@@ -837,9 +864,7 @@
           return;
         }
 
-        const btn = reset2Form.querySelector("button[type='submit']");
-        btn.disabled = true;
-        btn.innerHTML = "Updating Password...";
+        setFormPending(reset2Form, true, "Updating Password...", "Reset Password");
 
         try {
           const res = await apiCall("/api/auth/reset-password", "POST", {
@@ -852,8 +877,8 @@
           renderModalContent();
         } catch (err) {
           showToast(err.message, "error");
-          btn.disabled = false;
-          btn.innerHTML = "Reset Password";
+          setFormPending(reset2Form, false, "", "Reset Password");
+          showFormError(reset2Form, err.message);
         }
       };
     }
@@ -882,6 +907,13 @@
       box.addEventListener("keydown", (e) => {
         if (e.key === "Backspace" && !box.value && idx > 0) {
           boxes[idx - 1].focus();
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          const form = box.closest("form");
+          if (form) {
+            if (form.requestSubmit) form.requestSubmit();
+            else form.dispatchEvent(new Event("submit", { cancelable: true }));
+          }
         }
       });
 
