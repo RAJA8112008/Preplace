@@ -3216,28 +3216,84 @@ html[data-theme="dark"] .plink[data-site="gfg"] {
   flex-direction: column;
   gap: 10px;
   background: var(--bg-2);
-  padding: 14px;
+  padding: 12px;
   border-radius: var(--radius);
   border: 1px solid var(--line);
 }
 
-.channel-row {
+.channel-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.channel-item:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.channel-icon-pill {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.channel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.channel-meta-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  font-size: 0.88rem;
+  gap: 8px;
+  width: 100%;
 }
 
 .channel-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: var(--muted);
+}
+
+.channel-external-hint {
+  font-size: 0.7rem;
   font-weight: 600;
+  color: var(--muted);
 }
 
 .channel-val {
   color: var(--ink);
   font-weight: 650;
+  font-size: 0.88rem;
   text-decoration: none;
+  line-height: 1.35;
+  transition: color var(--transition-fast);
+}
+
+.channel-email {
+  word-break: break-all;
+  font-family: inherit;
 }
 
 .channel-val:hover {
@@ -3245,49 +3301,126 @@ html[data-theme="dark"] .plink[data-site="gfg"] {
   text-decoration: underline;
 }
 
+.channel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  word-break: break-all;
+}
+
+.channel-arrow {
+  font-size: 0.85rem;
+  transition: transform var(--transition-fast);
+}
+
+.channel-link:hover .channel-arrow {
+  transform: translate(2px, -2px);
+}
+
+.channel-tag {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
 .copy-mini-btn {
-  background: var(--bg-card);
+  background: var(--bg-2);
   border: 1px solid var(--line);
   color: var(--ink);
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: var(--radius-sm);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 650;
   cursor: pointer;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
+  line-height: 1.4;
 }
 
 .copy-mini-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .mentor-tips-box {
-  background: var(--accent-soft);
-  border: 1px solid rgba(217, 83, 30, 0.25);
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 83, 30, 0.04) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: var(--radius);
   padding: 14px 16px;
-  font-size: 0.86rem;
-  line-height: 1.55;
+  font-size: 0.85rem;
   color: var(--ink);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
 }
 
-.mentor-tips-box h4 {
-  margin: 0 0 6px;
-  color: var(--accent);
-  font-size: 0.92rem;
+.mentor-tips-head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mentor-tips-head h4 {
+  margin: 0;
+  color: #f59e0b;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.tips-bolt {
+  font-size: 1rem;
 }
 
 .mentor-tips-list {
   margin: 0;
-  padding-left: 1.2rem;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .mentor-tips-list li {
-  margin-bottom: 4px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.5;
+  color: var(--ink);
+  font-size: 0.84rem;
+}
+
+.tip-bullet {
+  color: #f59e0b;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+@media (max-width: 600px) {
+  .mentor-profile-card {
+    padding: 18px 16px;
+    gap: 14px;
+  }
+  .mentor-channels {
+    padding: 10px;
+    gap: 8px;
+  }
+  .channel-item {
+    padding: 8px 10px;
+    gap: 10px;
+  }
+  .channel-icon-pill {
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
+  }
+  .channel-val {
+    font-size: 0.82rem;
+  }
+  .mentor-tips-box {
+    padding: 12px 14px;
+  }
 }
 
 /* Modern Form Cards */

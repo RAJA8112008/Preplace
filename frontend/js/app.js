@@ -2347,29 +2347,60 @@
             </p>
 
             <div class="mentor-channels">
-              <div class="channel-row">
-                <span class="channel-label">📧 Direct Email:</span>
-                <span style="display:flex;align-items:center;gap:6px;">
-                  <a class="channel-val" href="mailto:${CONTACT.email}">${CONTACT.email}</a>
-                  <button class="copy-mini-btn" type="button" id="copyEmailBtn" title="Copy email">Copy</button>
-                </span>
+              <div class="channel-item">
+                <div class="channel-icon-pill">📧</div>
+                <div class="channel-content">
+                  <div class="channel-meta-row">
+                    <span class="channel-label">Direct Email</span>
+                    <button class="copy-mini-btn" type="button" id="copyEmailBtn" title="Copy email">Copy</button>
+                  </div>
+                  <a class="channel-val channel-email" href="mailto:${CONTACT.email}">${CONTACT.email}</a>
+                </div>
               </div>
-              <div class="channel-row">
-                <span class="channel-label">💼 LinkedIn:</span>
-                <a class="channel-val" href="${CONTACT.linkedin}" target="_blank" rel="noopener noreferrer">linkedin.com/in/raja-o ↗</a>
+
+              <div class="channel-item">
+                <div class="channel-icon-pill">💼</div>
+                <div class="channel-content">
+                  <div class="channel-meta-row">
+                    <span class="channel-label">LinkedIn</span>
+                    <span class="channel-external-hint">Connect</span>
+                  </div>
+                  <a class="channel-val channel-link" href="${CONTACT.linkedin}" target="_blank" rel="noopener noreferrer">
+                    <span>linkedin.com/in/raja-o</span>
+                    <span class="channel-arrow">↗</span>
+                  </a>
+                </div>
               </div>
-              <div class="channel-row">
-                <span class="channel-label">🎓 Preplace:</span>
-                <span class="channel-val">100% Free Placement Mentorship</span>
+
+              <div class="channel-item">
+                <div class="channel-icon-pill">🎓</div>
+                <div class="channel-content">
+                  <div class="channel-meta-row">
+                    <span class="channel-label">Preplace Platform</span>
+                  </div>
+                  <span class="channel-val channel-tag">100% Free Placement Mentorship</span>
+                </div>
               </div>
             </div>
 
             <div class="mentor-tips-box">
-              <h4>⚡ Tips for Fast Replies:</h4>
+              <div class="mentor-tips-head">
+                <span class="tips-bolt">⚡</span>
+                <h4>Tips for Fast Replies:</h4>
+              </div>
               <ul class="mentor-tips-list">
-                <li>Include the exact problem name &amp; topic.</li>
-                <li>Mention your approach or where testcases failed.</li>
-                <li>Share your LinkedIn/GitHub if you'd like resume advice.</li>
+                <li>
+                  <span class="tip-bullet">✦</span>
+                  <span>Include the exact problem name &amp; topic.</span>
+                </li>
+                <li>
+                  <span class="tip-bullet">✦</span>
+                  <span>Mention your approach or where testcases failed.</span>
+                </li>
+                <li>
+                  <span class="tip-bullet">✦</span>
+                  <span>Share your LinkedIn/GitHub if you'd like resume advice.</span>
+                </li>
               </ul>
             </div>
           </aside>
