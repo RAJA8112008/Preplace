@@ -19,7 +19,10 @@ function getTransporter() {
       host,
       port: Number(process.env.SMTP_PORT) || 587,
       secure: process.env.SMTP_SECURE === "true",
-      auth: { user, pass }
+      auth: { user, pass },
+      connectionTimeout: 4000, // 4s timeout prevents hanging on Render where port 587 is blocked
+      greetingTimeout: 4000,
+      socketTimeout: 5000
     });
   }
   return null;
@@ -218,12 +221,17 @@ async function sendOtp(email, purpose = "signup") {
     }
   }
 
+  if (!emailSent) {
+    console.warn(`[OTP WARNING] Email could not be sent to ${cleanEmail}.`);
+    if (!process.env.BREVO_API_KEY || process.env.BREVO_API_KEY.startsWith("xsmtpsib-")) {
+      console.warn(`[OTP WARNING] Cloud platforms (like Render) block SMTP port 587. Please add BREVO_API_KEY (starts with xkeysib-...) to your Render Environment variables to send emails instantly via HTTPS.`);
+    }
+  }
+
   return {
     success: true,
     email: cleanEmail,
-    emailSent,
-    // Return previewOtp for dev/instant testing assistance
-    previewOtp: otp
+    emailSent
   };
 }
 

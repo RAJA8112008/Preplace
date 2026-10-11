@@ -28,7 +28,6 @@
     resetStep: 1, // 1: email, 2: otp & password
     otpData: {
       email: "",
-      previewOtp: null,
       resendTimer: 0,
       intervalId: null
     },
@@ -99,6 +98,28 @@
       toast.style.transform = "translateX(20px)";
       setTimeout(() => toast.remove(), 200);
     }, 4000);
+  }
+
+  // Display inline error banner directly inside the form
+  function showFormError(formElement, message, actionText = null, actionFn = null) {
+    if (!formElement) return;
+    const oldErr = formElement.querySelector(".auth-inline-error");
+    if (oldErr) oldErr.remove();
+
+    const banner = document.createElement("div");
+    banner.className = "auth-inline-error";
+    banner.innerHTML = `<span>⚠️ ${escapeHtml(message)}</span>`;
+
+    if (actionText && actionFn) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "auth-inline-error-btn";
+      btn.textContent = actionText;
+      btn.onclick = actionFn;
+      banner.appendChild(btn);
+    }
+
+    formElement.prepend(banner);
   }
 
   // Save auth session
@@ -233,7 +254,6 @@
     state.signupStep = 1;
     state.loginOtpStep = 1;
     state.resetStep = 1;
-    state.otpData.previewOtp = null;
     clearTimer();
 
     let modal = document.getElementById("authModalBackdrop");
@@ -358,12 +378,7 @@
             We sent a 6-digit verification code to <strong>${escapeHtml(state.formData.email)}</strong>
           </p>
 
-          ${state.otpData.previewOtp ? `
-            <div class="otp-hint-banner">
-              <span>Demo OTP Preview:</span>
-              <span class="otp-code-pill" id="autoFillOtpBtn" title="Click to auto-fill">${state.otpData.previewOtp}</span>
-            </div>
-          ` : ""}
+
 
           <label class="auth-label">Enter 6-Digit Code</label>
           <div class="otp-inputs-wrap" id="otpInputsWrap">
@@ -436,12 +451,7 @@
               Enter the 6-digit code sent to <strong>${escapeHtml(state.formData.email)}</strong>
             </p>
 
-            ${state.otpData.previewOtp ? `
-              <div class="otp-hint-banner">
-                <span>Demo OTP Preview:</span>
-                <span class="otp-code-pill" id="autoFillOtpBtn" title="Click to auto-fill">${state.otpData.previewOtp}</span>
-              </div>
-            ` : ""}
+
 
             <div class="otp-inputs-wrap" id="otpInputsWrap">
               <input class="otp-digit-box" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" autofocus />
@@ -492,12 +502,7 @@
             Enter the code sent to <strong>${escapeHtml(state.formData.email)}</strong> and choose a new password.
           </p>
 
-          ${state.otpData.previewOtp ? `
-            <div class="otp-hint-banner">
-              <span>Demo OTP Preview:</span>
-              <span class="otp-code-pill" id="autoFillOtpBtn" title="Click to auto-fill">${state.otpData.previewOtp}</span>
-            </div>
-          ` : ""}
+
 
           <label class="auth-label">6-Digit Code</label>
           <div class="otp-inputs-wrap" id="otpInputsWrap">
@@ -593,13 +598,7 @@
     // OTP Navigation & Box Management
     setupOtpInputBoxes();
 
-    // Auto-fill OTP button
-    const autoFillBtn = document.getElementById("autoFillOtpBtn");
-    if (autoFillBtn && state.otpData.previewOtp) {
-      autoFillBtn.onclick = () => {
-        fillOtpBoxes(state.otpData.previewOtp);
-      };
-    }
+
 
     // OTP Back button
     const otpBackBtn = document.getElementById("otpBackBtn");
@@ -624,7 +623,6 @@
             email: state.formData.email,
             purpose
           });
-          state.otpData.previewOtp = res.previewOtp || null;
           showToast(res.message || "New code sent!", "success");
           startTimer(60);
           renderModalContent();
@@ -657,7 +655,6 @@
 
         try {
           const res = await apiCall("/api/auth/send-otp", "POST", { email, purpose: "signup" });
-          state.otpData.previewOtp = res.previewOtp || null;
           state.signupStep = 2;
           startTimer(60);
           showToast(res.message, "success");
@@ -666,6 +663,16 @@
           showToast(err.message, "error");
           btn.disabled = false;
           btn.innerHTML = "<span>Send Verification OTP</span> →";
+
+          const isExisting = err.message && err.message.toLowerCase().includes("already exists");
+          if (isExisting) {
+            showFormError(suStep1Form, err.message, "Sign In Instead →", () => {
+              state.tab = "login";
+              renderModalContent();
+            });
+          } else {
+            showFormError(suStep1Form, err.message);
+          }
         }
       };
     }
@@ -719,6 +726,7 @@
           saveAuth(res.token, res.user);
         } catch (err) {
           showToast(err.message, "error");
+          showFormError(loginPwdForm, err.message);
           btn.disabled = false;
           btn.innerHTML = "Sign In";
         }
@@ -739,7 +747,6 @@
 
         try {
           const res = await apiCall("/api/auth/send-otp", "POST", { email, purpose: "login" });
-          state.otpData.previewOtp = res.previewOtp || null;
           state.loginOtpStep = 2;
           startTimer(60);
           showToast(res.message, "success");
@@ -748,6 +755,16 @@
           showToast(err.message, "error");
           btn.disabled = false;
           btn.innerHTML = "Send Login Code →";
+          const notFound = err.message && err.message.toLowerCase().includes("no account");
+          if (notFound) {
+            showFormError(loginOtp1Form, err.message, "Create Account →", () => {
+              state.tab = "signup";
+              state.signupStep = 1;
+              renderModalContent();
+            });
+          } else {
+            showFormError(loginOtp1Form, err.message);
+          }
         }
       };
     }
@@ -795,7 +812,6 @@
 
         try {
           const res = await apiCall("/api/auth/send-otp", "POST", { email, purpose: "reset_password" });
-          state.otpData.previewOtp = res.previewOtp || null;
           state.resetStep = 2;
           startTimer(60);
           showToast(res.message, "success");

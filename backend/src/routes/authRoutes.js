@@ -66,7 +66,6 @@ router.post("/send-otp", async (req, res) => {
     return res.json({
       success: true,
       message: `Verification code sent to ${cleanEmail}`,
-      previewOtp: result.previewOtp, // Available for instant preview/dev test
       emailSent: result.emailSent
     });
   } catch (err) {
