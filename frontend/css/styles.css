@@ -3866,8 +3866,7 @@ dialog.code-runner-modal::backdrop {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  pointer-events: none;
   margin: 0;
   padding: 16px 20px;
   background: transparent !important;
@@ -3877,9 +3876,11 @@ dialog.code-runner-modal::backdrop {
   line-height: 1.65;
   white-space: pre;
   overflow: hidden;
-  pointer-events: none;
   border: none;
   box-sizing: border-box;
+  /* Size is set dynamically to match textarea scroll width/height */
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .runner-highlight code {
@@ -3892,8 +3893,6 @@ dialog.code-runner-modal::backdrop {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
   width: 100%;
   height: 100%;
   padding: 16px 20px;
@@ -3909,9 +3908,28 @@ dialog.code-runner-modal::backdrop {
   outline: none;
   white-space: pre;
   overflow: auto;
+  overflow-x: auto;
+  overflow-y: auto;
   tab-size: 2;
   box-sizing: border-box;
   z-index: 2;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.4) transparent;
+}
+
+.runner-textarea::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.runner-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+.runner-textarea::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.35);
+  border-radius: 4px;
+}
+.runner-textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.6);
 }
 
 .runner-textarea::selection {
@@ -3919,6 +3937,7 @@ dialog.code-runner-modal::backdrop {
   color: transparent !important;
   -webkit-text-fill-color: transparent !important;
 }
+
 
 .runner-console-logs {
   flex: 1;
@@ -4060,8 +4079,8 @@ dialog.code-runner-modal::backdrop {
 
 .code-wrap-card pre {
   margin: 0;
-  padding: 12px 14px;
-  max-height: 270px;
+  padding: 14px 16px;
+  max-height: 560px;
   overflow-y: auto;
   overflow-x: auto;
   font-family: "IBM Plex Mono", monospace;
@@ -4069,6 +4088,8 @@ dialog.code-runner-modal::backdrop {
   line-height: 1.6;
   background: #0d1017;
   cursor: pointer;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
 
 .code-wrap-card pre::-webkit-scrollbar {
@@ -4077,7 +4098,7 @@ dialog.code-runner-modal::backdrop {
 }
 
 .code-wrap-card pre::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 4px;
 }
 

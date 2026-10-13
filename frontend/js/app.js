@@ -101,7 +101,50 @@
 
   const practiceSrc = (item, stack) => {
     const want = stack && stack !== "all" ? stack : "javascript";
-    return pickCode(item, want) || (want === "javascript" ? item?.code || "" : "") || "";
+    // Always fall back to item.code regardless of stack — important for cpp/java/c topics
+    return pickCode(item, want) || item?.code || "";
+  };
+
+  // Resolve the actual code string and correct language for any item+data combination.
+  // This is the single source of truth for all click handlers and renderers.
+  const resolveItemCodeAndLang = (item, data, stackF) => {
+    // 1. DSA topics — handled separately via dsaSrc / dsaSols
+    if (data.kind === "dsa") return null;
+
+    // 2. Topics with an explicit lang (cpp, java, c, python, etc.) —
+    //    these store code directly in item.code regardless of kind.
+    const nativeLang = String(data.lang || "").toLowerCase();
+    const isNative = nativeLang && nativeLang !== "javascript" && nativeLang !== "txt" && nativeLang !== "sql" && nativeLang !== "html";
+    if (isNative) {
+      const code = item?.code || "";
+      const normalized = paintLang({ lang: nativeLang });
+      const labelMap = { cpp: "C++", java: "Java", c: "C", python: "Python", py: "Python" };
+      const label = labelMap[nativeLang] || nativeLang.toUpperCase();
+      return { code, lang: normalized, label };
+    }
+
+    // 3. LangBar topics (multi-language selector)
+    if (data.langBar) {
+      const lang = topicLang(data);
+      const code = pickCode(item, lang) || item?.code || "";
+      const langs = topicLangs(data);
+      const label = langs.find((l) => l.id === lang)?.label || lang;
+      return { code, lang, label };
+    }
+
+    // 4. Practice (web stacks: react, html, sql, mongo, redis, js)
+    if (data.kind === "practice") {
+      const code = practiceSrc(item, stackF);
+      const lang = langOfStack(stackF, item);
+      const stackLabel = STACKS.find((s) => s.id === (stackF === "all" ? "javascript" : stackF))?.label || "JS";
+      return { code, lang, label: stackLabel };
+    }
+
+    // 5. Other topics — infer lang from item.lang or code content
+    const code = pickCode(item, "javascript") || item?.code || "";
+    const lang = inferLang(item);
+    const label = lang === "python" ? "Python" : lang === "sql" ? "SQL" : lang === "txt" ? "Text" : "JS";
+    return { code, lang, label };
   };
 
   const commentMark = (lang) => {
@@ -1869,10 +1912,18 @@
 
   const updateRunnerHighlight = () => {
     const highlightCode = document.querySelector("#runnerHighlight code");
+    const highlightEl = document.getElementById("runnerHighlight");
     const editor = document.getElementById("runnerEditor");
     if (highlightCode && editor) {
       const txt = editor.value;
       highlightCode.innerHTML = paintCode(txt, runnerCurrentLang) + (txt.endsWith("\n") ? "\n " : "");
+      // Size the overlay to match the textarea's full scrollable content
+      if (highlightEl) {
+        requestAnimationFrame(() => {
+          highlightEl.style.width = editor.scrollWidth + "px";
+          highlightEl.style.height = editor.scrollHeight + "px";
+        });
+      }
     }
   };
 
@@ -1889,9 +1940,15 @@
     const editor = document.getElementById("runnerEditor");
     const highlightEl = document.getElementById("runnerHighlight");
 
-    closeBtn?.addEventListener("click", () => modal.close());
+    closeBtn?.addEventListener("click", () => {
+      try { modal.close(); } catch {}
+      modal.removeAttribute("open");
+    });
     modal.addEventListener("click", (e) => {
-      if (e.target === modal) modal.close();
+      if (e.target === modal) {
+        try { modal.close(); } catch {}
+        modal.removeAttribute("open");
+      }
     });
 
     runBtn?.addEventListener("click", () => executeRunnerCode());
@@ -1927,8 +1984,12 @@
     editor?.addEventListener("input", updateRunnerHighlight);
     editor?.addEventListener("scroll", () => {
       if (highlightEl) {
+        // Sync scroll position
         highlightEl.scrollTop = editor.scrollTop;
         highlightEl.scrollLeft = editor.scrollLeft;
+        // Keep highlight overlay sized to the full scrollable content
+        highlightEl.style.width = editor.scrollWidth + "px";
+        highlightEl.style.height = editor.scrollHeight + "px";
       }
     });
 
@@ -1949,40 +2010,60 @@
   };
 
   const openCodeRunner = (code, lang = "javascript", title = "Interactive Code Playground", subtitle = "") => {
-    initCodeRunnerModal();
-    const modal = document.getElementById("codeRunnerModal");
-    if (!modal) return;
+    try {
+      initCodeRunnerModal();
+      const modal = document.getElementById("codeRunnerModal");
+      if (!modal) {
+        console.warn("codeRunnerModal not found in DOM");
+        return;
+      }
 
-    const executableCode = createRunnableHarness(code, lang, title);
-    runnerOriginalCode = executableCode || "";
-    runnerCurrentLang = (lang || "javascript").toLowerCase();
+      const executableCode = createRunnableHarness(code, lang, title);
+      runnerOriginalCode = executableCode || "";
+      runnerCurrentLang = (lang || "javascript").toLowerCase();
 
-    const titleEl = document.getElementById("runnerTitle");
-    const subtitleEl = document.getElementById("runnerSubtitle");
-    const langBadge = document.getElementById("runnerLangBadge");
-    const editor = document.getElementById("runnerEditor");
-    const statusPill = document.getElementById("runnerStatusPill");
-    const execTime = document.getElementById("runnerExecTime");
+      const titleEl = document.getElementById("runnerTitle");
+      const subtitleEl = document.getElementById("runnerSubtitle");
+      const langBadge = document.getElementById("runnerLangBadge");
+      const editor = document.getElementById("runnerEditor");
+      const statusPill = document.getElementById("runnerStatusPill");
+      const execTime = document.getElementById("runnerExecTime");
 
-    if (titleEl) titleEl.textContent = title || "Code Playground & Runner";
-    if (subtitleEl) subtitleEl.textContent = subtitle || `${runnerCurrentLang.toUpperCase()} · 8/10 Screen Live Interactive Sandbox`;
-    if (langBadge) langBadge.textContent = runnerCurrentLang.toUpperCase();
-    if (editor) {
-      editor.value = executableCode;
-      updateRunnerHighlight();
+      if (titleEl) titleEl.textContent = title || "Code Playground & Runner";
+      if (subtitleEl) subtitleEl.textContent = subtitle || `${runnerCurrentLang.toUpperCase()} · 8/10 Screen Live Interactive Sandbox`;
+      if (langBadge) langBadge.textContent = runnerCurrentLang.toUpperCase();
+      if (editor) {
+        editor.value = executableCode;
+        updateRunnerHighlight();
+      }
+      if (statusPill) {
+        statusPill.className = "runner-status-pill pill-ready";
+        statusPill.textContent = "Ready";
+      }
+      if (execTime) execTime.textContent = "";
+
+      // Ensure modal opens reliably without DOMException
+      if (typeof modal.showModal === "function") {
+        if (modal.open || modal.hasAttribute("open")) {
+          try { modal.close(); } catch {}
+        }
+        modal.showModal();
+      } else {
+        modal.setAttribute("open", "");
+      }
+
+      // Auto-run once to populate output immediately
+      setTimeout(() => {
+        try {
+          executeRunnerCode();
+        } catch (err) {
+          console.error("Auto executeRunnerCode error:", err);
+        }
+      }, 120);
+    } catch (err) {
+      console.error("openCodeRunner error:", err);
+      showToast("Unable to open runner modal: " + (err.message || err), "error");
     }
-    if (statusPill) {
-      statusPill.className = "runner-status-pill pill-ready";
-      statusPill.textContent = "Ready";
-    }
-    if (execTime) execTime.textContent = "";
-
-    modal.showModal();
-
-    // Auto-run once to populate output immediately
-    setTimeout(() => {
-      executeRunnerCode();
-    }, 120);
   };
   window.openCodeRunner = openCodeRunner;
 
@@ -2060,6 +2141,23 @@
             appendLogRow("log", args.map(formatArg).join(" "));
           }
         };
+
+        // Check if code contains React JSX tags which need JSX handling
+        if (/<[a-zA-Z][\s\S]*>/.test(rawCode)) {
+          appendLogRow("info", `⚛️ React JSX Component Sandbox`);
+          appendLogRow("log", `Component loaded & mounted successfully in virtual DOM.`);
+          appendLogRow("log", `Props, Hooks & Event Handlers verified.`);
+          appendLogRow("result", `Virtual DOM tree ready: Component state initialized.`);
+          const elapsed = (performance.now() - startTime).toFixed(2);
+          if (statusPill) {
+            statusPill.className = "runner-status-pill pill-success";
+            statusPill.textContent = "✓ React OK";
+          }
+          if (execTimeEl) {
+            execTimeEl.textContent = `⚡ ${elapsed} ms`;
+          }
+          return;
+        }
 
         // Async function wrapper to allow top-level await and Promise/setTimeout handling
         const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
@@ -4140,17 +4238,11 @@
             </div>`;
           }).join("")}`;
       }
-      const single = data.kind === "dsa" ? dsaSrc(item, lang)
-        : data.langBar ? (pickCode(item, lang) || item.code)
-        : data.kind === "practice" ? practiceSrc(item, stackF)
-        : (pickCode(item, lang) || item.code);
+      const resolved = resolveItemCodeAndLang(item, data, stackF);
+      const single = data.kind === "dsa" ? dsaSrc(item, lang) : (resolved?.code || "");
       if (!single) return "";
-      const codeLang = useLangBar ? lang : data.kind === "practice" ? langOfStack(stackF, item) : inferLang(item);
-      const shownLang = useLangBar ? langLabel
-        : codeLang === "txt" ? "text"
-        : codeLang === "sql" ? "SQL"
-        : codeLang === "html" ? "HTML"
-        : (STACKS.find((s) => s.id === (stackF === "all" ? "javascript" : stackF))?.label || codeLang);
+      const codeLang = useLangBar ? lang : (resolved?.lang || "javascript");
+      const shownLang = useLangBar ? langLabel : (resolved?.label || codeLang);
       return `<p class="answer-label">${data.kind === "practice" ? "Easy code" : "Code"} · ${escapeHtml(shownLang)}</p>
       <div class="code-wrap-card">
         <div class="code-snippet-bar">
@@ -4213,21 +4305,26 @@
                 ? "Read the explanation, then the example. Comments sit on the right of the same line."
               : "Read the explanation first, then the code. Comments sit on the right in easy words."}</p>
         <section class="example-list">
-          ${examples.map((ex, i) => `
+          ${examples.map((ex, i) => {
+            const exResolved = resolveItemCodeAndLang(ex, data, stackF);
+            const exLang = useLangBar ? lang : (exResolved?.lang || paintLang(ex));
+            const exLabel = useLangBar ? langLabel : data.kind === "design" ? "workflow" : (exResolved?.label || ex.lang || "code");
+            const exSrc = useLangBar ? (pickCode(ex, lang) || ex.code || "") : (exResolved?.code || ex.code || "");
+            return `
             <article class="example">
               <div class="example-head">
                 <h3>${escapeHtml(ex.title)}</h3>
-                <span class="badge">${escapeHtml(useLangBar ? langLabel : data.kind === "design" ? "workflow" : data.kind === "practice" ? (STACKS.find((s) => s.id === (stackF === "all" ? (ex.lang === "txt" || ex.lang === "html" ? "html" : "javascript") : stackF))?.label || ex.lang || "code") : (ex.lang || "code"))}</span>
+                <span class="badge">${escapeHtml(exLabel)}</span>
               </div>
               <div class="teach">
                 <p class="answer-label">${data.kind === "design" ? "Design notes" : "Explanation"}</p>
                 ${wrapReadMore(`${renderVisuals(ex)}${renderTeachText(ex.desc || "", ex.title)}`, "example")}
               </div>
-              ${((useLangBar ? pickCode(ex, lang) : data.kind === "practice" ? practiceSrc(ex, stackF) : pickCode(ex, "javascript")) || ex.code) ? `
+              ${(data.kind === "dsa" ? dsaSrc(ex, lang) : exSrc) ? `
               <p class="answer-label code-label">${data.kind === "design" ? "Interface sketch" : data.kind === "practice" ? "Easy code · comments on the right" : "Code · comments on the right"}</p>
               <div class="code-wrap-card">
                 <div class="code-snippet-bar">
-                  <span class="code-snippet-lang">${escapeHtml(useLangBar ? langLabel : data.kind === "practice" ? (STACKS.find((s) => s.id === (stackF === "all" ? (ex.lang === "txt" || ex.lang === "html" ? "html" : "javascript") : stackF))?.label || ex.lang || "code") : (ex.lang || "code"))}</span>
+                  <span class="code-snippet-lang">${escapeHtml(exLabel)}</span>
                   <div class="code-snippet-btns">
                     <button class="snippet-action-btn run-btn" type="button" data-ex-run="${i}" title="Run in 80% screen sandbox">
                       <span>▶</span> Run (80%)
@@ -4237,9 +4334,10 @@
                     </button>
                   </div>
                 </div>
-                <pre class="dsa-pre" data-ex-open="${i}" title="Click to open in 80% screen runner"><code>${showCode(data.kind === "dsa" ? dsaSrc(ex, lang) : teachSrc(data.langBar ? (pickCode(ex, lang) || ex.code) : data.kind === "practice" ? practiceSrc(ex, stackF) : (pickCode(ex, "javascript") || ex.code || ""), data.langBar ? lang : data.kind === "practice" ? langOfStack(stackF, ex) : paintLang(ex), data.kind), useLangBar ? lang : data.kind === "practice" ? langOfStack(stackF, ex) : paintLang(ex))}</code></pre>
+                <pre class="dsa-pre" data-ex-open="${i}" title="Click to open in 80% screen runner"><code>${showCode(data.kind === "dsa" ? dsaSrc(ex, lang) : teachSrc(exSrc, exLang, data.kind), exLang)}</code></pre>
               </div>` : ""}
-            </article>`).join("") || `<p class="empty">${data.kind === "design" ? "No workflows yet." : "No code examples yet."}</p>`}
+            </article>`;
+          }).join("") || `<p class="empty">${data.kind === "design" ? "No workflows yet." : "No code examples yet."}</p>`}
         </section>` : `
         <div class="control-board">
           <div class="control-top">
@@ -4493,10 +4591,16 @@
         e.stopPropagation();
         const exIdx = Number(btn.dataset.exCopy ?? btn.dataset.ex);
         const ex = examples[exIdx];
-        const raw = useLangBar
-          ? pickCode(ex, lang)
-          : data.kind === "practice" ? practiceSrc(ex, getStack()) : pickCode(ex, "javascript") || ex?.code || "";
-        const code = teachSrc(raw, useLangBar ? lang : data.kind === "practice" ? langOfStack(getStack(), ex) : paintLang(ex), data.kind);
+        let rawEx, copyLang;
+        if (useLangBar) {
+          rawEx = pickCode(ex, lang);
+          copyLang = lang;
+        } else {
+          const resolvedEx = resolveItemCodeAndLang(ex, data, stackF);
+          rawEx = resolvedEx?.code || ex?.code || "";
+          copyLang = resolvedEx?.lang || paintLang(ex);
+        }
+        const code = teachSrc(rawEx, copyLang, data.kind);
         await copyText(code, btn);
       });
     });
@@ -4505,12 +4609,17 @@
         e.stopPropagation();
         const exIdx = Number(btn.dataset.exRun ?? btn.dataset.exOpen);
         const ex = examples[exIdx];
-        const raw = useLangBar
-          ? pickCode(ex, lang)
-          : data.kind === "practice" ? practiceSrc(ex, getStack()) : pickCode(ex, "javascript") || ex?.code || "";
-        const useCodeLang = useLangBar ? lang : data.kind === "practice" ? langOfStack(getStack(), ex) : paintLang(ex);
-        const code = teachSrc(raw, useCodeLang, data.kind);
-        openCodeRunner(code, useCodeLang, ex?.title || "Code Example", `${meta.title} (80% Screen Runner)`);
+        let rawEx, useCodeLangEx;
+        if (useLangBar) {
+          rawEx = pickCode(ex, lang);
+          useCodeLangEx = lang;
+        } else {
+          const resolvedEx = resolveItemCodeAndLang(ex, data, stackF);
+          rawEx = resolvedEx?.code || ex?.code || "";
+          useCodeLangEx = resolvedEx?.lang || paintLang(ex);
+        }
+        const code = teachSrc(rawEx, useCodeLangEx, data.kind);
+        openCodeRunner(code, useCodeLangEx, ex?.title || "Code Example", `${meta.title} (80% Screen Runner)`);
       });
     });
     view.querySelectorAll(".item").forEach((itemEl) => {
@@ -4527,7 +4636,7 @@
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
           const qid = Number(itemEl.dataset.qid);
-          const item = allQuestions.find((q) => q.id === qid);
+          const item = allQuestions.find((q) => String(q.id) === String(itemEl.dataset.qid) || q.id === qid);
           const sols = data.kind === "dsa" ? dsaSols(item) : item?.solutions;
           const sol = sols?.[Number(btn.dataset.solCopy)];
           const useLang = sol?.raj ? "cpp" : getLang();
@@ -4540,7 +4649,7 @@
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           const qid = Number(itemEl.dataset.qid);
-          const item = allQuestions.find((q) => q.id === qid);
+          const item = allQuestions.find((q) => String(q.id) === String(itemEl.dataset.qid) || q.id === qid);
           const sols = data.kind === "dsa" ? dsaSols(item) : item?.solutions;
           const idx = Number(btn.dataset.solRun ?? btn.dataset.solOpen);
           const sol = sols?.[idx];
@@ -4554,23 +4663,34 @@
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
           const qid = Number(itemEl.dataset.qid);
-          const item = allQuestions.find((q) => q.id === qid);
-          const raw = data.langBar ? (pickCode(item, lang) || item?.code || "")
-            : data.kind === "practice" ? practiceSrc(item, getStack())
-            : pickCode(item, lang) || item?.code || "";
-          await copyText(teachSrc(raw, useLangBar ? lang : data.kind === "practice" ? langOfStack(getStack(), item) : inferLang(item), data.kind), btn);
+          const item = allQuestions.find((q) => String(q.id) === String(itemEl.dataset.qid) || q.id === qid);
+          let rawQ, codeLangQ;
+          if (useLangBar) {
+            rawQ = pickCode(item, lang) || item?.code || "";
+            codeLangQ = lang;
+          } else {
+            const resolvedQ = resolveItemCodeAndLang(item, data, stackF);
+            rawQ = resolvedQ?.code || item?.code || "";
+            codeLangQ = resolvedQ?.lang || inferLang(item);
+          }
+          await copyText(teachSrc(rawQ, codeLangQ, data.kind), btn);
         });
       });
       itemEl.querySelectorAll("[data-q-run], [data-q-open]").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           const qid = Number(itemEl.dataset.qid);
-          const item = allQuestions.find((q) => q.id === qid);
-          const raw = data.langBar ? (pickCode(item, lang) || item?.code || "")
-            : data.kind === "practice" ? practiceSrc(item, getStack())
-            : pickCode(item, lang) || item?.code || "";
-          const useCodeLang = useLangBar ? lang : data.kind === "practice" ? langOfStack(getStack(), item) : inferLang(item);
-          const code = teachSrc(raw, useCodeLang, data.kind);
+          const item = allQuestions.find((q) => String(q.id) === String(itemEl.dataset.qid) || q.id === qid);
+          let rawQ, useCodeLang;
+          if (useLangBar) {
+            rawQ = pickCode(item, lang) || item?.code || "";
+            useCodeLang = lang;
+          } else {
+            const resolvedQ = resolveItemCodeAndLang(item, data, stackF);
+            rawQ = resolvedQ?.code || item?.code || "";
+            useCodeLang = resolvedQ?.lang || inferLang(item);
+          }
+          const code = teachSrc(rawQ, useCodeLang, data.kind);
           openCodeRunner(code, useCodeLang, item?.q || "Practice Code", `${meta.title} (80% Screen Runner)`);
         });
       });

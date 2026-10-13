@@ -54,12 +54,17 @@
       headers["Authorization"] = `Bearer ${state.token}`;
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     try {
       const res = await fetch(`${API_BASE}${endpoint}`, {
         method,
         headers,
-        body: body ? JSON.stringify(body) : null
+        body: body ? JSON.stringify(body) : null,
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
       const data = await res.json();
       if (!res.ok) {
@@ -67,6 +72,10 @@
       }
       return data;
     } catch (err) {
+      clearTimeout(timeoutId);
+      if (err.name === "AbortError") {
+        throw new Error("Request timed out. Please check your network connection and try again.");
+      }
       if (err.message === "Failed to fetch") {
         throw new Error("Cannot connect to backend server. Make sure it is running on port 5000.");
       }
@@ -133,6 +142,9 @@
     if (isPending) {
       if (oldErr) oldErr.remove();
       if (btn) {
+        if (!btn.dataset.defaultHtml) {
+          btn.dataset.defaultHtml = defaultHtml || btn.innerHTML;
+        }
         btn.disabled = true;
         btn.classList.add("is-pending");
         btn.innerHTML = `<span class="auth-btn-spinner"></span> <span>${pendingText}</span>`;
@@ -144,7 +156,7 @@
       if (!oldBanner) {
         const banner = document.createElement("div");
         banner.className = "auth-pending-banner";
-        banner.innerHTML = `<span class="auth-pending-dot"></span><span>Processing request... Please wait</span>`;
+        banner.innerHTML = `<span class="auth-pending-dot"></span><span>${pendingText || "Processing request... Please wait"}</span>`;
         if (btn && btn.parentNode) {
           btn.parentNode.insertBefore(banner, btn.nextSibling);
         } else {
@@ -155,7 +167,10 @@
       if (btn) {
         btn.disabled = false;
         btn.classList.remove("is-pending");
-        if (defaultHtml) btn.innerHTML = defaultHtml;
+        const restoredHtml = defaultHtml || btn.dataset.defaultHtml;
+        if (restoredHtml) {
+          btn.innerHTML = restoredHtml;
+        }
       }
       inputs.forEach((el) => {
         el.disabled = false;
@@ -165,14 +180,16 @@
   }
 
   // Save auth session
-  function saveAuth(token, user) {
+  function saveAuth(token, user, showWelcomeToast = true) {
     state.token = token;
     state.user = user;
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     renderAuthBar();
     closeModal();
-    showToast(`Welcome, ${user.name}!`, "success");
+    if (showWelcomeToast) {
+      showToast(`Welcome, ${user.name}!`, "success");
+    }
 
     // Synchronize latest MongoDB progress & navigate directly to Dashboard
     if (window.PreplaceProgress && typeof window.PreplaceProgress.fetchProgress === "function") {
@@ -316,6 +333,8 @@
     const modal = document.getElementById("authModalBackdrop");
     if (modal) {
       modal.classList.remove("open");
+      const pendingForms = modal.querySelectorAll("form");
+      pendingForms.forEach((form) => setFormPending(form, false));
     }
   }
 
@@ -666,6 +685,8 @@
             purpose
           });
           showToast(res.message || "New code sent!", "success");
+          otpResendBtn.disabled = false;
+          otpResendBtn.innerHTML = "Resend Code";
           startTimer(60);
           renderModalContent();
         } catch (err) {
@@ -687,21 +708,35 @@
         const email = document.getElementById("suEmail").value.trim();
         const password = document.getElementById("suPassword").value;
 
+        if (!name || name.length < 2) {
+          showToast("Please enter your name (at least 2 characters)", "error");
+          return;
+        }
+        if (!email || !email.includes("@")) {
+          showToast("Please enter a valid email address", "error");
+          return;
+        }
+        if (!password || password.length < 6) {
+          showToast("Password must be at least 6 characters", "error");
+          return;
+        }
+
         state.formData.name = name;
         state.formData.email = email;
         state.formData.password = password;
 
-        setFormPending(suStep1Form, true, "Sending Code...", "<span>Send Verification OTP</span> →");
+        setFormPending(suStep1Form, true, "Sending Verification Code...", "<span>Send Verification OTP</span> →");
 
         try {
           const res = await apiCall("/api/auth/send-otp", "POST", { email, purpose: "signup" });
+          showToast(res.message || "Verification code sent!", "success");
+          setFormPending(suStep1Form, false);
           state.signupStep = 2;
           startTimer(60);
-          showToast(res.message, "success");
           renderModalContent();
         } catch (err) {
           showToast(err.message, "error");
-          setFormPending(suStep1Form, false, "", "<span>Send Verification OTP</span> →");
+          setFormPending(suStep1Form, false);
 
           const isExisting = err.message && err.message.toLowerCase().includes("already exists");
           if (isExisting) {
@@ -736,10 +771,12 @@
             password: state.formData.password,
             otp
           });
-          saveAuth(res.token, res.user);
+          showToast(res.message || "Account created successfully!", "success");
+          setFormPending(suStep2Form, false);
+          saveAuth(res.token, res.user, false);
         } catch (err) {
           showToast(err.message, "error");
-          setFormPending(suStep2Form, false, "", "Verify & Create Account");
+          setFormPending(suStep2Form, false);
           showFormError(suStep2Form, err.message);
         }
       };
@@ -753,15 +790,26 @@
         const email = document.getElementById("loginEmail").value.trim();
         const password = document.getElementById("loginPassword").value;
 
+        if (!email || !email.includes("@")) {
+          showToast("Please enter a valid email address", "error");
+          return;
+        }
+        if (!password) {
+          showToast("Please enter your password", "error");
+          return;
+        }
+
         state.formData.email = email;
         setFormPending(loginPwdForm, true, "Signing In...", "Sign In");
 
         try {
           const res = await apiCall("/api/auth/login-password", "POST", { email, password });
-          saveAuth(res.token, res.user);
+          showToast(res.message || `Welcome back, ${res.user.name}!`, "success");
+          setFormPending(loginPwdForm, false);
+          saveAuth(res.token, res.user, false);
         } catch (err) {
           showToast(err.message, "error");
-          setFormPending(loginPwdForm, false, "", "Sign In");
+          setFormPending(loginPwdForm, false);
           showFormError(loginPwdForm, err.message);
         }
       };
@@ -773,19 +821,24 @@
       loginOtp1Form.onsubmit = async (e) => {
         e.preventDefault();
         const email = document.getElementById("loginOtpEmail").value.trim();
+        if (!email || !email.includes("@")) {
+          showToast("Please enter a valid email address", "error");
+          return;
+        }
         state.formData.email = email;
 
         setFormPending(loginOtp1Form, true, "Sending Login Code...", "Send Login Code →");
 
         try {
           const res = await apiCall("/api/auth/send-otp", "POST", { email, purpose: "login" });
+          showToast(res.message || "Login code sent!", "success");
+          setFormPending(loginOtp1Form, false);
           state.loginOtpStep = 2;
           startTimer(60);
-          showToast(res.message, "success");
           renderModalContent();
         } catch (err) {
           showToast(err.message, "error");
-          setFormPending(loginOtp1Form, false, "", "Send Login Code →");
+          setFormPending(loginOtp1Form, false);
           const notFound = err.message && err.message.toLowerCase().includes("no account");
           if (notFound) {
             showFormError(loginOtp1Form, err.message, "Create Account →", () => {
@@ -818,10 +871,12 @@
             email: state.formData.email,
             otp
           });
-          saveAuth(res.token, res.user);
+          showToast(res.message || `Welcome back, ${res.user.name}!`, "success");
+          setFormPending(loginOtp2Form, false);
+          saveAuth(res.token, res.user, false);
         } catch (err) {
           showToast(err.message, "error");
-          setFormPending(loginOtp2Form, false, "", "Verify & Sign In");
+          setFormPending(loginOtp2Form, false);
           showFormError(loginOtp2Form, err.message);
         }
       };
@@ -833,19 +888,24 @@
       reset1Form.onsubmit = async (e) => {
         e.preventDefault();
         const email = document.getElementById("resetEmail").value.trim();
+        if (!email || !email.includes("@")) {
+          showToast("Please enter a valid email address", "error");
+          return;
+        }
         state.formData.email = email;
 
         setFormPending(reset1Form, true, "Sending Reset Code...", "Send Reset Code →");
 
         try {
           const res = await apiCall("/api/auth/send-otp", "POST", { email, purpose: "reset_password" });
+          showToast(res.message || "Reset code sent!", "success");
+          setFormPending(reset1Form, false);
           state.resetStep = 2;
           startTimer(60);
-          showToast(res.message, "success");
           renderModalContent();
         } catch (err) {
           showToast(err.message, "error");
-          setFormPending(reset1Form, false, "", "Send Reset Code →");
+          setFormPending(reset1Form, false);
           showFormError(reset1Form, err.message);
         }
       };
@@ -863,6 +923,10 @@
           showToast("Please enter all 6 digits of the code", "error");
           return;
         }
+        if (!newPassword || newPassword.length < 6) {
+          showToast("New password must be at least 6 characters", "error");
+          return;
+        }
 
         setFormPending(reset2Form, true, "Updating Password...", "Reset Password");
 
@@ -872,12 +936,13 @@
             otp,
             newPassword
           });
-          showToast(res.message, "success");
+          showToast(res.message || "Password updated successfully!", "success");
+          setFormPending(reset2Form, false);
           state.tab = "login";
           renderModalContent();
         } catch (err) {
           showToast(err.message, "error");
-          setFormPending(reset2Form, false, "", "Reset Password");
+          setFormPending(reset2Form, false);
           showFormError(reset2Form, err.message);
         }
       };

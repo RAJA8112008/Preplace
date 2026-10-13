@@ -43,8 +43,8 @@ function buildOtpHtml(otp, purpose) {
     purpose === "signup"
       ? "creating your Preplace account"
       : purpose === "reset_password"
-      ? "resetting your Preplace password"
-      : "signing in to Preplace";
+        ? "resetting your Preplace password"
+        : "signing in to Preplace";
 
   return `
     <!DOCTYPE html>
