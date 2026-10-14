@@ -16,6 +16,9 @@
   const TOKEN_KEY = "preplace_auth_token";
   const USER_KEY = "preplace_user_data";
 
+  // Flag to set Work in Progress mode when login/signup backend is under maintenance
+  const AUTH_WORK_IN_PROGRESS = true;
+
   // Auth State
   let state = {
     token: localStorage.getItem(TOKEN_KEY) || null,
@@ -284,8 +287,14 @@
       }
     } else {
       authBar.innerHTML = `
-        <button id="loginOpenBtn" class="auth-btn auth-btn-ghost" type="button">Sign In</button>
-        <button id="signupOpenBtn" class="auth-btn auth-btn-primary" type="button">Sign Up</button>
+        <button id="loginOpenBtn" class="auth-btn auth-btn-ghost" type="button" title="Sign In — Work in progress">
+          <span>Sign In</span>
+          <span class="auth-wip-pill">WIP</span>
+        </button>
+        <button id="signupOpenBtn" class="auth-btn auth-btn-primary" type="button" title="Sign Up — Work in progress">
+          <span>Sign Up</span>
+          <span class="auth-wip-pill auth-wip-pill-accent">WIP</span>
+        </button>
       `;
 
       document.getElementById("loginOpenBtn")?.addEventListener("click", () => openModal("login"));
@@ -321,6 +330,15 @@
       modal.id = "authModalBackdrop";
       modal.className = "auth-modal-backdrop";
       document.body.appendChild(modal);
+    }
+
+    if (AUTH_WORK_IN_PROGRESS) {
+      showToast(
+        tab === "signup"
+          ? "🚧 Work in progress — Account Sign Up is currently under development. Enjoy full guest access!"
+          : "🚧 Work in progress — Account Sign In is currently under development. Enjoy full guest access!",
+        "info"
+      );
     }
 
     renderModalContent();
@@ -369,6 +387,12 @@
     const modal = document.getElementById("authModalBackdrop");
     if (!modal) return;
 
+    if (AUTH_WORK_IN_PROGRESS) {
+      modal.innerHTML = renderWipModalContent();
+      attachWipModalEvents();
+      return;
+    }
+
     modal.innerHTML = `
       <div class="auth-modal-card" onclick="event.stopPropagation()">
         <div class="auth-modal-header">
@@ -406,6 +430,106 @@
       return renderLoginView();
     } else {
       return renderResetView();
+    }
+  }
+
+  // =========================================================================
+  // Work In Progress (WIP) Mode Renderer & Handlers
+  // =========================================================================
+  function renderWipModalContent() {
+    const isSignup = state.tab === "signup";
+    return `
+      <div class="auth-modal-card auth-wip-card" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="wipTitle">
+        
+        <div class="auth-modal-header auth-wip-header">
+          <div class="auth-wip-status-badge">
+            <span class="auth-wip-pulse-dot" aria-hidden="true"></span>
+            <span class="auth-wip-status-label">Work in progress</span>
+          </div>
+          <button id="modalCloseBtn" class="auth-modal-close" type="button" title="Close" aria-label="Close dialog">✕</button>
+        </div>
+
+        <div class="auth-modal-body auth-wip-body">
+          <div class="auth-wip-hero">
+            <div class="auth-wip-icon-circle" aria-hidden="true">
+              <span class="auth-wip-icon">🚧</span>
+            </div>
+            <h3 id="wipTitle" class="auth-wip-title">
+              ${isSignup ? "Account Registration" : "Account Sign In"} is Under Development
+            </h3>
+            <p class="auth-wip-subtitle">
+              Cloud accounts &amp; cross-device sync are currently being finalized.
+            </p>
+          </div>
+
+          <div class="auth-wip-info-box">
+            <div class="auth-wip-highlight-head">
+              <span class="auth-wip-badge-mini">Guest Mode Active</span>
+              <span class="auth-wip-highlight-sub">No account required to prepare!</span>
+            </div>
+            <ul class="auth-wip-points">
+              <li>
+                <span class="auth-wip-check" aria-hidden="true">✓</span>
+                <div>
+                  <strong>100% Free &amp; Unlocked Roadmaps</strong>
+                  <p>Study Frontend, Backend, MERN, Machine Learning, DevOps, and System Design notes freely.</p>
+                </div>
+              </li>
+              <li>
+                <span class="auth-wip-check" aria-hidden="true">✓</span>
+                <div>
+                  <strong>Solved Questions Saved Locally</strong>
+                  <p>All your problem ticks, stars, and notes are automatically saved to your browser on this device.</p>
+                </div>
+              </li>
+              <li>
+                <span class="auth-wip-check" aria-hidden="true">✓</span>
+                <div>
+                  <strong>Live Code Playground &amp; Runner</strong>
+                  <p>Test JavaScript DSA solutions with console logs and execution times directly in the browser.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="auth-wip-actions">
+            <button id="wipContinueGuestBtn" class="auth-btn auth-btn-primary auth-wip-btn" type="button">
+              <span>Continue Learning as Guest →</span>
+            </button>
+            <button id="wipExploreDsaBtn" class="auth-btn auth-btn-ghost auth-wip-btn" type="button">
+              <span>Open Problem Sheet ⚡</span>
+            </button>
+          </div>
+
+          <p class="auth-wip-footer-note">
+            Preplace by <strong>Raj Kumar</strong> · Need help? <a href="#/contact">Send a message</a> or <a href="#/feedback">Feedback</a>.
+          </p>
+        </div>
+
+      </div>
+    `;
+  }
+
+  function attachWipModalEvents() {
+    const backdrop = document.getElementById("authModalBackdrop");
+    const closeBtn = document.getElementById("modalCloseBtn");
+    const continueBtn = document.getElementById("wipContinueGuestBtn");
+    const dsaBtn = document.getElementById("wipExploreDsaBtn");
+
+    if (backdrop) backdrop.onclick = closeModal;
+    if (closeBtn) closeBtn.onclick = closeModal;
+
+    if (continueBtn) {
+      continueBtn.onclick = () => {
+        closeModal();
+      };
+    }
+
+    if (dsaBtn) {
+      dsaBtn.onclick = () => {
+        closeModal();
+        window.location.hash = "#/dsa";
+      };
     }
   }
 
@@ -1024,11 +1148,20 @@
     checkSession();
   });
 
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && state.modalOpen) {
+      closeModal();
+    }
+  });
+
   // Expose API for external modules if needed
   window.PreplaceAuth = {
     openModal,
     closeModal,
     logout,
+    getUser: () => state.user,
+    renderAuthBar,
+    isWorkInProgress: () => AUTH_WORK_IN_PROGRESS,
     getState: () => ({ ...state })
   };
 })();

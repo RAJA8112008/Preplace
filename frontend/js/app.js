@@ -3621,7 +3621,9 @@
       } else {
         if (window.PreplaceAuth) window.PreplaceAuth.openModal("login");
         renderHome();
-        showToast("Please sign in or create an account to view your dashboard 🔒", "accent");
+        if (!window.PreplaceAuth || !window.PreplaceAuth.isWorkInProgress || !window.PreplaceAuth.isWorkInProgress()) {
+          showToast("Please sign in or create an account to view your dashboard 🔒", "accent");
+        }
       }
     }
     else if (page === "quantum") renderQuantum(id);
