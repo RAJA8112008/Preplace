@@ -18,7 +18,6 @@
     linkedin: "https://www.linkedin.com/in/raja-o/"
   };
   const statsCacheKey = "prepplace-public-stats-v1";
-  const countedEmailsKey = "prepplace-counted-emails-v1";
   const myRatingKey = "prepplace-my-rating-v1";
   const ratedPublicKey = "prepplace-rated-public-v1";
   const ABACUS = "https://abacus.jasoncameron.dev";
@@ -794,43 +793,6 @@
     .replace(/\s+/g, " ")
     .trim();
 
-  const formalAnswerSections = (text) => {
-    const parts = String(text || "").split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
-    const labeled = { definition: [], works: [], config: [], risk: [] };
-    for (const part of parts) {
-      const labeledHead = part.match(/^(Definition|How it works|Configuration|Operational risk)\.\s*([\s\S]*)$/i);
-      if (labeledHead) {
-        const key = labeledHead[1].toLowerCase().startsWith("def") ? "definition"
-          : labeledHead[1].toLowerCase().startsWith("how") ? "works"
-          : labeledHead[1].toLowerCase().startsWith("conf") ? "config"
-          : "risk";
-        labeled[key].push(dropCasual(labeledHead[2]));
-        continue;
-      }
-      if (/^In the code:/i.test(part)) labeled.config.push(dropCasual(part.replace(/^In the code:\s*/i, "")));
-      else if (/^A common mistake/i.test(part)) labeled.risk.push(dropCasual(part.replace(/^A common mistake is\s*/i, "A frequent operational error is ")));
-      else if (!labeled.definition.length) labeled.definition.push(dropCasual(part));
-      else labeled.works.push(dropCasual(part));
-    }
-    const rows = [
-      ["Definition", labeled.definition.join(" ")],
-      ["How it works", labeled.works.join(" ")],
-      ["Configuration", labeled.config.join(" ")],
-      ["Operational risk", labeled.risk.join(" ")]
-    ].filter(([, body]) => body);
-    return rows;
-  };
-
-  const renderFormalAnswer = (text) => {
-    const rows = formalAnswerSections(text);
-    if (!rows.length) return `<p class="answer">${escapeHtml(text || "")}</p>`;
-    return `<div class="answer-sections">${rows.map(([title, body]) => `
-      <section class="answer-block">
-        <h4>${escapeHtml(title)}</h4>
-        <p>${escapeHtml(body)}</p>
-      </section>`).join("")}</div>`;
-  };
-
   const TEACH_HEAD = /^(Summary|How the code works|What this is|What happens|What the code is doing|In the example|In the code|Also know|Say this in an interview|Watch out|Common mistake|Wrong answer|Check yourself|Follow-up questions|Worked example|In production|How it works|Definition|Configuration|Operational risk|Before you use this|Why we use it|When to pick this|The problem before|What it solves|Real-life example|Uses)\.?$/i;
 
   const extraForQuestion = (q, a) => {
@@ -1543,19 +1505,6 @@
     });
   };
 
-  const countLearnerOnce = async (email) => {
-    const key = String(email || "").trim().toLowerCase();
-    if (!key) return;
-    const counted = loadJson(countedEmailsKey, {});
-    if (counted[key]) return;
-    counted[key] = Date.now();
-    localStorage.setItem(countedEmailsKey, JSON.stringify(counted));
-    const remote = await abacusHit("logins");
-    const stats = readPublicStats();
-    stats.learners = Math.max(remote, localLearnerCount(), stats.learners);
-    writePublicStats(stats);
-  };
-
   const ratingAverage = (stats) => (stats.ratingN ? stats.ratingSum / stats.ratingN : 0);
 
   const ratingLabel = (stats) => (stats.ratingN ? ratingAverage(stats).toFixed(1) : "—");
@@ -1704,25 +1653,6 @@
     s.count = s.last === yesterday ? s.count + 1 : 1;
     s.last = today;
     patchUser((u) => { u.streak = s; });
-  };
-
-  const randomSalt = () => {
-    const bytes = new Uint8Array(16);
-    crypto.getRandomValues(bytes);
-    return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-  };
-
-  const hashPass = async (password, salt) => {
-    const raw = `${salt}:${password}`;
-    if (globalThis.crypto?.subtle) {
-      try {
-        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
-        return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
-      } catch { /* file:// and some browsers skip Web Crypto */ }
-    }
-    let h = 5381n;
-    for (let i = 0; i < raw.length; i += 1) h = (h * 33n) + BigInt(raw.charCodeAt(i));
-    return h.toString(16);
   };
 
   const currentPage = () => {
@@ -2297,56 +2227,6 @@
     }
   };
 
-  const showAuthError = (msg) => {
-    const el = document.getElementById("authError");
-    if (!el) return;
-    el.hidden = false;
-    el.textContent = msg;
-  };
-
-  const showPendingWork = (el, feature) => {
-    if (!el) return;
-    el.hidden = false;
-    el.textContent = `This work is pending. ${feature} is not active yet.`;
-    el.className = "form-status is-pending";
-  };
-
-  const renderAuth = (mode) => {
-    const signup = mode === "signup";
-    view.innerHTML = `
-      <section class="form-page">
-        <div class="page-actions">
-          <a class="btn btn-ghost" href="#/">← Home</a>
-        </div>
-        <article class="auth-card">
-          <p class="pending-banner">Work pending</p>
-          <h1>${signup ? "Create your account" : "Log in"}</h1>
-          <p>${signup
-            ? "This signup page is ready to look at. Creating an account is not active yet."
-            : "This login page is ready to look at. Signing in is not active yet."}</p>
-          <form id="authForm" class="auth-form" novalidate>
-            ${signup ? `<label>Your name<input class="auth-field" name="name" maxlength="40" autocomplete="name" /></label>` : ""}
-            <label>Email<input class="auth-field" name="email" type="email" autocomplete="email" /></label>
-            <label>Password<input class="auth-field" name="password" type="password" minlength="6" autocomplete="${signup ? "new-password" : "current-password"}" /></label>
-            <p class="form-status" id="authError" hidden></p>
-            <div class="form-actions">
-              <button class="btn btn-primary btn-wide" type="submit">${signup ? "Sign up" : "Log in"}</button>
-              <a class="btn btn-ghost btn-wide" href="${signup ? "#/login" : "#/signup"}">${signup ? "I already have an account" : "Create an account"}</a>
-            </div>
-          </form>
-          <p class="auth-note">Raj is still finishing accounts. You can use Preplace without logging in.</p>
-        </article>
-      </section>`;
-
-    document.getElementById("authForm")?.addEventListener("submit", (e) => {
-      e.preventDefault();
-      showPendingWork(
-        document.getElementById("authError"),
-        signup ? "Sign up" : "Login"
-      );
-    });
-  };
-
   const postToRaj = (fields) => {
     const frameName = "prepplaceMail";
     let frame = document.getElementById(frameName);
@@ -2379,14 +2259,6 @@
     document.body.appendChild(sink);
     sink.submit();
     sink.remove();
-  };
-
-  const setContactStatus = (text, kind) => {
-    const el = document.getElementById("contactStatus");
-    if (!el) return;
-    el.hidden = !text;
-    el.textContent = text;
-    el.className = `form-status${kind ? ` ${kind}` : ""}`;
   };
 
   const bindRajPhoto = () => {
@@ -4440,8 +4312,6 @@
                 <div class="q-tools">
                   ${(data.kind === "dsa" ? dsaSols(item).length : item.solutions) ? `<button class="btn btn-primary" type="button" data-reveal>Show solutions</button>` : ""}
                   ${data.kind === "dsa" && rajTabFor(item) ? `<button class="btn btn-primary" type="button" data-raj-open>Raj's C++</button>` : ""}
-                  <button class="btn" type="button" data-timer>20 min timer</button>
-                  <span class="timer-chip" data-timer-view hidden>20:00</span>
                 </div>
                 <div class="sol-spoiler">${data.kind === "practice" ? "" : renderSolutions(item)}</div>
                 <label class="answer-label" for="note-${item.id}">My notes</label>
@@ -4542,27 +4412,6 @@
         itemEl.querySelectorAll("[data-sol]").forEach((tab) => tab.classList.toggle("active", tab.dataset.sol === "0"));
         itemEl.querySelectorAll("[data-sol-panel]").forEach((panel) => panel.classList.toggle("open", panel.dataset.solPanel === "0"));
         box.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      });
-    });
-    view.querySelectorAll("[data-timer]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const chip = btn.parentElement.querySelector("[data-timer-view]");
-        chip.hidden = false;
-        if (chip.dataset.running === "1") return;
-        chip.dataset.running = "1";
-        let left = 20 * 60;
-        const tick = () => {
-          const m = Math.floor(left / 60);
-          const s = left % 60;
-          chip.textContent = `${m}:${String(s).padStart(2, "0")}`;
-          if (left-- <= 0) {
-            clearInterval(chip._tid);
-            chip.textContent = "Time up — write brute first";
-            chip.dataset.running = "0";
-          }
-        };
-        tick();
-        chip._tid = setInterval(tick, 1000);
       });
     });
     view.querySelectorAll("[data-note]").forEach((area) => {

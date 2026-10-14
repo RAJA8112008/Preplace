@@ -29,6 +29,7 @@
     signupStep: 1, // 1: form, 2: otp
     loginOtpStep: 1, // 1: email, 2: otp
     resetStep: 1, // 1: email, 2: otp & password
+    forceShowForm: false,
     otpData: {
       email: "",
       resendTimer: 0,
@@ -322,6 +323,7 @@
     state.signupStep = 1;
     state.loginOtpStep = 1;
     state.resetStep = 1;
+    state.forceShowForm = false;
     clearTimer();
 
     let modal = document.getElementById("authModalBackdrop");
@@ -356,6 +358,19 @@
     }
   }
 
+  function handleGoBack() {
+    const currentHash = window.location.hash;
+    closeModal();
+    // If user arrived at modal via an auth route or dashboard redirection
+    if (currentHash === "#/login" || currentHash === "#/signup" || currentHash === "#/dashboard") {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.hash = "#/";
+      }
+    }
+  }
+
   function startTimer(seconds = 60) {
     clearTimer();
     state.otpData.resendTimer = seconds;
@@ -387,7 +402,7 @@
     const modal = document.getElementById("authModalBackdrop");
     if (!modal) return;
 
-    if (AUTH_WORK_IN_PROGRESS) {
+    if (AUTH_WORK_IN_PROGRESS && !state.forceShowForm) {
       modal.innerHTML = renderWipModalContent();
       attachWipModalEvents();
       return;
@@ -396,16 +411,34 @@
     modal.innerHTML = `
       <div class="auth-modal-card" onclick="event.stopPropagation()">
         <div class="auth-modal-header">
-          <div>
-            <h3 class="auth-modal-title">
-              ${state.tab === "signup" ? "Create your Preplace Account" : state.tab === "login" ? "Welcome back" : "Reset Password"}
-            </h3>
-            <p class="auth-modal-sub">
-              ${state.tab === "signup" ? "Master careers, DSA, and interview prep" : state.tab === "login" ? "Sign in to track your prep journey" : "Verify your email to create a new password"}
-            </p>
+          <div class="auth-modal-header-left">
+            <button id="modalHeaderBackBtn" class="auth-modal-back-btn" type="button" title="Go back to previous screen" aria-label="Go back">
+              <span class="auth-back-arrow">←</span>
+              <span>Back</span>
+            </button>
+            <div>
+              <h3 class="auth-modal-title">
+                ${state.tab === "signup" ? "Create your Preplace Account" : state.tab === "login" ? "Welcome back" : "Reset Password"}
+              </h3>
+              <p class="auth-modal-sub">
+                ${state.tab === "signup" ? "Master careers, DSA, and interview prep" : state.tab === "login" ? "Sign in to track your prep journey" : "Verify your email to create a new password"}
+              </p>
+            </div>
           </div>
           <button id="modalCloseBtn" class="auth-modal-close" type="button" aria-label="Close">✕</button>
         </div>
+
+        ${AUTH_WORK_IN_PROGRESS && state.forceShowForm ? `
+          <div class="auth-wip-form-banner">
+            <div class="auth-wip-form-banner-text">
+              <span class="auth-wip-pulse-dot" aria-hidden="true"></span>
+              <span>Backend under maintenance — Testing mode active</span>
+            </div>
+            <button id="wipReturnToNoticeBtn" class="auth-wip-banner-btn" type="button">
+              ← Go back to notice
+            </button>
+          </div>
+        ` : ""}
 
         ${state.tab !== "reset" ? `
           <div class="auth-tabs">
@@ -442,6 +475,10 @@
       <div class="auth-modal-card auth-wip-card" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="wipTitle">
         
         <div class="auth-modal-header auth-wip-header">
+          <button id="wipHeaderBackBtn" class="auth-modal-back-btn" type="button" title="Go back to previous screen" aria-label="Go back">
+            <span class="auth-back-arrow">←</span>
+            <span>Back</span>
+          </button>
           <div class="auth-wip-status-badge">
             <span class="auth-wip-pulse-dot" aria-hidden="true"></span>
             <span class="auth-wip-status-label">Work in progress</span>
@@ -499,6 +536,23 @@
             <button id="wipExploreDsaBtn" class="auth-btn auth-btn-ghost auth-wip-btn" type="button">
               <span>Open Problem Sheet ⚡</span>
             </button>
+            <button id="wipBackBtn" class="auth-btn auth-btn-ghost auth-wip-btn auth-wip-back-main-btn" type="button" title="Go back to previous screen">
+              <span class="auth-back-arrow">←</span>
+              <span>Go Back</span>
+            </button>
+          </div>
+
+          <div class="auth-wip-switch-tab">
+            <span>${isSignup ? "Already have an account?" : "Need a new account?"}</span>
+            <button id="wipSwitchTabBtn" class="auth-sublink" type="button">
+              ${isSignup ? "Check Sign In →" : "Check Sign Up →"}
+            </button>
+          </div>
+
+          <div class="auth-wip-dev-toggle">
+            <button id="wipDevBypassBtn" class="auth-sublink auth-dev-bypass-link" type="button" title="Open traditional authentication form">
+              Developer testing? Open ${isSignup ? "Sign Up" : "Sign In"} form anyway ⚙️
+            </button>
           </div>
 
           <p class="auth-wip-footer-note">
@@ -513,11 +567,17 @@
   function attachWipModalEvents() {
     const backdrop = document.getElementById("authModalBackdrop");
     const closeBtn = document.getElementById("modalCloseBtn");
+    const headerBackBtn = document.getElementById("wipHeaderBackBtn");
+    const backBtn = document.getElementById("wipBackBtn");
     const continueBtn = document.getElementById("wipContinueGuestBtn");
     const dsaBtn = document.getElementById("wipExploreDsaBtn");
+    const switchTabBtn = document.getElementById("wipSwitchTabBtn");
+    const devBypassBtn = document.getElementById("wipDevBypassBtn");
 
     if (backdrop) backdrop.onclick = closeModal;
     if (closeBtn) closeBtn.onclick = closeModal;
+    if (headerBackBtn) headerBackBtn.onclick = handleGoBack;
+    if (backBtn) backBtn.onclick = handleGoBack;
 
     if (continueBtn) {
       continueBtn.onclick = () => {
@@ -529,6 +589,20 @@
       dsaBtn.onclick = () => {
         closeModal();
         window.location.hash = "#/dsa";
+      };
+    }
+
+    if (switchTabBtn) {
+      switchTabBtn.onclick = () => {
+        state.tab = state.tab === "signup" ? "login" : "signup";
+        renderModalContent();
+      };
+    }
+
+    if (devBypassBtn) {
+      devBypassBtn.onclick = () => {
+        state.forceShowForm = true;
+        renderModalContent();
       };
     }
   }
@@ -562,8 +636,6 @@
           <p style="font-size: 13px; color: var(--fg-muted); margin-bottom: 12px;">
             We sent a 6-digit verification code to <strong>${escapeHtml(state.formData.email)}</strong>
           </p>
-
-
 
           <label class="auth-label">Enter 6-Digit Code</label>
           <div class="otp-inputs-wrap" id="otpInputsWrap">
@@ -636,8 +708,6 @@
               Enter the 6-digit code sent to <strong>${escapeHtml(state.formData.email)}</strong>
             </p>
 
-
-
             <div class="otp-inputs-wrap" id="otpInputsWrap">
               <input class="otp-digit-box" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" autofocus />
               <input class="otp-digit-box" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" />
@@ -687,8 +757,6 @@
             Enter the code sent to <strong>${escapeHtml(state.formData.email)}</strong> and choose a new password.
           </p>
 
-
-
           <label class="auth-label">6-Digit Code</label>
           <div class="otp-inputs-wrap" id="otpInputsWrap">
             <input class="otp-digit-box" type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" autofocus />
@@ -725,11 +793,20 @@
   function attachModalEvents() {
     const backdrop = document.getElementById("authModalBackdrop");
     const closeBtn = document.getElementById("modalCloseBtn");
+    const headerBackBtn = document.getElementById("modalHeaderBackBtn");
+    const returnToNoticeBtn = document.getElementById("wipReturnToNoticeBtn");
     const tabSignupBtn = document.getElementById("tabSignupBtn");
     const tabLoginBtn = document.getElementById("tabLoginBtn");
 
     if (backdrop) backdrop.onclick = closeModal;
     if (closeBtn) closeBtn.onclick = closeModal;
+    if (headerBackBtn) headerBackBtn.onclick = handleGoBack;
+    if (returnToNoticeBtn) {
+      returnToNoticeBtn.onclick = () => {
+        state.forceShowForm = false;
+        renderModalContent();
+      };
+    }
 
     if (tabSignupBtn) {
       tabSignupBtn.onclick = () => {
